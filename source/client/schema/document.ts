@@ -29,7 +29,7 @@ import { QuaternionTuple } from "three";
 export { EUnitType, TUnitType, Vector3, Quaternion, Matrix4, ColorRGB };
 
 export type TCameraType = "perspective" | "orthographic";
-export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere" | "rect" | "environment" | "sun";
+export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere" | "rect" | "environment" | "sun" | "raking";
 
 /**
  * Encapsulates a node tree representing a renderable scene.
@@ -138,6 +138,7 @@ export interface ILight
     spot?: ISpotLightProps;
     hemisphere?: IHemisphereLightProps;
     sun?: ISunLightProps;
+    raking?: IRakingLightProps;
 }
 
 /**
@@ -160,6 +161,16 @@ export interface ISpotLightProps extends IPointLightProps
 
 export interface IHemisphereLightProps {
     ground :ColorRGB;
+}
+
+/**
+ * Properties for raking lights.
+ * The light direction is derived from azimuth (horizontal rotation, 0–360°)
+ * and elevation (angle above the horizontal plane, 0–90°).
+ */
+export interface IRakingLightProps {
+    azimuth: number;    // degrees, 0-360
+    elevation: number;  // degrees, 0-90
 }
 
 export interface ISunLightProps {

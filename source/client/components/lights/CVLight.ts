@@ -31,6 +31,7 @@ export enum ELightType {
     hemisphere,
     rect,
     sun,
+    raking,
 }
 
 export interface ICVLight extends CLight

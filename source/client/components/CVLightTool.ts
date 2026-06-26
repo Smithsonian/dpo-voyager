@@ -30,8 +30,10 @@ import CVDocument from "./CVDocument";
 
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
+import CVRakingLight from "./lights/CVRakingLight";
 import NVNode from "client/nodes/NVNode";
 import CSunLight from "@ff/scene/components/CSunLight";
+import "../ui/SVRakingLightBall";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -101,6 +103,18 @@ export class LightToolView extends ToolView<CVLightTool>
         super.disconnected();
     }
 
+    private renderRakingLightProperties(light: CVRakingLight, language): unknown {
+        return html`
+            <sv-raking-light-ball
+                .azimuthProperty=${light.ins.azimuth}
+                .elevationProperty=${light.ins.elevation}
+                .colorProperty=${light.ins.color}
+            ></sv-raking-light-ball>
+            <sv-property-slider .property=${light.ins.elevation} name=${language.getLocalizedString("Elevation")} min="0" max="90"></sv-property-slider>
+            <sv-property-slider .property=${light.ins.azimuth} name=${language.getLocalizedString("Azimuth")} min="0" max="360"></sv-property-slider>
+        `;
+    }
+
     private renderSunLightProperties(light: CSunLight, language): unknown {
         return html`
             <sv-property-datetime input="datetime-local" .property=${light.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
@@ -141,6 +155,12 @@ export class LightToolView extends ToolView<CVLightTool>
                 lightControls = this.renderSunLightProperties(activeLight as CSunLight, language);
             } else if (activeLight.is(CVEnvironmentLight)) {
                 lightControls = this.renderCommonLightProperties(activeLight, language);
+            } else if (activeLight.is(CVRakingLight)) {
+                lightControls = html`
+                    ${this.renderCommonLightProperties(activeLight, language)}
+                    ${this.renderColorInput(activeLight, language)}
+                    ${this.renderRakingLightProperties(activeLight as CVRakingLight, language)}
+                `;
             } else {
                 lightControls = html`
                     ${this.renderCommonLightProperties(activeLight, language)}
