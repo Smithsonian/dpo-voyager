@@ -137,7 +137,7 @@ export default class CVSnapshots extends CTweenMachine
 
     protected updateComponentTarget(component: Component, include: boolean)
     {
-        const snapshotProperties = component["snapshotProperties"] as Property[];
+        const snapshotProperties = component?.["snapshotProperties"] as Property[];
         if (!snapshotProperties) {
             return;
         }
