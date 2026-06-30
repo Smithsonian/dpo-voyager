@@ -233,7 +233,7 @@ export default class CVActionsTask extends CVTask
                 this._actionIds.indexOf(action.triggerDetail) : 0);
 
             const isTour = ins.trigger.value === EActionTrigger.OnTourStep;
-            if(action.triggerDetail.includes("\x1F")) {
+            if(action.triggerDetail?.includes("\x1F")) {
                 // Support for updating deprecated v0.63 tour step triggers
                 const detail = action.triggerDetail ? action.triggerDetail.split("\x1F") : [];
                 ins.tour.setValue(isTour ? ins.tour.schema.options.indexOf(detail[0]) : 0);

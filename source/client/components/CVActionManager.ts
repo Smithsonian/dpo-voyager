@@ -283,6 +283,10 @@ export default class CVActionManager extends Component
     {
         const id = this.viewer.ins.activeAnnotation.value;
 
+        if(id.length === 0 || this.ins.reset.changed) {
+            return;
+        }
+
         this.getGraphComponents(CVMeta).forEach((meta) => {
             const actions = meta.actions.items.filter(item => {return id.length > 0 && item.annotationId == id});
             if(actions.length > 0) {
