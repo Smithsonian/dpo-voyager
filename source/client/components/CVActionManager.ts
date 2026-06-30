@@ -314,12 +314,15 @@ export default class CVActionManager extends Component
                 item.clip.time = item.clip.timeScale > 0 ? item.clip.getClip().duration : 0;
             });
 
-            const tour = this.tours.title;
-            const step = this.tours.outs.stepIndex.value;
+            const tour = this.tours.title;                  // DEPRECATED SUPPORT - REMOVE IN v0.64
+            const step = this.tours.outs.stepIndex.value;   // DEPRECATED SUPPORT - REMOVE IN v0.64
+
+            const stepId = this.tours.activeStep.id;
             
             this.getGraphComponents(CVMeta).forEach((meta) => {
                 const actions = meta.actions.items.filter(action => {return action.trigger === EActionTrigger[EActionTrigger.OnTourStep] as TActionTrigger
-                    && action.triggerDetail.split("\x1F")[0] === tour && action.triggerDetail.split("\x1F")[1] === (step+1).toString()
+                    && ((action.triggerDetail.split("\x1F")[0] === tour && action.triggerDetail.split("\x1F")[1] === (step+1).toString())  // DEPRECATED SUPPORT - REMOVE IN v0.64
+                    || action.triggerDetail === stepId)
                 });
                 if(actions.length > 0) {
                     actions.forEach((action) => {

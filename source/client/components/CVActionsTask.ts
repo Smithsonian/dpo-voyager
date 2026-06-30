@@ -29,6 +29,7 @@ import NVNode from "client/nodes/NVNode";
 import CVModel2 from "./CVModel2";
 import CVAnnotationView from "./CVAnnotationView";
 import { ELanguageType } from "client/schema/common";
+import CVTours from "./CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -73,6 +74,9 @@ export default class CVActionsTask extends CVTask
 
     get actions() {
         return this.meta && this.meta.actions.items;
+    }
+    protected get tours() {
+        return this.getSystemComponent(CVTours);
     }
 
     constructor(node: Node, id: string)
@@ -184,7 +188,7 @@ export default class CVActionsTask extends CVTask
                 if(ins.tour.changed) {
                     this.synchTourStepOptions();
                 }
-                action.triggerDetail = this.ins.tour.getOptionText() + "\x1F" + this.ins.tourStep.getOptionText();
+                action.triggerDetail = this.ins.tour.value > 0 ? this.tours.tours[this.ins.tour.value-1].steps[this.ins.tourStep.value].id : "";
             }
             if(ins.action.changed) {
                 action.triggerDetail = ins.action.value > 0 ? this._actionIds[ins.action.value] : undefined;
@@ -229,10 +233,20 @@ export default class CVActionsTask extends CVTask
                 this._actionIds.indexOf(action.triggerDetail) : 0);
 
             const isTour = ins.trigger.value === EActionTrigger.OnTourStep;
-            const detail = action.triggerDetail ? action.triggerDetail.split("\x1F") : [];
-            ins.tour.setValue(isTour ? ins.tour.schema.options.indexOf(detail[0]) : 0);
-            this.synchTourStepOptions();
-            ins.tourStep.setValue(isTour ? ins.tourStep.schema.options.indexOf(detail[1]) : 0);
+            if(action.triggerDetail.includes("\x1F")) {
+                // Support for updating deprecated v0.63 tour step triggers
+                const detail = action.triggerDetail ? action.triggerDetail.split("\x1F") : [];
+                ins.tour.setValue(isTour ? ins.tour.schema.options.indexOf(detail[0]) : 0);
+                this.synchTourStepOptions();
+                ins.tourStep.setValue(isTour ? ins.tourStep.schema.options.indexOf(detail[1]) : 0);
+                action.triggerDetail = this.ins.tour.value > 0 ? this.tours.tours[this.ins.tour.value-1].steps[this.ins.tourStep.value].id : "";
+            }
+            else {
+                const tour = this.tours.tours.find((entry) => entry.steps.some(step => step.id === action.triggerDetail));
+                ins.tour.setValue(isTour ? ins.tour.schema.options.indexOf(tour.titles[ELanguageType[this.activeDocument.setup.language.outs.uiLanguage.value]] || tour.title) : 0);
+                this.synchTourStepOptions();
+                ins.tourStep.setValue(isTour ? tour.steps.findIndex(step => step.id === action.triggerDetail) : 0);
+            }
         }
     }
 
