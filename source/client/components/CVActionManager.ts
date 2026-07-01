@@ -389,6 +389,7 @@ export default class CVActionManager extends Component
     protected playAnimation(component: CVModel2, action: IAction) 
     {
         const mesh = this._animMap[action.animation];
+        const groupId = mesh.id+action.id;
 
         if(!mesh) {
             console.warn("No playable animation found!");
@@ -411,9 +412,11 @@ export default class CVActionManager extends Component
                 annotations.parent.position.copy(mesh.position);
                 annotations.parent.rotation.copy(mesh.rotation);
 
-                this._initialOffset[mesh.id] = new Matrix4().copy(mesh.matrix);
-                this._animGroups[mesh.id] = new AnimationObjectGroup(mesh, annotations.parent);
-            } 
+                this._initialOffset[mesh.id] = new Matrix4().copy(mesh.matrix);        
+            }
+            if(!this._animGroups[groupId]) {
+                this._animGroups[groupId] = new AnimationObjectGroup(mesh, annotations.parent);
+            }
             mesh.matrixAutoUpdate = true;
 
             // add offset to remove baked transforms
@@ -428,7 +431,7 @@ export default class CVActionManager extends Component
             annotations.parent.parent.matrixWorldNeedsUpdate = true;
         }
         
-        const clip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), this._animGroups[mesh.id]);
+        const clip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), this._animGroups[groupId]);
 
         if(clip && !clip.isRunning()) {
             clip.reset();
