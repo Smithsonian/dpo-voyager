@@ -321,7 +321,7 @@ export default class CVActionManager extends Component
             const tour = this.tours.title;                  // DEPRECATED SUPPORT - REMOVE IN v0.64
             const step = this.tours.outs.stepIndex.value;   // DEPRECATED SUPPORT - REMOVE IN v0.64
 
-            const stepId = this.tours.activeStep.id;
+            const stepId = this.tours.activeStep?.id;
             
             this.getGraphComponents(CVMeta).forEach((meta) => {
                 const actions = meta.actions.items.filter(action => {return action.trigger === EActionTrigger[EActionTrigger.OnTourStep] as TActionTrigger
