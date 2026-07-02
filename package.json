@@ -1,6 +1,6 @@
 {
     "name": "voyager",
-    "version": "0.63.1",
+    "version": "0.63.2",
     "description": "Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
     "scripts": {
         "start": "npm run server",

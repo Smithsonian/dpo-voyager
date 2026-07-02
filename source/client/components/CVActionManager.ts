@@ -321,7 +321,7 @@ export default class CVActionManager extends Component
             const tour = this.tours.title;                  // DEPRECATED SUPPORT - REMOVE IN v0.64
             const step = this.tours.outs.stepIndex.value;   // DEPRECATED SUPPORT - REMOVE IN v0.64
 
-            const stepId = this.tours.activeStep.id;
+            const stepId = this.tours.activeStep?.id;
             
             this.getGraphComponents(CVMeta).forEach((meta) => {
                 const actions = meta.actions.items.filter(action => {return action.trigger === EActionTrigger[EActionTrigger.OnTourStep] as TActionTrigger
@@ -395,6 +395,7 @@ export default class CVActionManager extends Component
             return;
         }
 
+        const groupId = mesh.id+action.id;
         const meshParent = component.object3D;
         const annotations = component.node.getComponent(CVAnnotationView).object3D;
 
@@ -411,9 +412,11 @@ export default class CVActionManager extends Component
                 annotations.parent.position.copy(mesh.position);
                 annotations.parent.rotation.copy(mesh.rotation);
 
-                this._initialOffset[mesh.id] = new Matrix4().copy(mesh.matrix);
-                this._animGroups[mesh.id] = new AnimationObjectGroup(mesh, annotations.parent);
-            } 
+                this._initialOffset[mesh.id] = new Matrix4().copy(mesh.matrix);        
+            }
+            if(!this._animGroups[groupId]) {
+                this._animGroups[groupId] = new AnimationObjectGroup(mesh, annotations.parent);
+            }
             mesh.matrixAutoUpdate = true;
 
             // add offset to remove baked transforms
@@ -428,7 +431,7 @@ export default class CVActionManager extends Component
             annotations.parent.parent.matrixWorldNeedsUpdate = true;
         }
         
-        const clip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), this._animGroups[mesh.id]);
+        const clip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), this._animGroups[groupId]);
 
         if(clip && !clip.isRunning()) {
             clip.reset();
