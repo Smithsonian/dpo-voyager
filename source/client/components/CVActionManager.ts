@@ -389,13 +389,13 @@ export default class CVActionManager extends Component
     protected playAnimation(component: CVModel2, action: IAction) 
     {
         const mesh = this._animMap[action.animation];
-        const groupId = mesh.id+action.id;
 
         if(!mesh) {
             console.warn("No playable animation found!");
             return;
         }
 
+        const groupId = mesh.id+action.id;
         const meshParent = component.object3D;
         const annotations = component.node.getComponent(CVAnnotationView).object3D;
 
