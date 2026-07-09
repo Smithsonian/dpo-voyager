@@ -44,7 +44,7 @@ export default class CVViewer extends Component
 
     private _rootElement: HTMLElement = null;
     private _needsAnnoFocus: boolean = false;
-    private _modelLoadCount: number = 0;
+    private _loadedModels = new Set<CVModel2>();
 
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
@@ -461,16 +461,25 @@ export default class CVViewer extends Component
         });
         this.ins.variant.setOptions([...variantSet]);
 
-        // if all models in scene have loaded derivatives closest to scene quality
-        // (or greater than Thumb with LOD enabled), consider scene fully loaded.
-        if(this.assetManager.outs.initialLoad.value && 
-            (this.getGraphComponent(CVSetup).derivatives.ins.enabled.value && event.quality > EDerivativeQuality.Thumb
-            || event.quality === event.model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value).data.quality)) {
-            if(++this._modelLoadCount === models.length) {
-                this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
-                this.analytics.resetTimer();
-                this.assetManager.outs.initialLoad.setValue(false);
-                this.outs.sceneLoaded.setValue(true);
+        // Track initial scene loading so the spinner is only shown once, during the initial load.
+        // A model counts as loaded when it has loaded the derivative it currently requests:
+        //  - with LOD enabled, that is the quality picked by the derivatives controller
+        //  - otherwise it is the scene quality.
+        if(this.assetManager.outs.initialLoad.value) {
+            const lodEnabled = this.getGraphComponent(CVSetup).derivatives.ins.enabled.value;
+            const requestedQuality = lodEnabled
+                ? event.model.ins.quality.value
+                : event.model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value).data.quality;
+
+            if(event.quality === requestedQuality) {
+                this._loadedModels.add(event.model);
+
+                if(models.every(model => this._loadedModels.has(model))) {
+                    this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
+                    this.analytics.resetTimer();
+                    this.assetManager.outs.initialLoad.setValue(false);
+                    this.outs.sceneLoaded.setValue(true);
+                }
             }
         }
     }
