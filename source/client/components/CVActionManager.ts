@@ -239,7 +239,7 @@ export default class CVActionManager extends Component
         model.object3D.traverse(object => {
             if (object.animations.length > 0) {
                 object.animations.forEach((anim) => {
-                    this._animMap[anim.name] = object;
+                    this._animMap[model.node.id + anim.name] = object;
                 })
             }
         });
@@ -388,7 +388,7 @@ export default class CVActionManager extends Component
 
     protected playAnimation(component: CVModel2, action: IAction) 
     {
-        const mesh = this._animMap[action.animation];
+        const mesh = this._animMap[component.node.id + action.animation];
 
         if(!mesh) {
             console.warn("No playable animation found!");
