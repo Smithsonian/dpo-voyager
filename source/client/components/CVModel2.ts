@@ -61,6 +61,19 @@ export interface IModelLoadEvent extends ITypedEvent<"model-load">
 }
 
 /**
+ * Emitted when a model gives up on displaying anything: its derivative failed to load,
+ * or it has no Web3D derivative to load in the first place. Counterpart of "model-load",
+ * which never fires in those cases.
+ *
+ * A failed LOD upgrade doesn't emit it, as long as an earlier derivative is still on display.
+ */
+export interface IModelErrorEvent extends ITypedEvent<"model-error">
+{
+    model: CVModel2;
+    error: Error;
+}
+
+/**
  * Describes an overlay image
  */
 export interface IOverlay
@@ -152,6 +165,9 @@ export default class CVModel2 extends CObject3D
     private _derivatives = new DerivativeList();
     private _activeDerivative: Derivative = null;
 
+    /** Set once this model has given up on displaying anything. See "model-error". */
+    private _failed: boolean = false;
+
     /**
      * Separate from activeDerivative because when switching quality levels,
      * we want to keep the active model until the new one is ready
@@ -200,6 +216,16 @@ export default class CVModel2 extends CObject3D
     }
     get localBoundingBox(): Readonly<Box3> {
         return this._localBoundingBox;
+    }
+
+    /**
+     * True once this model's load has settled: it either has a derivative on display,
+     * or it never will, because loading failed or autoLoad is off. A model with no Web3D
+     * derivative at all (an AR-only model) settles as failed, as soon as autoLoad looks
+     * for something to load and finds nothing.
+     */
+    get isSettled(): boolean {
+        return !!this._activeDerivative || this._failed || !this.ins.autoLoad.value;
     }
 
     protected get assetManager() {
@@ -311,8 +337,11 @@ export default class CVModel2 extends CObject3D
             this.autoLoad().then(()=> {
                 let setup = this.getGraphComponent(CVSetup);
                  if (!setup.derivatives.ins.enabled.value){
+                    // a model with no Web3D derivative at all (an AR-only model) has nothing to select
                     const derivative = this.derivatives.select(EDerivativeUsage.Web3D, EDerivativeQuality.High);
-                    this.ins.quality.setValue(derivative.data.quality);
+                    if (derivative) {
+                        this.ins.quality.setValue(derivative.data.quality);
+                    }
                  }
             });
         }
@@ -828,9 +857,17 @@ export default class CVModel2 extends CObject3D
         if (nearestDerivative) {
             return this.loadDerivative(nearestDerivative); 
         }else {
-            Notification.show(`No 3D derivatives available for '${this.displayName}'.`);
+            const error = new Error(`No 3D derivatives available for '${this.displayName}'.`);
+            Notification.show(error.message);
+            this.setError(error);
             return Promise.resolve();
         };
+    }
+
+    /** Marks this model as never going to display anything, and tells the scene about it. */
+    private setError(error: Error){
+        this._failed = true;
+        this.emit<IModelErrorEvent>({ type: "model-error", model: this, error });
     }
 
     public unload(){
@@ -972,12 +1009,19 @@ export default class CVModel2 extends CObject3D
                     this.ins.overlayMap.set();
                 }
 
+                this._failed = false;
+
                 this.emit<IModelLoadEvent>({ type: "model-load", quality: derivative.data.quality, model: this });
                 //this.getGraphComponent(CVSetup).navigation.ins.zoomExtents.set(); 
             }).catch(error =>{
                 if(error.name == "AbortError" || error.name == "ABORT_ERR") return;
                 console.error(error);
                 Notification.show(`Failed to load model derivative: ${error.message}`)
+
+                // A failed LOD upgrade is not a model failure: an earlier derivative is still on display.
+                if (!this._activeDerivative) {
+                    this.setError(error);
+                }
             });
     }
 
