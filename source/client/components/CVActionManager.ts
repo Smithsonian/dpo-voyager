@@ -313,7 +313,11 @@ export default class CVActionManager extends Component
     protected onTourStep() 
     {
         if(this.tours.activeTour) {
-            // Set any currently active animations to their finish state
+            // Set any currently active or queued animations to their finish state
+            while(this._animQueue.length > 0) {
+                const action = this._animQueue.pop();
+                this.playAction(action.model, action.action);
+            }
             this._activeClips.forEach(item => {
                 item.clip.time = item.clip.timeScale > 0 ? item.clip.getClip().duration : 0;
             });
