@@ -34,7 +34,8 @@ export enum EReaderPosition { Overlay, Left, Right }
 export type TSliceAxis = "X" | "Y" | "Z";
 export enum ESliceAxis { X, Y, Z }
 
-export type TMarkerStyle = "Sphere" | "Ring" | "Crosshair" | "Disc" | "Pin";
+export type TMarkerStyle = "Pin" | "Ring";
+export enum EMarkerStyle { Pin, Ring };
 
 export interface ISetup
 {
