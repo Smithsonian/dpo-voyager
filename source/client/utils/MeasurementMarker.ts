@@ -33,16 +33,16 @@ import {
 export enum EMarkerStyle { Sphere, Ring, Crosshair, Disc, Pin }
 
 const markerStyleValues: TMarkerStyle[] = ["Sphere", "Ring", "Crosshair", "Disc", "Pin"];
-
+*/
 export function getMarkerStyleValue(index: number): TMarkerStyle {
-    return markerStyleValues[index] || "Sphere";
-}*/
+    return EMarkerStyle[index] as TMarkerStyle || "Pin";
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Abstract base class for measurement markers.
- * Non-invasive alternatives to pin-style markers for museum contexts.
+ * Alternatives to default pin-style.
  */
 export abstract class MeasurementMarker extends Group
 {

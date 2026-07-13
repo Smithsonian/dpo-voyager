@@ -19,14 +19,13 @@ import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial,
 
 import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
-import { ITape, TMarkerStyle } from "client/schema/setup";
+import { EMarkerStyle, ITape, TMarkerStyle } from "client/schema/setup";
 
-import { MeasurementMarker, EMarkerStyle, createMarker, getMarkerStyleValue } from "../utils/MeasurementMarker";
+import { MeasurementMarker, createMarker } from "../utils/MeasurementMarker";
 import CVModel2 from "./CVModel2";
 import CVScene from "client/components/CVScene";
 import { EUnitType } from "client/schema/common";
 import unitScaleFactor from "client/utils/unitScaleFactor";
-import { getMeshTransform } from "client/utils/Helpers";
 import Annotation from "../models/Annotation";
 import CVStaticAnnotationView from "./CVStaticAnnotationView";
 
@@ -55,7 +54,7 @@ export default class CVTape extends CObject3D
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
         enabled: types.Boolean("Tape.Enabled", false),
-        markerStyle: types.Enum("Tape.MarkerStyle", EMarkerStyle, EMarkerStyle.Sphere),
+        markerStyle: types.Enum("Tape.MarkerStyle", EMarkerStyle, EMarkerStyle.Pin),
     };
 
     protected static readonly tapeOuts = {
@@ -70,6 +69,7 @@ export default class CVTape extends CObject3D
     get settingProperties() {
         return [
             this.ins.visible,
+            this.ins.markerStyle
         ];
     }
 
@@ -96,11 +96,11 @@ export default class CVTape extends CObject3D
         this.object3D = new Group();
         this.object3D.name = "Tape";
 
-        this.startMarker = createMarker(EMarkerStyle.Sphere);
+        this.startMarker = createMarker(EMarkerStyle.Pin);
         this.startMarker.matrixAutoUpdate = false;
         this.startMarker.visible = false;
 
-        this.endMarker = createMarker(EMarkerStyle.Sphere);
+        this.endMarker = createMarker(EMarkerStyle.Pin);
         this.endMarker.matrixAutoUpdate = false;
         this.endMarker.visible = false;
 
@@ -176,11 +176,11 @@ export default class CVTape extends CObject3D
             ins.boundingBox.value.getSize(_vec3a);
             const radius = _vec3a.length() * 0.5;
 
-            this.startMarker.scale.setScalar(radius * 0.003);
-            this.startMarker.updateMatrix();
+            startMarker.scale.setScalar(radius * 0.003);
+            startMarker.updateMatrix();
 
-            this.endMarker.scale.setScalar(radius * 0.003);
-            this.endMarker.updateMatrix();
+            endMarker.scale.setScalar(radius * 0.003);
+            endMarker.updateMatrix();
 
             const defaultScale = radius * 0.05;
             this.annotationView.ins.unitScale.setValue(defaultScale);
@@ -275,15 +275,16 @@ export default class CVTape extends CObject3D
             startPosition: data.startPosition || [ 0, 0, 0 ],
             startDirection: data.startDirection || [ 1, 0, 0 ],
             endPosition: data.endPosition || [ 0, 0, 0 ],
-            endDirection: data.endDirection || [ 1, 0, 0 ]
+            endDirection: data.endDirection || [ 1, 0, 0 ],
+            markerStyle: EMarkerStyle[data.markerStyle] || EMarkerStyle.Pin
         });
         this.ins.enabled.copyValue(false);  // enable not set from data
 
         if (data.markerStyle) {
-            const styleIndex = ["Sphere", "Ring", "Crosshair", "Disc", "Pin"].indexOf(data.markerStyle);
+            /*const styleIndex = ["Sphere", "Ring", "Crosshair", "Disc", "Pin"].indexOf(data.markerStyle);
             if (styleIndex >= 0) {
                 this.ins.markerStyle.setValue(styleIndex);
-            }
+            }*/
         }
     }
 
@@ -292,9 +293,9 @@ export default class CVTape extends CObject3D
         const ins = this.ins;
 
         return {
-            enabled: ins.visible.cloneValue(),/*
-            markerStyle: ins.markerStyle.cloneValue(),
-            startPosition: ins.startPosition.cloneValue(),
+            enabled: ins.visible.cloneValue(),
+            markerStyle: EMarkerStyle[ins.markerStyle.value] as TMarkerStyle,
+            /*startPosition: ins.startPosition.cloneValue(),
             startDirection: ins.startDirection.cloneValue(),
             endPosition: ins.endPosition.cloneValue(),
             endDirection: ins.endDirection.cloneValue()*/
