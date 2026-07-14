@@ -163,7 +163,10 @@ module.exports = function(env, argv)
             minimizer: [
                 new TerserPlugin({ parallel: true }),
                 new CSSMinimizerPlugin(),
-            ]
+            ],
+            splitChunks: {
+                chunks: ()=>false, //Disable common chunks splitting
+            }
         },
 
         plugins: [
