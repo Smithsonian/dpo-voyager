@@ -21,6 +21,7 @@ These attributes configure the initial object load of the component.
 | resourceRoot	   | Valid URL	   | Path to root folder where the Voyager assets are stored (fonts,images,language). Defaults to jsDelivr CDN.			 |
 | bgColor	   | Valid CSS colors  | Sets the color of the component background. Optional second color for gradient styles. Ex: "red" or "red rgb(0,255,0)" |
 | bgStyle	   | Solid, LinearGradient, RadialGradient | Sets the style of the component background. |
+| markerStyle  | Pin, Ring         | Sets the style of measurement tape markers.                                                                         |
 | controls	   | True, False	   | Enables/Disables user-driven camera controls. Defaults to 'True'. Useful if driving navigation from external code.  |
 | prompt	   | True, False	   | Enables/Disables user interaction prompt. Defaults to 'True'. Always false if 'controls' is false. |
 | reader	   | True, False	   | Enables/Disables visibility of reader UI. Defaults to 'True'. Overrides activation triggers like toggleReader()  |

@@ -41,7 +41,7 @@ import MainView from "../ui/explorer/MainView";
 import { EDerivativeQuality } from "client/schema/model";
 import CVARManager from "client/components/CVARManager";
 import { EUIElements } from "client/components/CVInterface";
-import { EBackgroundStyle } from "client/schema/setup";
+import { EBackgroundStyle, EMarkerStyle, TMarkerStyle } from "client/schema/setup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 import { clamp } from "client/utils/Helpers"
@@ -83,6 +83,8 @@ export interface IExplorerApplicationProps
     bgColor?: string;
     /** Component background style */
     bgStyle?: string;
+    /** Measurement marker style */
+    markerStyle?: string;
     /** Enables/disables pointer-driven camera controls. */
     controls?: string;
     /** Enables/disables navigation interaction prompt. */
@@ -289,6 +291,7 @@ Version: ${ENV_VERSION}
         props.uiMode = props.uiMode || qs.get("uiMode") || qs.get("u");
         props.bgColor = props.bgColor || qs.get("bgColor") || qs.get("bc");
         props.bgStyle = props.bgStyle || qs.get("bgStyle") || qs.get("bs");
+        props.markerStyle = props.markerStyle || qs.get("markerStyle") || qs.get("ms");
         props.controls = props.controls || qs.get("controls") || qs.get("ct");
         props.prompt = props.prompt || qs.get("prompt") || qs.get("pm");
         props.reader = props.reader || qs.get("reader") || qs.get("rdr");
@@ -372,6 +375,7 @@ Version: ${ENV_VERSION}
     }
 
     protected postLoadHandler(props: IExplorerApplicationProps) {
+        const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
         this.assetManager.ins.baseUrlValid.setValue(true);
         if(props.bgColor) {
             const colors = props.bgColor.split(" ");
@@ -392,9 +396,11 @@ Version: ${ENV_VERSION}
         if(props.lang) {
             this.setLanguage(props.lang);
         }
+        if(props.markerStyle) {
+            this.setMarkerStyle(props.markerStyle);
+        }
 
         // Re-cache postload setups
-        const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
         setup.ins.saveState.set();
     }
 
@@ -650,7 +656,23 @@ Version: ${ENV_VERSION}
             backgroundIns.style.setValue(EBackgroundStyle[foundStyle]);
         }
         else {
-            console.error("Error: Style param is invalid.");
+            console.error("Error: Background style param [" + style + "] is invalid.");
+        }
+    }
+
+    // Set measurement tape marker style (Pin, Ring)
+    setMarkerStyle(style: string)
+    {
+        const tapelIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
+            
+        const enumNames = Object.values(EMarkerStyle).filter(value => typeof value === 'string') as string[];
+        const foundStyle = enumNames.find(name => name.toLowerCase() === style.toLowerCase());
+
+        if(foundStyle !== undefined) {
+            tapelIns.markerStyle.setValue(EMarkerStyle[foundStyle]);
+        }
+        else {
+            console.error("Error: Marker style param [" + style + "] is invalid.");
         }
     }
 

@@ -124,6 +124,7 @@ export default class MainView extends CustomElement
                 uiMode: this.getAttribute("uiMode"),
                 bgColor: this.getAttribute("bgColor"),
                 bgStyle: this.getAttribute("bgStyle"),
+                markerStyle: this.getAttribute("markerStyle"),
                 controls: this.getAttribute("controls"),
                 prompt: this.getAttribute("prompt"),
                 reader: this.getAttribute("reader"),

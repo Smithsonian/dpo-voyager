@@ -177,6 +177,12 @@
                 "enabled": {
                     "type": "boolean"
                 },
+                "markerStyle": {
+                    "type": "string",
+                    "enum": [
+                        "Pin", "Ring"
+                    ]
+                },
                 "startPosition": {
                     "$ref": "./common.schema.json#/definitions/vector3"
                 },
