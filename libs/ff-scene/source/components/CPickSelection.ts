@@ -149,6 +149,7 @@ export default class CPickSelection extends CSelection
 
                 if(!bracket){
                     bracket = new Bracket(object3D);
+                    bracket.layers.set(1);
                 }
                 object3D.add(bracket);
                 this._brackets_map.set(component, bracket);
@@ -159,6 +160,7 @@ export default class CPickSelection extends CSelection
             if(transform && transform.object3D != object3D){
                 let o = new Axes(transform.object3D);
                 this._axes_map.set(transform, o);
+                o.layers.set(1);
                 transform.object3D.add(o);
 
                 o.visible = this.ins.viewportBrackets.value;
