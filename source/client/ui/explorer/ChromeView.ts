@@ -206,7 +206,7 @@ export default class ChromeView extends DocumentView
                     ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${languageManager.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
                 </div>
             </div>
-            <div class=sv-compass-container>${this.compass}</div>
+            ${this.compass}
             `;
     }
 
