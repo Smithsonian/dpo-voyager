@@ -119,9 +119,11 @@ export default class CSunLight extends CLight {
 
     protected calculatePosition(altitude: number, azimuth: number): [number, number, number] {
         // See https://stackoverflow.com/a/71968928/1897839
-        const x = Math.cos(altitude) * Math.sin(azimuth);
-        const y = Math.cos(altitude) * Math.cos(azimuth);
-        const z = Math.sin(altitude);
+        // Adjusted to the Three.js coordinate system (Y-up): North=−Z, South=+Z, East=+X, West=−X, Up=+Y
+        // Azimuth is measured from South toward West (clockwise): 0=South, π/2=West, π=North, 3π/2=East
+        const x = -Math.cos(altitude) * Math.sin(azimuth); // West=−X, East=+X
+        const y =  Math.sin(altitude);                      // Up=+Y
+        const z =  Math.cos(altitude) * Math.cos(azimuth); // South=+Z, North=−Z
 
         return [x, y, z];
     }
