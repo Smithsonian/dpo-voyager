@@ -26,6 +26,7 @@ import CVDocumentProvider from "client/components/CVDocumentProvider";
 import CVOrbitNavigation, { EKeyNavMode } from "client/components/CVOrbitNavigation";
 import CVSetup from "client/components/CVSetup";
 import {getFocusableElements, focusTrap} from "../utils/focusHelpers";
+import CVDocument from "client/components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -149,19 +150,21 @@ export default class SceneView extends SystemView
         }
         
         this.resizeObserver.observe(this.view.renderer.domElement);
-        
-        this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.on("value", this.enablePointerEvents, this);
-        this.system.getComponent(CVOrbitNavigation).ins.keyNavActive.on("value", this.onKeyboardNavigation, this);
-        this.system.getComponent(CVSetup).tape.ins.enabled.on("value", this.onMeasure, this);
+
+        // initial document activation happens before this view
+        // is instantiated so initialize once here.
+        this.onDocumentActivate();
+
+        this.system.getMainComponent(CVDocumentProvider).outs.activeDocument.on("value", this.onDocumentActivate, this)
     }
 
     protected disconnected()
     {
         this.resizeObserver.disconnect();
 
-        this.system.getComponent(CVSetup).tape.ins.enabled.off("value", this.onMeasure, this);
-        this.system.getComponent(CVOrbitNavigation).ins.keyNavActive.off("value", this.onKeyboardNavigation, this);
-        this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.off("value", this.enablePointerEvents, this);
+        this.onDocumentDeactivate(this.system.getMainComponent(CVDocumentProvider).outs.activeDocument.value);
+
+        this.system.getMainComponent(CVDocumentProvider).outs.activeDocument.off("value", this.onDocumentActivate, this)
 
         this.view.detach();
     }
@@ -261,6 +264,23 @@ export default class SceneView extends SystemView
         else if(e.code === "Tab") {
             focusTrap(getFocusableElements(this.overlay) as HTMLElement[], e, true);
         }
+    }
+
+    protected onDocumentActivate()
+    {
+        const activeDoc = this.system.getMainComponent(CVDocumentProvider).activeComponent;
+        activeDoc.setup.navigation.ins.pointerEnabled.on("value", this.enablePointerEvents, this);
+        activeDoc.setup.navigation.ins.keyNavActive.on("value", this.onKeyboardNavigation, this);
+        activeDoc.setup.tape.ins.enabled.on("value", this.onMeasure, this);
+        activeDoc.ins.active.on("value", () => this.onDocumentDeactivate(activeDoc), this);
+    }
+
+    protected onDocumentDeactivate(doc: CVDocument)
+    {
+        doc.setup.navigation.ins.pointerEnabled.off("value", this.enablePointerEvents, this);
+        doc.setup.navigation.ins.keyNavActive.off("value", this.onKeyboardNavigation, this);
+        doc.setup.tape.ins.enabled.off("value", this.onMeasure, this);
+        doc.ins.active.off("value", this.onDocumentDeactivate, this);
     }
 
     /*protected onResize()

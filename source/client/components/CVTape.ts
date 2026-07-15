@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper, BufferAttribute, Material } from "three";
+import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper, BufferAttribute, Material, Mesh } from "three";
 
 import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
@@ -293,10 +293,8 @@ export default class CVTape extends CObject3D
             return;
         }
 
-        // Compensate for any internal transforms the loaded geometry may have
-        const model = event.component as CVModel2;
-        const meshTransform = getMeshTransform(model.object3D, event.object3D);
-        const bounds = model.localBoundingBox.clone().applyMatrix4(meshTransform);
+        // Get local bounding box
+        const bounds = (event.object3D as Mesh).geometry.boundingBox.clone();
 
         // get click position and normal
         const worldMatrix = event.object3D.matrixWorld;

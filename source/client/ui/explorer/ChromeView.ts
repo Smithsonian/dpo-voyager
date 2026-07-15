@@ -83,7 +83,7 @@ export default class ChromeView extends DocumentView
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.activeLanguage.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.isPlaying.on("value", this.onUpdate, this);
-        this.activeDocument.setup.audio.outs.narrationPlaying.on("value", this.onUpdate, this);
+        this.activeDocument.setup.audio.outs.globalPlaying.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.ins.captionsEnabled.on("value", this.onUpdate, this);
         this.system.getComponent(CVOrbitNavigation).ins.orbit.on("value", this.updateCompassRotation, this);
         this.compass.addEventListener("mousedown", this.onCompassMouseDown);
@@ -101,7 +101,7 @@ export default class ChromeView extends DocumentView
         window.removeEventListener("mouseup", this.onCompassMouseUp);
         this.removeEventListener("keydown", this.onKeyDown);
         this.activeDocument.setup.audio.ins.captionsEnabled.off("value", this.onUpdate, this);
-        this.activeDocument.setup.audio.outs.narrationPlaying.off("value", this.onUpdate, this);
+        this.activeDocument.setup.audio.outs.globalPlaying.off("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.isPlaying.off("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.activeLanguage.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
@@ -139,7 +139,7 @@ export default class ChromeView extends DocumentView
 
         const captionsVisible = setup.audio.outs.isPlaying.value && setup.audio.getClipCaptionUri(setup.audio.activeId);
         const captionsEnabled = setup.audio.ins.captionsEnabled.value;
-        const audioVisible = setup.audio.outs.narrationPlaying.value;
+        const audioVisible = setup.audio.outs.globalPlaying.value || setup.audio.outs.narrationPlaying.value;
 
         const isEditing = !!this.system.getComponent("CVStoryApplication", true);
         const toolBarAllowed = isEditing || !toursEnabled;
@@ -182,7 +182,7 @@ export default class ChromeView extends DocumentView
         titleElement.innerHTML = title;
 
         return html`${showTourEndMsg ? html`<div class="sr-only" role="alert" id="screen-reader-msg">Tour Ending...</div>` : null}
-            ${audioVisible ? html`<div class="sv-narrate-player">${setup.audio.getPlayerById(setup.audio.narrationId)}</div>` : null}
+            ${audioVisible ? html`<div class="sv-narrate-player" id="global-audio">${setup.audio.getPlayerById(setup.audio.activeId)}</div>` : null}
             <div class="sv-chrome-header">
                 <div class="sv-main-menu-wrapper">
                     ${menuVisible ? html`<sv-main-menu role="region" aria-label="Main toolbar" .system=${this.system}></sv-main-menu>` : null}
