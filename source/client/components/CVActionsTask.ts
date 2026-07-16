@@ -342,8 +342,7 @@ export default class CVActionsTask extends CVTask
         this._actionIds.length = 0;
         this._actionIds.push("0");
         this.getSystemComponents(CVMeta).forEach((meta) => {
-            const model = meta.node.getComponent(CVModel2, true);
-            actionOptions.push(...meta.actions.items.map(action => model.node.name + " : " + action.name));
+            actionOptions.push(...meta.actions.items.map(action => action.name));
             this._actionIds.push(...meta.actions.items.map(action => action.id));
         });
         this.ins.action.setOptions(actionOptions);
