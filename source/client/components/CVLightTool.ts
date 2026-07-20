@@ -30,7 +30,7 @@ import CVDocument from "./CVDocument";
 
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
-import CVRakingLight from "./lights/CVRakingLight";
+import CVDirectionalLight from "./lights/CVDirectionalLight";
 import NVNode from "client/nodes/NVNode";
 import CSunLight from "@ff/scene/components/CSunLight";
 import "../ui/SVRakingLightBall";
@@ -91,27 +91,58 @@ export class LightToolView extends ToolView<CVLightTool>
         this.classList.add("sv-group", "sv-light-tool-view");
     }
 
+    private _rakingSubscribedLight: CVDirectionalLight = null;
+
     protected connected()
     {
         super.connected();
-        this.tool.outs.light.on("value", this.onUpdate, this);
+        this.tool.outs.light.on("value", this.onActiveLightChange, this);
+        this.onActiveLightChange();
     }
 
     protected disconnected()
     {
-        this.tool.outs.light.off("value", this.onUpdate, this);
+        this.tool.outs.light.off("value", this.onActiveLightChange, this);
+        this.unsubscribeActiveLightRaking();
         super.disconnected();
     }
 
-    private renderRakingLightProperties(light: CVRakingLight, language): unknown {
+    private unsubscribeActiveLightRaking()
+    {
+        if (this._rakingSubscribedLight) {
+            this._rakingSubscribedLight.ins.rakingEnabled.off("value", this.onUpdate, this);
+            this._rakingSubscribedLight = null;
+        }
+    }
+
+    private onActiveLightChange()
+    {
+        this.unsubscribeActiveLightRaking();
+
+        const activeLight = this.tool.outs.light.value;
+        if (activeLight && activeLight.is(CVDirectionalLight)) {
+            const light = activeLight as CVDirectionalLight;
+            light.ins.rakingEnabled.on("value", this.onUpdate, this);
+            this._rakingSubscribedLight = light;
+        }
+
+        this.onUpdate();
+    }
+
+    private renderDirectionalLightProperties(light: CVDirectionalLight, language): unknown {
+        const raking = light.ins.rakingEnabled.value;
         return html`
-            <sv-raking-light-ball
-                .azimuthProperty=${light.ins.azimuth}
-                .elevationProperty=${light.ins.elevation}
-                .colorProperty=${light.ins.color}
-            ></sv-raking-light-ball>
-            <sv-property-slider .property=${light.ins.elevation} name=${language.getLocalizedString("Elevation")} min="0" max="90"></sv-property-slider>
-            <sv-property-slider .property=${light.ins.azimuth} name=${language.getLocalizedString("Azimuth")} min="0" max="360"></sv-property-slider>
+            ${this.renderCommonLightProperties(light, language)}
+            ${this.renderColorInput(light, language)}
+            <sv-property-boolean .property=${light.ins.rakingEnabled} name=${language.getLocalizedString("Raking Light")}></sv-property-boolean>
+            ${raking ? html`
+                <sv-raking-light-ball
+                    .azimuthProperty=${light.ins.azimuth}
+                    .elevationProperty=${light.ins.elevation}
+                    .colorProperty=${light.ins.color}
+                    .diameter=${64}
+                ></sv-raking-light-ball>
+            ` : null}
         `;
     }
 
@@ -155,12 +186,8 @@ export class LightToolView extends ToolView<CVLightTool>
                 lightControls = this.renderSunLightProperties(activeLight as CSunLight, language);
             } else if (activeLight.is(CVEnvironmentLight)) {
                 lightControls = this.renderCommonLightProperties(activeLight, language);
-            } else if (activeLight.is(CVRakingLight)) {
-                lightControls = html`
-                    ${this.renderCommonLightProperties(activeLight, language)}
-                    ${this.renderColorInput(activeLight, language)}
-                    ${this.renderRakingLightProperties(activeLight as CVRakingLight, language)}
-                `;
+            } else if (activeLight.is(CVDirectionalLight)) {
+                lightControls = this.renderDirectionalLightProperties(activeLight as CVDirectionalLight, language);
             } else {
                 lightControls = html`
                     ${this.renderCommonLightProperties(activeLight, language)}
