@@ -81,7 +81,6 @@ import NVDocuments from "../nodes/NVDocuments";
 import NVScene from "../nodes/NVScene";
 import NVNode from "../nodes/NVNode";
 
-import CVRakingLight from "../components/lights/CVRakingLight";
 import CVAmbientLight from "client/components/lights/CVAmbientLight";
 import CVHemisphereLight from "client/components/lights/CVHemisphereLight";
 import CVRectLight from "client/components/lights/CVRectLight";
@@ -99,7 +98,6 @@ export const lightTypes = [
     CVRectLight,
     CVEnvironmentLight,
     CVSunLight,
-    CVRakingLight,
 ] as const;
 
 const types = [
