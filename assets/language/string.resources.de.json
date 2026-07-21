@@ -61,7 +61,10 @@
     "Axis": "Achse",
     "Position": "Position",
     "Select": "Auswählen",
+    "Select...": "Auswählen...",
     "Step": "Schritt",
     "Tour": "Tour",
-    "of": "von"
+    "of": "von",
+    "Remove tag": "Tag entfernen",
+    "Add a tag...": "Tag hinzufügen..."
 }

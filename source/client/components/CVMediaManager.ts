@@ -96,10 +96,10 @@ export default class CVMediaManager extends CAssetManager
         return this.assetManager.getAssetUrl(resolvePathname(uri, this.rootUrl));
     }
 
-    uploadFile(name: string, blob: Blob, folder: IAssetEntry): Promise<any>
+    uploadFile(name: string, blob: Blob, folder?: IAssetEntry): Promise<any>
     {
         const filename = decodeURI(name);
-        const filepath = folder.info.path.length > 1 ? folder.info.path + filename : filename;
+        const filepath = folder?.info?.path?.length > 1 ? folder.info.path + filename : filename;
         const url = resolvePathname(filepath, this.rootUrl);
         
         if(this.standaloneFileManager) {

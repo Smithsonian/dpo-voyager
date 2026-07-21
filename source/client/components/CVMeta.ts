@@ -97,10 +97,13 @@ export default class CVMeta extends Component
             this.audio.dictionary = audioDict;
         }
         if (data.actions) {
+            let count = 0;
             const actionDict = {};
             data.actions.forEach(action => {
+                action.name ??= "Action" + count++;
                 action.animation ??= "";
                 action.audioId ??= "";
+                action.speed ??= 1;
                 actionDict[action.id] = action;
             });
             this.actions.dictionary = actionDict;
@@ -149,6 +152,9 @@ export default class CVMeta extends Component
                 action.animation?.length < 1 ? delete action.animation : null;
                 action.audioId?.length < 1 ? delete action.audioId : null;
                 action.annotationId?.length < 1 ? delete action.annotationId : null;
+                action.actionAnnoId?.length < 1 ? delete action.actionAnnoId : null;
+                action.triggerDetail?.length < 1 ? delete action.triggerDetail : null;
+                action.syncWith?.length < 1 ? delete action.syncWith : null;
             });
         }
 

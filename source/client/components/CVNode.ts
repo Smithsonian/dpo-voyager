@@ -52,6 +52,24 @@ export default class CVNode extends CTransform
         ];
     }
 
+    update(context)
+    {
+        // handle potential zero-scale matrix collapse
+        // by converting to very small number
+        if(this.ins.scale.changed) {
+            const scale = this.ins.scale.value;
+            for(let i=0; i<3; i++) {
+                if(scale[i] === 0.0) {
+                    scale[i] = 1e-10;
+                }
+            }
+        }
+
+        super.update(context);
+
+        return true;
+    }
+
     fromData(data: INode)
     {
         const { position, rotation, order, scale } = this.ins;

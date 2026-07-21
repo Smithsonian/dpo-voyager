@@ -29,6 +29,7 @@ import CVDocument from "../../components/CVDocument";
 import { IButtonClickEvent } from "@ff/ui/Button";
 import { ELanguageType } from "client/schema/common";
 
+
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-tours-task-view")
@@ -91,8 +92,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
             <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <div class="sv-label">${languageManager.getUILocalizedString("Title")}</div>
             <ff-line-edit name="title" text=${props.tourTitle.value} @change=${this.onTextEdit}></ff-line-edit>
-            <div class="sv-label">${languageManager.getUILocalizedString("Tags")}</div>
-            <ff-line-edit name="tags" text=${props.tourTags.value} @change=${this.onTextEdit}></ff-line-edit>
+            <sv-property-view .property=${props.tourTags}></sv-property-view>
             <div class="sv-label">${languageManager.getUILocalizedString("Lead")}</div>
             <ff-text-edit name="lead" text=${props.tourLead.value} @change=${this.onTextEdit}></ff-text-edit>
         </div>` : null;
@@ -194,9 +194,6 @@ export default class ToursTaskView extends TaskView<CVToursTask>
                     allowedTags: [ 'b', 'i', 'em', 'strong', 'sup', 'sub' ],
                 }
             ));
-        }
-        else if (target.name === "tags") {
-            task.ins.tourTags.setValue(text);
         }
     }
 

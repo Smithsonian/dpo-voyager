@@ -91,7 +91,7 @@ export default class CVModel2 extends CObject3D
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
         quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.Thumb),
-        tags: types.String("Model.Tags"),
+        tags: types.Tags("Model.Tags"),
         renderOrder: types.Number("Model.RenderOrder", 0),
         shadowSide: types.Enum("Model.ShadowSide", ESideType, ESideType.Back),
         activeTags: types.String("Model.ActiveTags"),

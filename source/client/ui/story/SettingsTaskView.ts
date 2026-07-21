@@ -16,7 +16,6 @@
  */
 
 import Node from "@ff/graph/Node";
-import Component from "@ff/graph/Component";
 import Property from "@ff/graph/Property";
 
 import "@ff/scene/ui/PropertyView";
