@@ -1605,9 +1605,8 @@ $tour-entry-indent: 12px;
     width: 30px;
     height: 30px;
     border-radius: 15px;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     padding: 0px;
-    margin-right: 3px;
     background-color: $menu-color-text;
     -webkit-tap-highlight-color: transparent;
 
@@ -1633,6 +1632,7 @@ $tour-entry-indent: 12px;
   .sv-timer {
     font-size: small;
     display: flex;
+    margin-left: 3px;
   }
 
   input {
