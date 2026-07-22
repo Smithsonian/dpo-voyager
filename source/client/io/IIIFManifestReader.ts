@@ -39,6 +39,8 @@ import { DEFAULT_LANGUAGE, ELanguageType, EUnitType } from "client/schema/common
 import CVAnnotationView from "client/components/CVAnnotationView";
 import CVAssetReader from "client/components/CVAssetReader";
 import Document from "@ff/core/Document";
+import CVSetup from "client/components/CVSetup";
+import { Dictionary } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +64,7 @@ export default class IIIFManifestReader {
     {
         const app = this.application;
         const models: CVModel2[] = [];
+        const annotations: Dictionary<VAnnotation> = {};
         console.log("LOADING IIIF MANIFEST");
         const docProvider = app.system.getMainComponent(CVDocumentProvider);
         const assetReader = app.system.getMainComponent(CVAssetReader);
@@ -257,44 +260,52 @@ console.log(annos);
 
             // only handle one camera for now
             if(iiifCameras.length > 0) {
-                const camera = iiifCameras[0];
-                const vCamera = cvScene.cameras[0];
-                const orbitNavIns = setup.navigation.ins;
-                orbitNavIns.autoZoom.setValue(false);
-                orbitNavIns.minOffset.setValue([-Infinity,-Infinity,-Infinity]);
+                let hasCamera = false;
 
-                const cameraBody = camera.getBody()[0];
+                iiifCameras.forEach((camera) => {
+                    const behavior = camera.getBehavior();
+                    if(!hasCamera && !behavior?.includes("hidden")) {
+                        const vCamera = cvScene.cameras[0];
+                        const orbitNavIns = setup.navigation.ins;
+                        orbitNavIns.autoZoom.setValue(false);
+                        orbitNavIns.minOffset.setValue([-Infinity,-Infinity,-Infinity]);
 
-                // set name
-                const cameraLabel = cameraBody.getLabelFromSelfOrSource().getValue();
-                vCamera.node.name = cameraLabel ?? "Camera";
+                        const cameraBody = camera.getBody()[0];
 
-                _mat4b.copy(this.getIIIFBodyTransform(cameraBody, camera));
+                        // set name
+                        const cameraLabel = cameraBody.getLabelFromSelfOrSource().getValue();
+                        vCamera.node.name = cameraLabel ?? "Camera";
 
-                _vec3a.setFromMatrixPosition(_mat4b);
-                const transform = this.getIIIFLookAtTransform(cameraBody, scene, _vec3a, _upVector);
+                        _mat4b.copy(this.getIIIFBodyTransform(cameraBody, camera));
 
-                _euler.setFromRotationMatrix(transform ? transform : _mat4b, "YXZ");
-                _vec3b.setFromEuler(_euler).multiplyScalar(math.RAD2DEG);
-                _vec3a.applyMatrix4(_mat4b.makeRotationFromEuler(_euler).invert());
+                        _vec3a.setFromMatrixPosition(_mat4b);
+                        const transform = this.getIIIFLookAtTransform(cameraBody, scene, _vec3a, _upVector);
 
-                orbitNavIns.offset.setValue(_vec3a.toArray());
-                orbitNavIns.orbit.setValue(_vec3b.toArray());
+                        _euler.setFromRotationMatrix(transform ? transform : _mat4b, "YXZ");
+                        _vec3b.setFromEuler(_euler).multiplyScalar(math.RAD2DEG);
+                        _vec3a.applyMatrix4(_mat4b.makeRotationFromEuler(_euler).invert());
 
-                // set properties if defined
-                const fov = cameraBody.FieldOfView;
-                if(fov) {
-                    vCamera.ins.fov.setValue(fov);
-                }
-                const near = cameraBody.Near;
-                const far = cameraBody.Far;
-                if(near || far) {
-                    vCamera.addIns.autoNearFar.setValue(false);
-                    near ? vCamera.ins.near.setValue(near) : null;
-                    far ? vCamera.ins.far.setValue(far) : null;
-                }
-                vCamera.ins.projection.setValue(cameraBody.isPerspectiveCamera() ? 
-                    EProjection.Perspective : EProjection.Orthographic);
+                        orbitNavIns.offset.setValue(_vec3a.toArray());
+                        orbitNavIns.orbit.setValue(_vec3b.toArray());
+
+                        // set properties if defined
+                        const fov = cameraBody.FieldOfView;
+                        if(fov) {
+                            vCamera.ins.fov.setValue(fov);
+                        }
+                        const near = cameraBody.Near;
+                        const far = cameraBody.Far;
+                        if(near || far) {
+                            vCamera.addIns.autoNearFar.setValue(false);
+                            near ? vCamera.ins.near.setValue(near) : null;
+                            far ? vCamera.ins.far.setValue(far) : null;
+                        }
+                        vCamera.ins.projection.setValue(cameraBody.isPerspectiveCamera() ? 
+                            EProjection.Perspective : EProjection.Orthographic);
+
+                        hasCamera = true;
+                    }
+                });
             }
 
             // only handle one scene-level audio element
@@ -467,32 +478,7 @@ console.log(annos);
                             switch(type) {
                                 case "perspectivecamera":
                                 case "orthographiccamera":
-                                    const cameraBody = anno.getBody()[0];
-                                    _mat4b.copy(this.getIIIFBodyTransform(cameraBody, anno));
-
-                                    _vec3a.setFromMatrixPosition(_mat4b);
-                                    const transform = this.getIIIFLookAtTransform(cameraBody, scene, _vec3a, _upVector);
-
-                                    _euler.setFromRotationMatrix(transform ? transform : _mat4b, "YXZ");
-                                    _vec3b.setFromEuler(_euler).multiplyScalar(math.RAD2DEG);
-                                    _vec3a.applyMatrix4(_mat4b.makeRotationFromEuler(_euler).invert());
-
-                                    // add view to annotation
-                                    const machine = setup.snapshots;
-                                    const props = machine.getTargetProperties();
-                                    const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
-                                    const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
-
-                                    const values = machine.getCurrentValues();
-                                    values[offsetIdx] = _vec3a.toArray();
-                                    values[orbitIdx] = _vec3b.toArray();
-                                    const id = machine.setState({
-                                        values: values,
-                                        curve: EEasingCurve.EaseOutQuad,
-                                        duration: 1.0,
-                                        threshold: 0.5,
-                                    });
-                                    annotation.set("viewId", id);
+                                    this.addAnnotationView(anno, annotation, scene, setup);
                                     break;
                                 default:
                                     console.log("Unsupported IIIF scope annotation type: "+type);
@@ -503,6 +489,7 @@ console.log(annos);
 
                 const view = models[0].getGraphComponent(CVAnnotationView);
                 view.addAnnotation(annotation);
+                annotations[comment.id] = annotation;
             });
 
             // handle canvases
@@ -581,6 +568,31 @@ console.log(annos);
                     });
                 }
             });
+
+            iiifActivations.forEach((activation) => {
+                const body = activation.getBody()[0];
+                const actions = body.getAction();
+                const subject = scene.getAnnotationById(body.getSource().id);
+                const target = annos.find((anno) => {return anno.id === activation.getTarget().id});
+  
+                actions.forEach((action) => {
+                    switch(action) {
+                        case "select":
+                            const subjectType = subject.getBody()[0].getType();
+                            // Handle activating annotation views
+                            if(subjectType.includes("camera") && target.getProperty("motivation").includes("commenting")) {
+                                this.addAnnotationView(subject, annotations[target.id], scene, setup);
+                            }    
+                            break;
+                        case "show":
+                            break;
+                        case "enable":
+                            break;
+                        default:
+                            console.log("Unsupported IIIF activation action: "+ action);
+                    }
+                });
+            });
         });
       });
       
@@ -646,6 +658,35 @@ console.log(annos);
           return _mat4a;
       }
       return null;
+  }
+
+  private addAnnotationView(camera: any, annotation: VAnnotation, scene: Scene, setup: CVSetup) {
+    const cameraBody = camera.getBody()[0];
+    _mat4b.copy(this.getIIIFBodyTransform(cameraBody, camera));
+
+    _vec3a.setFromMatrixPosition(_mat4b);
+    const transform = this.getIIIFLookAtTransform(cameraBody, scene, _vec3a, _upVector);
+
+    _euler.setFromRotationMatrix(transform ? transform : _mat4b, "YXZ");
+    _vec3b.setFromEuler(_euler).multiplyScalar(math.RAD2DEG);
+    _vec3a.applyMatrix4(_mat4b.makeRotationFromEuler(_euler).invert());
+
+    // add view to annotation
+    const machine = setup.snapshots;
+    const props = machine.getTargetProperties();
+    const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
+    const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
+
+    const values = machine.getCurrentValues();
+    values[offsetIdx] = _vec3a.toArray();
+    values[orbitIdx] = _vec3b.toArray();
+    const id = machine.setState({
+        values: values,
+        curve: EEasingCurve.EaseOutQuad,
+        duration: 1.0,
+        threshold: 0.5,
+    });
+    annotation.set("viewId", id);
   }
 }
 
