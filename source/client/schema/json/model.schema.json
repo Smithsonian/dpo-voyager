@@ -214,8 +214,7 @@
                         "Occlusion",
                         "Emissive",
                         "MetallicRoughness",
-                        "Zone",
-                        "Kintsugi"
+                        "Zone"
                     ]
                 }
             },

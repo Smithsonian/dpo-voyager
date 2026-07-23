@@ -999,8 +999,6 @@ export default class CVModel2 extends CObject3D
         material.defines["MODE_NORMALS"] = false;
         material.defines["MODE_XRAY"] = false;
         material.defines["OBJECTSPACE_NORMALMAP"] = !!(material.normalMap && material.normalMapType === ObjectSpaceNormalMap);
-        material.defines["USE_KINTSUGI"] = mode === EShaderMode.Kintsugi;
-        material.defines["USE_SPECULAR"] = mode === EShaderMode.Kintsugi;
 
         material.side = material.defines["CUT_PLANE"] ? DoubleSide : material.side;
 
@@ -1085,13 +1083,6 @@ export default class CVModel2 extends CObject3D
                 material.emissiveMap = null;
                 material.normalMap = null;
                 material.defines["OBJECTSPACE_NORMALMAP"] = false;
-                break;
-
-            case EShaderMode.Kintsugi:
-                material.userData.paramCopy = {
-                    metalness: material.metalness,
-                };
-                material.metalness = 0.0;
                 break;
         }
     }
