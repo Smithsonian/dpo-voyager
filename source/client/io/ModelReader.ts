@@ -113,28 +113,27 @@ export default class ModelReader
 
                 if (material) {
                     // Use Kintsugi diffuse instead of the albedo map (which incorporates both diffuse and specular)
-                    var kintsugiDiffuse = material.userData["diffuseTexture"]
+                    const kintsugiDiffuse = material.userData["diffuseTexture"]
                     if (kintsugiDiffuse) {
-                        var kintsugiDiffuseTex = gltf.parser.loadTexture(kintsugiDiffuse.index)
+                        const kintsugiDiffuseTex = gltf.parser.loadTexture(kintsugiDiffuse.index)
                         .then(texture => {
                             texture.colorSpace = SRGBColorSpace;
-                            material.map = texture
-                            material.needsUpdate = true
+                            material.map = texture;
+                            material.needsUpdate = true;
                         })
                     }
 
                     // Kintsugi specular is loaded as a custom texture map
-                    var kintsugiSpecular = material.userData["specularTexture"]
+                    const kintsugiSpecular = material.userData["specularTexture"]
                     if (kintsugiSpecular) {
-                        var kintsugiSpecularTex = gltf.parser.loadTexture(kintsugiSpecular.index)
+                        const kintsugiSpecularTex = gltf.parser.loadTexture(kintsugiSpecular.index)
                         .then(texture => {
                             texture.colorSpace = SRGBColorSpace;
-                            material.metalness = 0.0
-                            material.roughness = 1.0
-                            material.userData.shader.uniforms["specularOverrideMap"].value = texture
-                            material.defines["USE_KINTSUGI"] = true
-                            material.defines["USE_SPECULAR"] = true
-                            material.needsUpdate = true
+                            material.metalness = 0.0;
+                            material.roughness = 1.0;
+                            material.userData.shader.uniforms["specularOverrideMap"].value = texture;
+                            material.defines["USE_KINTSUGI"] = true;
+                            material.needsUpdate = true;
                         })
                     }
                 }
