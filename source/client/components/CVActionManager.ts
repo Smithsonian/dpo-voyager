@@ -313,7 +313,11 @@ export default class CVActionManager extends Component
     protected onTourStep() 
     {
         if(this.tours.activeTour) {
-            // Set any currently active animations to their finish state
+            // Set any currently active or queued animations to their finish state
+            while(this._animQueue.length > 0) {
+                const action = this._animQueue.pop();
+                this.playAction(action.model, action.action);
+            }
             this._activeClips.forEach(item => {
                 item.clip.time = item.clip.timeScale > 0 ? item.clip.getClip().duration : 0;
             });
@@ -325,7 +329,7 @@ export default class CVActionManager extends Component
             
             this.getGraphComponents(CVMeta).forEach((meta) => {
                 const actions = meta.actions.items.filter(action => {return action.trigger === EActionTrigger[EActionTrigger.OnTourStep] as TActionTrigger
-                    && ((action.triggerDetail.split("\x1F")[0] === tour && action.triggerDetail.split("\x1F")[1] === (step+1).toString())  // DEPRECATED SUPPORT - REMOVE IN v0.64
+                    && ((action.triggerDetail?.split("\x1F")[0] === tour && action.triggerDetail?.split("\x1F")[1] === (step+1).toString())  // DEPRECATED SUPPORT - REMOVE IN v0.64
                     || action.triggerDetail === stepId)
                 });
                 if(actions.length > 0) {
