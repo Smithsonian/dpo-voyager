@@ -21,7 +21,7 @@ import { EActionTrigger, TActionTrigger, EActionType, TActionType, EActionPlaySt
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import CVAudioManager from "./CVAudioManager";
-import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Clock, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
+import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Timer, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
 import { Dictionary } from "@ff/core/types";
 import { AnnotationElement } from "client/annotations/AnnotationSprite";
 import CVViewer from "./CVViewer";
@@ -29,6 +29,7 @@ import CVAnnotationView from "./CVAnnotationView";
 import CVSnapshots from "./CVSnapshots";
 import CVTape from "./CVTape";
 import CVSetup from "./CVSetup";
+import { IPulseContext } from "@ff/graph/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,7 +50,7 @@ export default class CVActionManager extends Component
 
     static readonly isSystemSingleton = true;
 
-    private _clock: Clock = new Clock();
+    private _clock: Timer = new Timer();
     private _mixer: AnimationMixer = null;
     private _activeClips: {id: string, clip: AnimationAction}[] = [];
     private _direction: Dictionary<number> = {};
@@ -155,8 +156,9 @@ export default class CVActionManager extends Component
         }
     }
 
-    tick() : boolean
+    tick(context: IPulseContext) : boolean
     {   
+        this._clock.update(context.time.getTime());
         const delta = this._clock.getDelta();
 
         if(this._activeClips.length > 0) {
