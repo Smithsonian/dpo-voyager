@@ -1043,6 +1043,7 @@ export default class CVModel2 extends CObject3D
         material.defines["MODE_NORMALS"] = false;
         material.defines["MODE_XRAY"] = false;
         material.defines["OBJECTSPACE_NORMALMAP"] = !!(material.normalMap && material.normalMapType === ObjectSpaceNormalMap);
+        material.defines["USE_KINTSUGI"] = !!material.userData.shader.uniforms["specularOverrideMap"].value && mode === EShaderMode.Default;
 
         material.side = material.defines["CUT_PLANE"] ? DoubleSide : material.side;
 
