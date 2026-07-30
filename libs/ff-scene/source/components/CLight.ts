@@ -5,7 +5,7 @@
  * License: MIT
  */
 
-import { Light } from "three";
+import { Light, LightShadow } from "three";
 
 import { ITypedEvent, Node, types } from "@ff/graph/Component";
 import CObject3D from "./CObject3D";
@@ -96,17 +96,17 @@ export default class CLight extends CObject3D
             }
 
             if(ins.shadowBlur.changed){
-                light.shadow.radius = ins.shadowBlur.value;
+                (light.shadow as LightShadow).radius = ins.shadowBlur.value;
             }
 
             if(ins.shadowIntensity.changed){
-                light.shadow.intensity = ins.shadowIntensity.value;
+                (light.shadow as LightShadow).intensity = ins.shadowIntensity.value;
             }
                 
             if (ins.shadowResolution.changed) {
                 const mapResolution = _mapResolution[ins.shadowResolution.getValidatedValue()];
-                light.shadow.mapSize.set(mapResolution, mapResolution);
-                light.shadow.map = null; // TODO: check for resource leak
+                (light.shadow as LightShadow).mapSize.set(mapResolution, mapResolution);
+                (light.shadow as LightShadow).map = null; // TODO: check for resource leak
             }
         }
 

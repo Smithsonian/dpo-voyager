@@ -34,6 +34,9 @@ export enum EReaderPosition { Overlay, Left, Right }
 export type TSliceAxis = "X" | "Y" | "Z";
 export enum ESliceAxis { X, Y, Z }
 
+export type TMarkerStyle = "Pin" | "Ring";
+export enum EMarkerStyle { Pin, Ring };
+
 export interface ISetup
 {
     interface?: IInterface;
@@ -154,6 +157,7 @@ export interface IAudio
 export interface ITape
 {
     enabled: boolean;
+    markerStyle?: TMarkerStyle;
     startPosition?: number[];
     startDirection?: number[];
     endPosition?: number[];
