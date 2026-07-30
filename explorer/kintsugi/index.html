@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Demo Assets - Voyager Documentation</title>
+  <title>How To: Use Kintsugi 3D - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -20,7 +20,7 @@
 
 </head>
 
-<body class='page page-default-single'>
+<body class='page page-default-list'>
   <div id="main-menu-mobile" class="main-menu-mobile">
   <ul>
     
@@ -132,9 +132,9 @@
     
     
       
-        
-      
     
+      
+        
       
     
       
@@ -168,7 +168,7 @@
     </li>
 		
     
-    <li class="active ">
+    <li class="">
       <a href="/dpo-voyager/introduction/demo-assets/">Demo Assets</a>
     </li>
 		
@@ -210,7 +210,7 @@
     </li>
 		
     
-    <li class="">
+    <li class="active ">
       <a href="/dpo-voyager/explorer/kintsugi/">How To: Use Kintsugi 3D</a>
     </li>
 		
@@ -356,45 +356,28 @@
         </div>
         <div class="col-12 col-md-9">
           
-<h1 class="title">Demo Assets</h1>
-<div class="content">
-  <h2 id="demo-assets">Demo Assets</h2>
-<p>For getting you started easily, Voyager comes with a set of demo assets.
-Please have a look at the enclosed readme, the disclaimer and the terms of use before using the assets.</p>
-<p>The following installation guide assumes you&rsquo;ve already installed and started the Voyager development server.</p>
-<h4 id="installation">Installation</h4>
-<p>In your Voyager project folder, create a new folder named <code>files</code> and navigate into it.</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> &lt;my_project_dir&gt;
-mkdir files
-<span class="nb">cd</span> files
-</code></pre></div><p>Now fetch the demo assets from GitHub and unzip them:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">curl -L -o assets.zip https://github.com/Smithsonian/dpo-voyager/releases/download/v0.7.0/voyager-demo-assets.zip
-unzip assets.zip
-</code></pre></div><p>Your <code>files</code> folder should now contain the following:</p>
-<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">assets.zip
-DISCLAIMER.txt
-models           &lt;- this folder contains the demo models
-README.txt
-TERMS_OF_USE.txt
-</code></pre></div><p>Next, open your web browser (Chrome preferred) and navigate to one of the following URLs. Note that the host and port
-may be different depending on where you installed the Voyager development server.</p>
-<h6 id="voyager-explorer-the-viewer">Voyager Explorer (the viewer)</h6>
-<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">http://localhost:8000/voyager-explorer-dev.html?root=models/tusk/&amp;document=tusk.svx.json
-http://localhost:8000/voyager-explorer-dev.html?root=models/vase/&amp;document=vase.svx.json
-http://localhost:8000/voyager-explorer-dev.html?root=models/chair/&amp;document=chair.svx.json
-http://localhost:8000/voyager-explorer-dev.html?root=models/ewer/&amp;document=ewer.svx.json
-</code></pre></div><h6 id="voyager-story-the-authoring-tool-quality-inspection-mode">Voyager Story (the authoring tool), quality inspection mode</h6>
-<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/tusk/&amp;document=tusk.svx.json
-http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/vase/&amp;document=vase.svx.json
-http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/chair/&amp;document=chair.svx.json
-http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/ewer/&amp;document=ewer.svx.json
-</code></pre></div><h6 id="voyager-story-the-authoring-tool-authoring-mode">Voyager Story (the authoring tool), authoring mode</h6>
-<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/tusk/&amp;document=tusk.svx.json
-http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/vase/&amp;document=vase.svx.json
-http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/chair/&amp;document=chair.svx.json
-http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/ewer/&amp;document=ewer.svx.json
-</code></pre></div>
-</div>
+
+  
+  <h1 class="title">How To: Use Kintsugi 3D</h1>
+  <div class="content">
+    <h3 id="what-is-kintsugi-3d">What is Kintsugi 3D?</h3>
+<p>Kintsugi 3D is a 3D capture and rendering technique developed by researchers at the University of Wisconsin - Stout Polytechnic that allows for synthesizing material properties, like roughness and specularity, that 
+are historically difficult to capture accurately. These improved material properties can lead to a render quality that more closely matches the &ldquo;true&rdquo; appearance of the object than 
+traditional photogrammetry processing and rendering pipelines.</p>
+<p>See the Voyager comparison below showing the improved visual quality with traditional photogrammetry output vs. Kintsugi.</p>
+<p><img src="./rodin_compare.png" alt="comparison rendering of The Age of Bronze with without and with Kintsugi showing better specular highlights"></p>
+<p><em>Voyager renderings of The Age of Bronze by Auguste Rodin, from the collection of the Minneapolis Institute of Art</em></p>
+<h3 id="how-do-i-use-kintsugi-3d">How do I use Kintsugi 3D?</h3>
+<p>Kintsugi 3D assumes a &lsquo;flash-on-camera&rsquo; capture technique, so the ideal pipeline would start with data captured under these lighting conditions.</p>
+<p>Follow the <a href="https://michaelt919.github.io/Kintsugi3DBuilder/Kintsugi3DDocumentation.pdf">Kintusgi 3D Builder documentation</a> for appropriate photogrammetric processing 
+and <a href="https://github.com/michaelt919/Kintsugi3DBuilder/releases/latest">download the latest release of Kintsugi 3D Builder</a> to setup and export your final glb models.</p>
+<p>Drag-and-drop your glb model and textures into <a href="https://3d.si.edu/voyager-story-standalone">Voyager Story Standalone</a> or use any other Voyager scene creation method to see the result. Kintsugi-enabled 
+models will be automatically detected and supported!</p>
+
+  </div>
+
+  
+
 
         </div>
       </div>

@@ -210,6 +210,11 @@
     </li>
 		
     
+    <li class="">
+      <a href="/dpo-voyager/explorer/kintsugi/">How To: Use Kintsugi 3D</a>
+    </li>
+		
+    
     <li class="active ">
       <a href="/dpo-voyager/explorer/api/">API Overview</a>
     </li>
@@ -411,6 +416,11 @@
 <td>bgStyle</td>
 <td>Solid, LinearGradient, RadialGradient</td>
 <td>Sets the style of the component background.</td>
+</tr>
+<tr>
+<td>markerStyle</td>
+<td>Pin, Ring</td>
+<td>Sets the style of measurement tape markers.</td>
 </tr>
 <tr>
 <td>controls</td>
@@ -667,6 +677,18 @@
 <tr>
 <td>model-load</td>
 <td>This event fires every time a model finishes loading. event.detail will contain the quality <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/schema/model.ts">(EDerivativeQuality)</a> of the loaded model. This will likely fire multiple times depending on the number of derivatives loaded and unloaded.</td>
+</tr>
+<tr>
+<td>model-error</td>
+<td>This event fires when a model gives up on displaying anything: its derivative failed to load, or it has no 3D derivative to load in the first place. event.detail will contain the error message. It is the counterpart of <code>model-load</code>, which never fires in those cases. A failed quality upgrade does not fire it, as long as the model still has an earlier derivative on screen.</td>
+</tr>
+<tr>
+<td>scene-content-load</td>
+<td>This event fires once every model in the scene has a representation on screen, whatever its quality. Higher quality derivatives or other subresources may still be downloading. Models that will never display anything (their load failed, they have no 3D derivative, or auto-loading is disabled for them) don&rsquo;t hold the event back. Fires again if the scene later gains a model (eg: <code>reloadDocument()</code> is called)</td>
+</tr>
+<tr>
+<td>scene-load</td>
+<td>This event fires when the initial load completes, that is when every model has finished loading the quality it was asked for. It is emitted at exactly the point where Voyager stops showing the initial loading indicator, reports its <code>Loading_Time</code> analytics and enables the interaction prompt. Unlike <code>scene-content-load</code> it waits for the requested quality to load.</td>
 </tr>
 </tbody>
 </table>
