@@ -18,7 +18,7 @@ See the Voyager comparison below showing the improved visual quality with tradit
 
 ### How do I use Kintsugi 3D?
 
-Kintsugi 3D assumes a 'flash-on-camera' capture technique, so the ideal pipeline would start with data captured under these lighting conditions.
+[Kintsugi 3D](https://michaelt919.github.io/Kintsugi3DBuilder/) assumes a 'flash-on-camera' capture technique, so the ideal pipeline would start with data captured under these lighting conditions.
 
 Follow the [Kintusgi 3D Builder documentation](https://michaelt919.github.io/Kintsugi3DBuilder/Kintsugi3DDocumentation.pdf) for appropriate photogrammetric processing 
 and [download the latest release of Kintsugi 3D Builder](https://github.com/michaelt919/Kintsugi3DBuilder/releases/latest) to setup and export your final glb models.
