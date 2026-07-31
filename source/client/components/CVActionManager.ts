@@ -125,6 +125,8 @@ export default class CVActionManager extends Component
         this._actions.length = 0;
         this._visibilityCache.length = 0;
         
+        Object.keys(this._animMap).forEach(( key ) => this._animMap[key] = null);
+        
         super.dispose();
     }
 
