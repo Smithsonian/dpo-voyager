@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Box3, Plane, Object3D, PerspectiveCamera, OrthographicCamera, Spherical } from "three";
+import { Vector3, Box3, Plane, Object3D, PerspectiveCamera, OrthographicCamera, Spherical, LightShadow } from "three";
 
 import { IComponentEvent, types } from "@ff/graph/Component";
 
@@ -280,9 +280,11 @@ export default class CVScene extends CVNode
                     }else if(light_has_distance(lightNode)){
                         if(lightNode.ins.distance.value ){
                             lightNode.ins.distance.setValue(lightNode.ins.distance.value * unitScale);
-                        }else if("far" in lightNode.light.shadow?.camera ){
-                            //When distance is not set, shadow's far plane isn't updated on rescale
-                            (lightNode.light.shadow.camera as PerspectiveCamera|OrthographicCamera).far = (lightNode.light.shadow.camera as PerspectiveCamera|OrthographicCamera).far * unitScale;
+                        }else if("shadow" in lightNode.light){
+                            if("far" in (lightNode.light.shadow as LightShadow)?.camera ){
+                                //When distance is not set, shadow's far plane isn't updated on rescale
+                                ((lightNode.light.shadow as LightShadow).camera as PerspectiveCamera|OrthographicCamera).far = ((lightNode.light.shadow as LightShadow).camera as PerspectiveCamera|OrthographicCamera).far * unitScale;
+                            }
                         }
                     }
     
