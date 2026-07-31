@@ -13,6 +13,8 @@ This document describes how to install a local development server, and build the
 The Voyager development environment can be run either directly in a suitable Linux environment (tested on Ubuntu Server 20.04),
 or in a Docker container. If you already have Docker and Docker Compose installed, we highly recommend installing in a container.
 
+**Security Note:** The simple web server included in this project is for convenience and should **only be used for local testing** of the Voyager web components during development. For security, never expose it to an open internet connection! We recommend production use of Voyager via a secure, managed, and well maintained web server infrastructure.
+
 #### Prerequisites
 
 Operating system for direct installation: **Linux only** (tested on Ubuntu server 20.04).
@@ -147,3 +149,5 @@ To use it:
 ```console
 npm run start
 ```
+
+

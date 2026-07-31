@@ -189,8 +189,11 @@ export default class CVTours extends Component
         const srElement = this.setup.viewer.rootElement.shadowRoot.querySelector("#sceneview-sr");
 
         if (ins.enabled.changed) {
+            this.setup.actions.ins.reset.set(); // reset animation when starting or finishing a tour
 
             if (ins.enabled.value) {
+                this.setup.navigation.ins.isInUse.setValue(true); // count tour as interaction
+
                 // store pre-tour scene state
                 const state: ITweenState = {
                     id: CVTours.sceneSnapshotId,

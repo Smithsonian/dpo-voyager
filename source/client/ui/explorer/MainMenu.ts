@@ -165,8 +165,7 @@ export default class MainMenu extends DocumentView
         const reader = this.activeDocument.setup.reader;
         const readerIns = reader.ins;
         readerIns.enabled.setValue(!readerIns.enabled.value);
-        readerIns.focus.setValue(readerIns.enabled.value);
-
+        
         if(readerIns.enabled.value) {
             readerIns.articleId.setValue(reader.articles.length === 1 ? reader.articles[0].article.id : "");
         }

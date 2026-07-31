@@ -18,7 +18,6 @@
 import { customElement, html } from "@ff/ui/CustomElement";
 
 import { IButtonClickEvent } from "@ff/ui/Button";
-
 import "@ff/ui/LineEdit";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
@@ -29,10 +28,11 @@ import Notification from "@ff/ui/Notification";
 import "./AnnotationList";
 import { ISelectAnnotationEvent } from "./AnnotationList";
 
+
 import CVAnnotationView from "../../components/CVAnnotationView";
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../../components/CVAnnotationsTask";
 import { TaskView } from "../../components/CVTask";
-import { ELanguageStringType, ELanguageType } from "client/schema/common";
+import { ELanguageType } from "client/schema/common";
 
 import sanitizeHtml from 'sanitize-html';
 import CVMediaManager from "client/components/CVMediaManager";

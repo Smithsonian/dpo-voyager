@@ -21,9 +21,9 @@ import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
 
 import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
-import { EDerivativeQuality, EDerivativeUsage } from "client/schema/model";
+import { EDerivativeQuality, EDerivativeUsage, TDerivativeQuality } from "client/schema/model";
 
-import CVModel2, { IModelLoadEvent } from "./CVModel2";
+import CVModel2, { IModelErrorEvent, IModelLoadEvent } from "./CVModel2";
 import CVAnnotationView, { IActiveTagUpdateEvent, IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
 import CVLanguageManager from "./CVLanguageManager";
@@ -35,6 +35,23 @@ import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * The public DOM events the viewer dispatches on its host element, mapped to the type of
+ * their `event.detail`. An event whose detail is `void` carries none.
+ */
+export interface IViewerEventDetail
+{
+    "annotation-active": string;
+    "model-load": TDerivativeQuality;
+    "model-error": string;
+    "scene-content-load": void;
+    "scene-load": void;
+}
+
+/** Forces a detail argument on the events that carry one, and forbids it on the others. */
+type ViewerEventArgs<K extends keyof IViewerEventDetail> =
+    IViewerEventDetail[K] extends void ? [] : [detail: IViewerEventDetail[K]];
+
 export default class CVViewer extends Component
 {
     static readonly typeName: string = "CVViewer";
@@ -44,15 +61,17 @@ export default class CVViewer extends Component
 
     private _rootElement: HTMLElement = null;
     private _needsAnnoFocus: boolean = false;
-    private _modelLoadCount: number = 0;
+
+    /** Models that have loaded the derivative they currently request. Drives the initial load. */
+    private _loadedModels = new Set<CVModel2>();
 
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
         annotationExit: types.Event("Annotations.Exit"),
         annotationFocus: types.Boolean("Annotations.Focus", false),
         activeAnnotation: types.String("Annotations.ActiveId"),
-        activeTags: types.String("Tags.Active"),
-        sortedTags: types.String("Tags.Sorted"),
+        activeTags: types.Tags("Tags.Active"),
+        sortedTags: types.Tags("Tags.Sorted"),
         radioTags: types.Boolean("Tags.Radio"),
         shader: types.Enum("Renderer.Shader", EShaderMode),
         variant: types.Option("Renderer.Variant", [], 0),
@@ -65,8 +84,14 @@ export default class CVViewer extends Component
     };
 
     protected static readonly outs = {
-        tagCloud: types.String("Tags.Cloud"),
-        sceneLoaded: types.Boolean("ViewerR.SceneLoaded", false),
+        tagCloud: types.Tags("Tags.Cloud"),
+        /**
+         * Every model in the scene has a representation on display, whatever its quality.
+         * Higher quality derivatives may still be downloading, much like DOMContentLoaded.
+         */
+        sceneContentLoaded: types.Boolean("Viewer.SceneContentLoaded", false),
+        /** The initial load is over: every model has loaded the quality it was asked for. */
+        sceneLoaded: types.Boolean("Viewer.SceneLoaded", false),
     };
 
     ins = this.addInputs(CVViewer.ins);
@@ -118,6 +143,15 @@ export default class CVViewer extends Component
         this._rootElement = root;
     }
 
+    /**
+     * Fires events on the host element.
+     * Does nothing while the viewer is detached, as nobody could be listening.
+     */
+    protected dispatch<K extends keyof IViewerEventDetail>(type: K, ...detail: ViewerEventArgs<K>)
+    {
+        this._rootElement?.dispatchEvent(new CustomEvent(type, { detail: detail[0] }));
+    }
+
     create()
     {
         super.create();
@@ -125,6 +159,8 @@ export default class CVViewer extends Component
         this.graph.components.on(CLight, this.onLightComponent, this);
         this.graph.components.on(CVAnnotationView, this.onAnnotationsComponent, this);
         this.graph.components.on(CVLanguageManager, this.onLanguageComponent, this);
+        this.graph.components.on(Component, this.onAnyComponent, this);
+        this.outs.tagCloud.on("value", this.onTagCloudUpdate, this);
 
         this.ar.ins.wallMount.linkFrom(this.ins.isWallMountAR);
         this.ar.ins.arScale.linkFrom(this.ins.arScale);
@@ -132,10 +168,12 @@ export default class CVViewer extends Component
 
     dispose()
     {
+        this.outs.tagCloud.off("value", this.onTagCloudUpdate, this);
         this.graph.components.off(CVModel2, this.onModelComponent, this);
         this.graph.components.off(CLight, this.onLightComponent, this);
         this.graph.components.off(CVAnnotationView, this.onAnnotationsComponent, this);
         this.graph.components.off(CVLanguageManager, this.onLanguageComponent, this);
+        this.graph.components.off(Component, this.onAnyComponent, this);
         super.dispose();
     }
 
@@ -186,6 +224,7 @@ export default class CVViewer extends Component
         if (ins.activeAnnotation.changed) {
             const id = ins.activeAnnotation.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.setActiveAnnotationById(id));
+
         }
         if(ins.annotationExit.changed) {
             ins.annotationsVisible.setValue(false);
@@ -199,6 +238,13 @@ export default class CVViewer extends Component
                 const tourIns = setup.tours.ins;
                 this._needsAnnoFocus = ins.annotationsVisible.value && !tourIns.enabled.value;
                 ins.annotationFocus.setValue(false);
+            }
+        }
+        if (ins.radioTags.changed && ins.radioTags.value) {
+            const tagString = ins.activeTags.value;
+            const tags = tagString.split(",");
+            if(tags.length > 1) {
+                ins.activeTags.setValue(tags[0]);
             }
         }
         if (ins.activeTags.changed) {
@@ -308,7 +354,9 @@ export default class CVViewer extends Component
             annotations.forEach(annotation => {
                 const tags = annotation.tags;
                 tags.forEach(tag => {
-                    tagCloud.add(tag)
+                    if(tag !== "Missing content") {
+                        tagCloud.add(tag)
+                    }
                 });
             });
         });
@@ -324,12 +372,51 @@ export default class CVViewer extends Component
 
         this.outs.tagCloud.setValue(tagArray.join(", "));
 
-        // refresh tag display
-        this.ins.activeTags.set();
-        this.ins.annotationsVisible.set();
-
         if (ENV_DEVELOPMENT) {
             console.log("CVViewer.refreshTagCloud - %s", tagArray.join(", "));
+        }
+    }
+
+    protected onTagCloudUpdate()
+    {
+        this.distributeTagOptions();
+        this.ins.activeTags.set();
+        this.ins.annotationsVisible.set();
+    }
+
+    /**
+     * Pushes the current tag cloud as `schema.options` onto every tag-semantic
+     * input property in the graph. Consumers (PropertyTags) pick it up through
+     * the "change" event emitted by Property.setOptions().
+     */
+    protected distributeTagOptions()
+    {
+        const options = this.parseTagCloud();
+        this.graph.components.getArray().forEach(component => {
+            this.seedComponentTagOptions(component, options);
+        });
+    }
+
+    protected parseTagCloud(): string[]
+    {
+        return this.outs.tagCloud.value
+            .split(",").map(t => t.trim()).filter(Boolean);
+    }
+
+    protected seedComponentTagOptions(component: Component, options?: string[])
+    {
+        const opts = options || this.parseTagCloud();
+        component.ins.properties.forEach(property => {
+            if (property.schema.semantic === "tags" && property.schema.options) {
+                property.setOptions(opts);
+            }
+        });
+    }
+
+    protected onAnyComponent(event: IComponentEvent)
+    {
+        if (event.add) {
+            this.seedComponentTagOptions(event.object);
         }
     }
 
@@ -338,7 +425,7 @@ export default class CVViewer extends Component
         const id = event.annotation ? event.annotation.id : "";
         this.ins.activeAnnotation.setValue(id);
 
-        this.rootElement.dispatchEvent(new CustomEvent('annotation-active', { detail: id }));
+        this.dispatch('annotation-active', id);
     }
 
     protected onModelComponent(event: IComponentEvent<CVModel2>)
@@ -348,11 +435,16 @@ export default class CVViewer extends Component
         if (event.add) {
             component.on<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
             component.on<IModelLoadEvent>("model-load", this.onModelLoad, this);
+            component.on<IModelErrorEvent>("model-error", this.onModelError, this);
         }
         else if (event.remove) {
             component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
             component.off<IModelLoadEvent>("model-load", this.onModelLoad, this);
+            component.off<IModelErrorEvent>("model-error", this.onModelError, this);
+            this._loadedModels.delete(component);
         }
+
+        this.updateSceneContentLoaded();
     }
 
     protected onAnnotationsComponent(event: IComponentEvent<CVAnnotationView>)
@@ -397,7 +489,7 @@ export default class CVViewer extends Component
     }
 
     protected onModelLoad(event: IModelLoadEvent) {
-        this.rootElement.dispatchEvent(new CustomEvent('model-load', { detail: EDerivativeQuality[event.quality] }));
+        this.dispatch('model-load', EDerivativeQuality[event.quality] as TDerivativeQuality);
         this.refreshTagCloud();
 
         // update variant list
@@ -408,17 +500,59 @@ export default class CVViewer extends Component
         });
         this.ins.variant.setOptions([...variantSet]);
 
-        // if all models in scene have loaded derivatives closest to scene quality
-        // (or greater than Thumb with LOD enabled), consider scene fully loaded.
-        if(this.assetManager.outs.initialLoad.value && 
-            (this.getGraphComponent(CVSetup).derivatives.ins.enabled.value && event.quality > EDerivativeQuality.Thumb
-            || event.quality === event.model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value).data.quality)) {
-            if(++this._modelLoadCount === models.length) {
-                this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
-                this.analytics.resetTimer();
-                this.assetManager.outs.initialLoad.setValue(false);
-                this.outs.sceneLoaded.setValue(true);
+        this.updateSceneContentLoaded();
+
+        // Track initial scene loading so the spinner is only shown once, during the initial load.
+        // A model counts as loaded when it has loaded the derivative it currently requests:
+        //  - with LOD enabled, that is the quality picked by the derivatives controller
+        //  - otherwise it is the scene quality.
+        if(this.assetManager.outs.initialLoad.value) {
+            const lodEnabled = this.getGraphComponent(CVSetup).derivatives.ins.enabled.value;
+            const requestedQuality = lodEnabled
+                ? event.model.ins.quality.value
+                : event.model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value).data.quality;
+
+            if(event.quality === requestedQuality) {
+                this._loadedModels.add(event.model);
+
+                if(models.every(model => this._loadedModels.has(model))) {
+                    this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
+                    this.analytics.resetTimer();
+                    this.assetManager.outs.initialLoad.setValue(false);
+                    this.outs.sceneLoaded.setValue(true);
+                    this.dispatch('scene-load');
+                }
             }
+        }
+    }
+
+    protected onModelError(event: IModelErrorEvent) {
+        this.dispatch('model-error', event.error.message);
+        this.updateSceneContentLoaded();
+    }
+
+    /**
+     * Dispatches "scene-content-load" once every model in the scene has something to display,
+     * whatever its quality. {@link CVModel2.isSettled}.
+     *
+     * Called on every "model-load" and "model-error", and whenever the set of models changes.
+     * Tracks the reverse transition too, so that a scene which gains a model - through
+     * appendModel() or a document reload - dispatches again once that model has settled.
+     */
+    protected updateSceneContentLoaded()
+    {
+        const models = this.getGraphComponents(CVModel2);
+        // An empty scene has no content: nothing has been asked of it yet.
+        const contentLoaded = models.length > 0 && models.every(model => model.isSettled);
+
+        if (contentLoaded === this.outs.sceneContentLoaded.value) {
+            return;
+        }
+
+        this.outs.sceneContentLoaded.setValue(contentLoaded);
+
+        if (contentLoaded) {
+            this.dispatch('scene-content-load');
         }
     }
 

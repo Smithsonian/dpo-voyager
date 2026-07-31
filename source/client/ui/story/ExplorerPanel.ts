@@ -53,7 +53,10 @@ export default class ExplorerPanel extends CustomElement
             const dropZone = new SimpleDropzone(this, fileInput);
 
             const mediaManager = application.system.getComponent(CVMediaManager);
-            dropZone.on('drop', ({files}: any) => mediaManager.ingestFiles(files));
+            dropZone.on('drop', ({files}: any) => {
+                this.classList.remove("sv-drop-zone", "sv-transfer-pulse");
+                mediaManager.ingestFiles(files);
+            });
         }
     }
 
@@ -92,6 +95,6 @@ export default class ExplorerPanel extends CustomElement
 
     protected onDragDrop(e: MouseEvent) {
         e.preventDefault();
-        this.classList.remove("sv-drop-zone");
+        this.classList.add("sv-transfer-pulse"); // indicator that file is transferring to browser or unzipping
     }
 }

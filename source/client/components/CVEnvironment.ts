@@ -285,10 +285,8 @@ export default class CVEnvironment extends Component
             component.on<IModelLoadEvent>("model-load", () => this.legacyCheck(component), this);
 
             // Hack to prevent env map from loading when not needed
-            if(this.ins.enabled.value && this._target === null) {
-                this._hasContent = true;
-                this.ins.enabled.set();
-            }
+            this._hasContent = true;
+            this.ins.enabled.set();
         }
         else if (event.remove) {
             component.off<IModelLoadEvent>("model-load", () => this.legacyCheck(component), this);

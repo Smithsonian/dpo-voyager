@@ -142,32 +142,69 @@
             "type": "object",
             "properties": {
                 "id": {
+                    "description": "Unique ID for the action",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "name": {
+                    "description": "Name for the action",
                     "type": "string",
                     "minLength": 1
                 },
                 "type": {
+                    "description": "Type of action.",
                     "type": "string",
-                    "enum": [ "PlayAnimation", "PlayAudio" ]
+                    "enum": [ "PlayAnimation", "PlayAudio", "ShowAnnotation", "HideAnnotation", "ToggleAnnotation" ]
                 },
                 "trigger": {
+                    "description": "Method by which this action is triggered.",
                     "type": "string",
-                    "enum": [ "OnClick", "OnLoad", "OnAnnotation" ]
+                    "enum": [ "OnClick", "OnLoad", "OnAnnotation", "OnTourStep", "OnActionEnd", "OnActionBegin" ]
+                },
+                "triggerDetail": {
+                    "description": "Trigger specific string for additional required details. Elements delimited by unit seperator char",
+                    "type": "string",
+                    "minLength": 1
                 },
                 "audioId": {
+                    "description": "ID of the audio clip to play.",
                     "type": "string",
                     "minLength": 1
                 },
                 "annotationId": {
+                    "description": "ID of the annotation that triggers this action.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "actionAnnoId": {
+                    "description": "ID of the annotation affected by this action (e.g. show/hide annotation)",
                     "type": "string",
                     "minLength": 1
                 },
                 "animation": {
+                    "description": "Name of the animation to play",
                     "type": "string",
                     "minLength": 1
                 },
                 "style": {
+                    "description": "Method for playing an animation.",
                     "type": "string",
                     "enum": [ "Single", "PingPong", "Loop" ]
+                },
+                "speed": {
+                    "description": "Speed of the action playback.",
+                    "type": "number",
+                    "default": 1
+                },
+                "clamp": {
+                    "description": "Flag to clamp an animation on the last frame",
+                    "type": "boolean",
+                    "default": 1
+                },
+                "syncWith": {
+                    "description": "Name of an animation to sync audio with",
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "required": [

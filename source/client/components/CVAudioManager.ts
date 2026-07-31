@@ -28,6 +28,7 @@ import CustomElement, { customElement, html, property, PropertyValues } from "@f
 import CVAnalytics from "./CVAnalytics";
 import CVAssetReader from "./CVAssetReader";
 import CVAnnotationView from "./CVAnnotationView";
+import CVActionManager from "./CVActionManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -65,6 +66,7 @@ export default class CVAudioManager extends Component
     protected static readonly outs = {
         narrationEnabled: types.Boolean("Audio.NarrationEnabled", false),
         narrationPlaying: types.Boolean("Audio.NarrationPlaying", false),
+        globalPlaying: types.Boolean("Audio.NarrationPlaying", false),  // an audio clip isplaying requiring the global player UI
         isPlaying: types.Boolean("Audio.IsPlaying", false),
         updated: types.Event("Audio.Updated")
     };
@@ -77,6 +79,9 @@ export default class CVAudioManager extends Component
     }
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
+    }
+    protected get actions() {
+        return this.getGraphComponent(CVActionManager);
     }
     protected get language() {
         return this.getGraphComponent(CVLanguageManager, true);
@@ -131,6 +136,7 @@ export default class CVAudioManager extends Component
                 if(outs.narrationPlaying.value && this.activeId == this._narrationId) {
                     this.stop();
                     outs.narrationPlaying.setValue(false);
+                    outs.globalPlaying.setValue(false);
                 }
                 else if(!outs.narrationPlaying.value){
                     this.play(this._narrationId);
@@ -140,6 +146,7 @@ export default class CVAudioManager extends Component
         if (ins.reset.changed) {
             this.stop();
             outs.narrationPlaying.setValue(false);
+            outs.globalPlaying.setValue(false);
         }
 
         return true;
@@ -315,6 +322,7 @@ export default class CVAudioManager extends Component
     {
         const { outs } = this;
         const uri = this.getAudioClipUri(id);
+        this.audioView = this.audioViews[id];
 
         if(!uri) {
             Notification.show("Failed to play audio clip - no uri", "warning");
@@ -329,8 +337,13 @@ export default class CVAudioManager extends Component
         if(this.activeId !== id) {
             this.setTimeElapsed(0);
         }
-
-        this.audioView = this.audioViews[id];
+        // Handle possible animation sync
+        this.audioView.synched = false;
+        const syncTime = this.actions?.getSyncTime(id);
+        if(syncTime !== undefined) {
+            this.setTimeElapsed(syncTime);
+            this.audioView.synched = true;
+        }
 
         this.initializeClip(id);
         
@@ -340,6 +353,7 @@ export default class CVAudioManager extends Component
             outs.isPlaying.setValue(true);
             this.isPlaying = true;
             outs.narrationPlaying.setValue(id == this.narrationId);
+            outs.globalPlaying.setValue((useDefaultPlayer && +this.getDuration(id) > 2) || outs.narrationPlaying.value);
             Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
             this.analytics.sendProperty("Audio_Play", uri);
         })
@@ -364,6 +378,7 @@ export default class CVAudioManager extends Component
         this.pause();
         this.setTimeElapsed(0);
         this.onEnd();
+        this.outs.narrationPlaying.setValue(false);
     }
 
     protected onEnd = () => {
@@ -371,7 +386,9 @@ export default class CVAudioManager extends Component
         
         this.isPlaying = false;
         outs.isPlaying.setValue(false);
+        outs.globalPlaying.setValue(false);
         this.audioView?.requestUpdate();
+        this.ins.activeCaption.setValue("");
     }
 
     // Initialize player for a specific audio clip
@@ -474,6 +491,9 @@ export class AudioView extends CustomElement
     @property({ attribute: false })
     elapsed: number = 0;
 
+    @property({ attribute: false })
+    synched: boolean = false;
+
     constructor()
     {
         super();
@@ -503,22 +523,33 @@ export class AudioView extends CustomElement
     protected render()
     {
         const isPlaying = this.audio.outs.isPlaying.value && this.audioId == this.audio.activeId;
+        const isGlobal = this.parentElement.id === "global-audio";
         const duration = this.audio.getDuration(this.audioId);
+        const disabledSlider = this.synched ? "disabled" : "";
         const elapsedStr = this.formatSeconds(this.elapsed);
         const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
-        return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div><input title="audio slider" id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" step="0.1" max="${duration}" value="${this.elapsed}" class="slider">`;
+        const exitBtn = isGlobal ? html`<ff-button title="exit audio" id="exit-btn" icon="close" @pointerdown=${this.stopAudio}></ff-button>` : null;
+        return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId, isGlobal)}></ff-button>
+            <div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div>
+            <input title="audio slider" ?disabled=${this.synched} id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" step="0.1" max="${duration}" value="${this.elapsed}" class="slider">
+            ${exitBtn}`;
     }
 
-    protected playAudio(event: MouseEvent, id: string) {
+    protected playAudio(event: MouseEvent, id: string, isGlobal: boolean) {
         const audio = this.audio;
         const isPlaying = this.audio.outs.isPlaying.value && this.audioId == this.audio.activeId;
 
         if(!isPlaying) {
-            audio.play(id);
+            audio.play(id, isGlobal);
         }
         else {
             audio.pause();
         }
+    }
+
+    protected stopAudio() {
+        const audio = this.audio;
+        audio.stop();
     }
 
     protected onDrag(event: MouseEvent) {
@@ -529,7 +560,10 @@ export class AudioView extends CustomElement
     {
         if (e.code === "Space" || e.code === "Enter") {
             if((e.target as HTMLElement).id == "play-btn") {
-                this.playAudio(null, this.audioId);
+                this.playAudio(null, this.audioId, this.parentElement.id === "global-audio");
+            }
+            else if((e.target as HTMLElement).id == "exit-btn") {
+                this.stopAudio();
             }
         }
         else if(e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "ArrowLeft" || e.code === "ArrowRight") {

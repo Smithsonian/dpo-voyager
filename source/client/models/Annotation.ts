@@ -220,9 +220,9 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if (data.style !== AnnotationFactory.defaultTypeName) {
             json.style = data.style;
         }
-        if (data.visible === false) {
+        /*if (data.visible === false) {
             json.visible = data.visible;
-        }
+        }*/
         if (data.position) {
             json.position = data.position.slice();
         }

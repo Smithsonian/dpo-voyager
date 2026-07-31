@@ -119,6 +119,7 @@ export default class TourNavigator extends DocumentView
         // disable tours
         this.tours.ins.enabled.setValue(false);
         this.tours.ins.closed.set();
+        this.dispatchEvent(new CustomEvent("close"));
     }
 
     protected onClickMenu()
@@ -182,7 +183,7 @@ export default class TourNavigator extends DocumentView
         if (e.code === "Escape") {
             e.preventDefault();
             this.tours.ins.tourIndex.setValue(-1);
-            //this.dispatchEvent(new CustomEvent("close"));
+            this.dispatchEvent(new CustomEvent("close"));
         }
         else if(e.code === "Tab") {
             focusTrap(getFocusableElements(this) as HTMLElement[], e);

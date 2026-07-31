@@ -56,7 +56,7 @@ export default class CVArticlesTask extends CVTask
         moveArticleDown: types.Event("Articles.MoveDown"),
         title: types.String("Article.Title"),
         lead: types.String("Article.Lead"),
-        tags: types.String("Article.Tags"),
+        tags: types.Tags("Article.Tags"),
         uri: types.String("Article.URI"),
     };
 

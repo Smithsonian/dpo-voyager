@@ -41,7 +41,7 @@ import MainView from "../ui/explorer/MainView";
 import { EDerivativeQuality } from "client/schema/model";
 import CVARManager from "client/components/CVARManager";
 import { EUIElements } from "client/components/CVInterface";
-import { EBackgroundStyle } from "client/schema/setup";
+import { EBackgroundStyle, EMarkerStyle, TMarkerStyle } from "client/schema/setup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 import { clamp } from "client/utils/Helpers"
@@ -83,6 +83,8 @@ export interface IExplorerApplicationProps
     bgColor?: string;
     /** Component background style */
     bgStyle?: string;
+    /** Measurement marker style */
+    markerStyle?: string;
     /** Enables/disables pointer-driven camera controls. */
     controls?: string;
     /** Enables/disables navigation interaction prompt. */
@@ -289,6 +291,7 @@ Version: ${ENV_VERSION}
         props.uiMode = props.uiMode || qs.get("uiMode") || qs.get("u");
         props.bgColor = props.bgColor || qs.get("bgColor") || qs.get("bc");
         props.bgStyle = props.bgStyle || qs.get("bgStyle") || qs.get("bs");
+        props.markerStyle = props.markerStyle || qs.get("markerStyle") || qs.get("ms");
         props.controls = props.controls || qs.get("controls") || qs.get("ct");
         props.prompt = props.prompt || qs.get("prompt") || qs.get("pm");
         props.reader = props.reader || qs.get("reader") || qs.get("rdr");
@@ -372,6 +375,7 @@ Version: ${ENV_VERSION}
     }
 
     protected postLoadHandler(props: IExplorerApplicationProps) {
+        const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
         this.assetManager.ins.baseUrlValid.setValue(true);
         if(props.bgColor) {
             const colors = props.bgColor.split(" ");
@@ -392,9 +396,11 @@ Version: ${ENV_VERSION}
         if(props.lang) {
             this.setLanguage(props.lang);
         }
+        if(props.markerStyle) {
+            this.setMarkerStyle(props.markerStyle);
+        }
 
         // Re-cache postload setups
-        const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
         setup.ins.saveState.set();
     }
 
@@ -404,75 +410,101 @@ Version: ${ENV_VERSION}
     toggleAnnotations()
     {
         const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+        this.setAnnotationsEnabled(!viewerIns.annotationsVisible.value);
+    }
+
+    setAnnotationsEnabled(visible: boolean)
+    {
+        const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
         const toolIns = this.system.getMainComponent(CVToolProvider).ins;
 
-        if (toolIns.visible.value) {
+        if (visible && toolIns.visible.value) {
             toolIns.visible.setValue(false);
         }
 
-        viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
-        this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
+        viewerIns.annotationsVisible.setValue(visible);
+        this.analytics.sendProperty("Annotations_Visible", visible);
     }
 
     toggleReader()
     {
+        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+        this.setReaderEnabled(!readerIns.enabled.value);
+    }
+
+    setReaderEnabled(enabled: boolean)
+    {
         const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
         const readerIns = reader.ins;
-                    
-        readerIns.enabled.setValue(!readerIns.enabled.value);
-        readerIns.focus.setValue(readerIns.enabled.value);
 
-        if(readerIns.enabled.value) {
+        readerIns.enabled.setValue(enabled);
+        readerIns.focus.setValue(enabled);
+
+        if (enabled) {
             readerIns.articleId.setValue(reader.articles.length === 1 ? reader.articles[0].article.id : "");
         }
 
-        this.analytics.sendProperty("Reader_Enabled", readerIns.enabled.value);
+        this.analytics.sendProperty("Reader_Enabled", enabled);
     }
 
     toggleTours()
     {
         const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
+        this.setToursEnabled(!tourIns.enabled.value);
+    }
+
+    setToursEnabled(enabled: boolean)
+    {
+        const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
         const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
 
-        if (tourIns.enabled.value) {
-            tourIns.enabled.setValue(false);
+        if (enabled && readerIns.enabled.value) {
+            readerIns.enabled.setValue(false);
         }
-        else {
-            if (readerIns.enabled.value) {
-                readerIns.enabled.setValue(false); // disable reader
-            }
 
-            tourIns.enabled.setValue(true); // enable tours
+        tourIns.enabled.setValue(enabled);
+
+        if (enabled) {
             tourIns.tourIndex.setValue(-1); // show tour menu
         }
 
-        this.analytics.sendProperty("Tours_Enabled", tourIns.enabled.value);
+        this.analytics.sendProperty("Tours_Enabled", enabled);
     }
 
     toggleTools()
     {
         const toolIns = this.system.getMainComponent(CVToolProvider).ins;
+        this.setToolsEnabled(!toolIns.visible.value);
+    }
+
+    setToolsEnabled(visible: boolean)
+    {
+        const toolIns = this.system.getMainComponent(CVToolProvider).ins;
         const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
 
-        if (viewerIns.annotationsVisible.value) {
+        if (visible && viewerIns.annotationsVisible.value) {
             viewerIns.annotationsVisible.setValue(false);
         }
 
-        toolIns.visible.setValue(!toolIns.visible.value);
-        this.analytics.sendProperty("Tools_Visible", toolIns.visible.value);
+        toolIns.visible.setValue(visible);
+        this.analytics.sendProperty("Tools_Visible", visible);
     }
 
     toggleMeasurement()
     {
         const tapeIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
+        this.setMeasurementEnabled(!tapeIns.visible.value);
+    }
 
-        tapeIns.visible.setValue(!tapeIns.visible.value);
+    setMeasurementEnabled(visible: boolean)
+    {
+        const tapeIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
+        tapeIns.visible.setValue(visible);
     }
     
     enableAR()
     {
         const ARIns = this.system.getMainComponent(CVARManager).ins;
-
         ARIns.enabled.setValue(true);
         this.analytics.sendProperty("AR_enabled", true);
     }
@@ -481,9 +513,7 @@ Version: ${ENV_VERSION}
     getArticles()
     {
         const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
-        const articles = reader.articles.map(entry => entry.article.data);
-
-        return articles;
+        return reader.articles.map(entry => entry.article.data);
     }
 
     // Returns an array of objects with the annotation data for the current scene
@@ -626,7 +656,23 @@ Version: ${ENV_VERSION}
             backgroundIns.style.setValue(EBackgroundStyle[foundStyle]);
         }
         else {
-            console.error("Error: Style param is invalid.");
+            console.error("Error: Background style param [" + style + "] is invalid.");
+        }
+    }
+
+    // Set measurement tape marker style (Pin, Ring)
+    setMarkerStyle(style: string)
+    {
+        const tapelIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
+            
+        const enumNames = Object.values(EMarkerStyle).filter(value => typeof value === 'string') as string[];
+        const foundStyle = enumNames.find(name => name.toLowerCase() === style.toLowerCase());
+
+        if(foundStyle !== undefined) {
+            tapelIns.markerStyle.setValue(EMarkerStyle[foundStyle]);
+        }
+        else {
+            console.error("Error: Marker style param [" + style + "] is invalid.");
         }
     }
 
