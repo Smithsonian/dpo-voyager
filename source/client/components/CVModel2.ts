@@ -115,6 +115,7 @@ export default class CVModel2 extends CObject3D
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
         videoURL: types.String("Material.VideoURL", ""),
+        videoMuted: types.Boolean("Material.VideoMuted", true),
         variant: types.Option("Material.Variant", [], 0),
         overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
         slicerEnabled: types.Boolean("Material.SlicerEnabled", true),
@@ -161,7 +162,8 @@ export default class CVModel2 extends CObject3D
             this.ins.metalness,
             this.ins.occlusion,
             this.ins.doubleSided,
-            this.ins.videoURL
+            this.ins.videoURL,
+            this.ins.videoMuted
         ];
     }
 
@@ -213,7 +215,8 @@ export default class CVModel2 extends CObject3D
             this.ins.metalness,
             this.ins.color,
             this.ins.slicerEnabled,
-            this.ins.videoURL
+            this.ins.videoURL,
+            this.ins.videoMuted
         ];
     }
 
@@ -379,7 +382,7 @@ export default class CVModel2 extends CObject3D
             this.updateShader();
         }
 
-        if (ins.videoURL.changed && ins.shader.value === EShaderMode.Video) {
+        if ((ins.videoURL.changed || ins.videoMuted.changed) && ins.shader.value === EShaderMode.Video) {
             this.updateShader();
         }
 
@@ -1153,12 +1156,13 @@ export default class CVModel2 extends CObject3D
         }
 
         const resolvedVideoURL = this.assetManager.getAssetUrl(videoURL);
+        const muted = this.ins.videoMuted.value;
 
         if (!this._videoElement) {
             this._videoElement = document.createElement("video");
             this._videoElement.crossOrigin = "anonymous";
             this._videoElement.loop = true;
-            this._videoElement.muted = true;
+            this._videoElement.muted = muted;
             this._videoElement.autoplay = true;
             this._videoElement.playsInline = true;
             this._videoElement.preload = "auto";
@@ -1167,6 +1171,8 @@ export default class CVModel2 extends CObject3D
             this._videoElement.addEventListener("loadeddata", this.onVideoReady);
             this._videoElement.addEventListener("canplay", this.onVideoReady);
         }
+
+        this._videoElement.muted = muted;
 
         if (this._videoElement.dataset.videoUrl !== resolvedVideoURL) {
             this._videoElement.dataset.videoUrl = resolvedVideoURL;
