@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import { Vector3, Quaternion, Box3, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, Texture, Material, MeshStandardMaterial, NoBlending, AdditiveBlending, Color, MeshPhysicalMaterial, ObjectSpaceNormalMap } from "three";
+import { Vector3, Quaternion, Box3, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, Texture, Material, MeshStandardMaterial, NoBlending, AdditiveBlending, Color, MeshPhysicalMaterial, ObjectSpaceNormalMap, VideoTexture, SRGBColorSpace, LinearFilter } from "three";
 
 import Notification from "@ff/ui/Notification";
 
 import { ITypedEvent, Node, types } from "@ff/graph/Component";
-import CObject3D from "@ff/scene/components/CObject3D";
+import CObject3D, { IPointerEvent } from "@ff/scene/components/CObject3D";
 
 import * as helpers from "@ff/three/helpers";
 
@@ -41,6 +41,7 @@ import CVEnvironment from "./CVEnvironment";
 import CVSetup from "./CVSetup";
 import { Dictionary } from "client/../../libs/ff-core/source/types";
 import Asset from "client/models/Asset";
+import { IPulseContext } from "@ff/graph/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -113,6 +114,7 @@ export default class CVModel2 extends CObject3D
         rotation: types.Vector3("Model.Rotation"),
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
+        videoURL: types.String("Material.VideoURL", ""),
         variant: types.Option("Material.Variant", [], 0),
         overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
         slicerEnabled: types.Boolean("Material.SlicerEnabled", true),
@@ -158,7 +160,8 @@ export default class CVModel2 extends CObject3D
             this.ins.roughness,
             this.ins.metalness,
             this.ins.occlusion,
-            this.ins.doubleSided
+            this.ins.doubleSided,
+            this.ins.videoURL
         ];
     }
 
@@ -184,6 +187,11 @@ export default class CVModel2 extends CObject3D
     private _wireColor = new Color("#004966").convertLinearToSRGB();
     private _wireEmissiveColor = new Color("#004966").convertLinearToSRGB();
     private _overlays: Dictionary<IOverlay> = {};
+    private _videoElement: HTMLVideoElement | null = null;
+    private _videoTexture: VideoTexture | null = null;
+    private _videoSourceUrl: string = "";
+    private _videoObjectUrl: string | null = null;
+    private _videoLoadToken: number = 0;
 
     constructor(node: Node, id: string)
     {
@@ -204,7 +212,8 @@ export default class CVModel2 extends CObject3D
             this.ins.roughness,
             this.ins.metalness,
             this.ins.color,
-            this.ins.slicerEnabled
+            this.ins.slicerEnabled,
+            this.ins.videoURL
         ];
     }
 
@@ -282,6 +291,8 @@ export default class CVModel2 extends CObject3D
         // link units with annotation view
         const av = this.node.createComponent(CVAnnotationView);
         av.ins.unitScale.linkFrom(this.outs.unitScale);
+
+        this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
     }
 
@@ -368,6 +379,14 @@ export default class CVModel2 extends CObject3D
             this.updateShader();
         }
 
+        if (ins.videoURL.changed && ins.shader.value === EShaderMode.Video) {
+            this.updateShader();
+        }
+
+        if (ins.shader.value === EShaderMode.Video && ins.videoURL.value.trim()) {
+            this.setupVideoTexture();
+        }
+
         if (ins.overlayMap.changed) {
             this.updateOverlayMap();
         }
@@ -419,6 +438,8 @@ export default class CVModel2 extends CObject3D
 
     dispose()
     {
+        this.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+
         this.derivatives.clear();
         this._activeDerivative = null;
         for (let key in this._overlays) {
@@ -427,7 +448,72 @@ export default class CVModel2 extends CObject3D
             }
         }
 
+        if (this._videoTexture) {
+            this._videoTexture.dispose();
+            this._videoTexture = null;
+        }
+
+        if (this._videoElement) {
+            this._videoElement.pause();
+            this._videoElement.removeAttribute("src");
+            this._videoElement.load();
+            this._videoElement = null;
+        }
+
+        if (this._videoObjectUrl) {
+            URL.revokeObjectURL(this._videoObjectUrl);
+            this._videoObjectUrl = null;
+        }
+
         super.dispose();
+    }
+
+    protected onPointerUp(event: IPointerEvent)
+    {
+        if (!event.isPrimary || event.isDragging || !event.component || !event.component.is(CVModel2)) {
+            return;
+        }
+
+        if (this.ins.shader.value !== EShaderMode.Video || !this._videoElement) {
+            return;
+        }
+
+        if (this._videoElement.paused) {
+            this._videoElement.play().catch(() => {
+                // Ignore autoplay/playback restrictions; the next click can retry.
+            });
+        }
+        else {
+            this._videoElement.pause();
+        }
+    }
+
+    protected onVideoReady = () => {
+        this._videoElement?.play().catch(() => {
+            // Ignore autoplay/playback restrictions; the next readiness event or click can retry.
+        });
+
+        if (this.ins.shader.value === EShaderMode.Video) {
+            this.updateShader();
+        }
+    }
+
+    tick(context: IPulseContext): boolean
+    {
+        if (this.ins.shader.value !== EShaderMode.Video || !this._videoElement) {
+            return false;
+        }
+
+        if (this._videoElement.paused || this._videoElement.ended) {
+            return false;
+        }
+
+        if (this._videoTexture) {
+            this._videoTexture.needsUpdate = true;
+        }
+
+        this.renderer?.forceRender();
+        return true;
     }
 
     center()
@@ -985,6 +1071,9 @@ export default class CVModel2 extends CObject3D
                 if(this.ins.renderOrder.value !== 0)
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
 
+                // re-apply the active shader now that the derivative materials exist
+                this.updateShader();
+
                 // load overlays
                 const overlayProp = this.ins.overlayMap;
                 overlayProp.setOptions(["None"]);
@@ -1033,6 +1122,116 @@ export default class CVModel2 extends CObject3D
                 this.registerPickableObject3D(node, true);
             }
         });
+    }
+
+    protected setupVideoTexture(): boolean
+    {
+        const videoURL = this.ins.videoURL.value.trim();
+
+        if (!videoURL) {
+            this._videoSourceUrl = "";
+            this._videoLoadToken++;
+
+            if (this._videoTexture) {
+                this._videoTexture.dispose();
+                this._videoTexture = null;
+            }
+
+            if (this._videoElement) {
+                this._videoElement.pause();
+                this._videoElement.removeAttribute("src");
+                this._videoElement.load();
+                this._videoElement = null;
+            }
+
+            if (this._videoObjectUrl) {
+                URL.revokeObjectURL(this._videoObjectUrl);
+                this._videoObjectUrl = null;
+            }
+
+            return false;
+        }
+
+        const resolvedVideoURL = this.assetManager.getAssetUrl(videoURL);
+
+        if (!this._videoElement) {
+            this._videoElement = document.createElement("video");
+            this._videoElement.crossOrigin = "anonymous";
+            this._videoElement.loop = true;
+            this._videoElement.muted = true;
+            this._videoElement.autoplay = true;
+            this._videoElement.playsInline = true;
+            this._videoElement.preload = "auto";
+
+            this._videoElement.addEventListener("loadedmetadata", this.onVideoReady);
+            this._videoElement.addEventListener("loadeddata", this.onVideoReady);
+            this._videoElement.addEventListener("canplay", this.onVideoReady);
+        }
+
+        if (this._videoElement.dataset.videoUrl !== resolvedVideoURL) {
+            this._videoElement.dataset.videoUrl = resolvedVideoURL;
+            this._videoElement.src = resolvedVideoURL;
+            this._videoElement.load();
+        }
+
+        if (!this._videoTexture) {
+            this._videoTexture = new VideoTexture(this._videoElement);
+            this._videoTexture.flipY = false;
+            this._videoTexture.colorSpace = SRGBColorSpace;
+            this._videoTexture.generateMipmaps = false;
+            this._videoTexture.minFilter = LinearFilter;
+            this._videoTexture.magFilter = LinearFilter;
+        }
+
+        if (this._videoSourceUrl !== resolvedVideoURL) {
+            this._videoSourceUrl = resolvedVideoURL;
+            this._videoLoadToken++;
+
+            const loadToken = this._videoLoadToken;
+
+            fetch(resolvedVideoURL, { credentials: "include" })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`failed to fetch video '${resolvedVideoURL}', status: ${response.status} ${response.statusText}`);
+                    }
+
+                    return response.blob();
+                })
+                .then(blob => {
+                    if (loadToken !== this._videoLoadToken || !this._videoElement) {
+                        return;
+                    }
+
+                    if (this._videoObjectUrl) {
+                        URL.revokeObjectURL(this._videoObjectUrl);
+                    }
+
+                    this._videoObjectUrl = URL.createObjectURL(blob);
+                    this._videoElement.src = this._videoObjectUrl;
+                    this._videoElement.load();
+                    return this._videoElement.play().catch(() => {
+                        // Playback can fail without a user gesture; ignore and let retries happen later.
+                    });
+                })
+                .catch(error => {
+                    if (loadToken === this._videoLoadToken) {
+                        console.error("Failed to prepare video texture", error);
+                    }
+                });
+        }
+
+        this._videoElement.play().catch(() => {
+            // Playback can fail without a user gesture; ignore and let retries happen later.
+        });
+
+        const hasFrameData = this._videoElement.readyState >= this._videoElement.HAVE_CURRENT_DATA;
+
+        if (this._videoTexture && hasFrameData) {
+            this._videoTexture.needsUpdate = true;
+            return true;
+        }
+
+        return false;
     }
 
     setShaderMode(mode: EShaderMode, inMaterial: Material)
@@ -1127,6 +1326,41 @@ export default class CVModel2 extends CObject3D
                 material.aoMap = null;
                 material.emissiveMap = null;
                 material.normalMap = null;
+                material.defines["OBJECTSPACE_NORMALMAP"] = false;
+                break;
+
+            case EShaderMode.Video:
+                material.userData.paramCopy = {
+                    color: material.color,
+                    emissive: material.emissive,
+                    roughness: material.roughness,
+                    metalness: material.metalness,
+                    map: material.map,
+                    aoMap: material.aoMap,
+                    emissiveMap: material.emissiveMap,
+                    normalMap: material.normalMap,
+                    transparent: material.transparent,
+                    depthWrite: material.depthWrite,
+                    blending: material.blending,
+                };
+                const hasVideoFrame = this.setupVideoTexture();
+                if (hasVideoFrame) {
+                    material.color.set(0xffffff);
+                    material.emissive.set(0xffffff);
+                }
+                else {
+                    material.color.copy(material.userData.paramCopy.color);
+                    material.emissive.copy(material.userData.paramCopy.emissive);
+                }
+                material.roughness = 1;
+                material.metalness = 0;
+                material.map = hasVideoFrame ? this._videoTexture : material.userData.paramCopy.map;
+                material.aoMap = null;
+                material.emissiveMap = hasVideoFrame ? this._videoTexture : material.userData.paramCopy.emissiveMap;
+                material.normalMap = null;
+                material.transparent = false;
+                material.depthWrite = true;
+                material.blending = NoBlending;
                 material.defines["OBJECTSPACE_NORMALMAP"] = false;
                 break;
         }
