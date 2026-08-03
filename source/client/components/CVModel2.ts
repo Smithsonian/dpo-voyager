@@ -1214,8 +1214,10 @@ export default class CVModel2 extends CObject3D
                     });
                 })
                 .catch(error => {
-                    if (loadToken === this._videoLoadToken) {
-                        console.error("Failed to prepare video texture", error);
+                  if (loadToken === this._videoLoadToken) {
+                      const message = `Error loading video: ${error.message}`;
+                      console.error(message, error);
+                      Notification.show(message, "error", 10000);
                     }
                 });
         }
