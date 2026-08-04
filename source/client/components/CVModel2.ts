@@ -192,8 +192,6 @@ export default class CVModel2 extends CObject3D
     private _videoElement: HTMLVideoElement | null = null;
     private _videoTexture: VideoTexture | null = null;
     private _videoSourceUrl: string = "";
-    private _videoObjectUrl: string | null = null;
-    private _videoLoadToken: number = 0;
 
     constructor(node: Node, id: string)
     {
@@ -461,11 +459,6 @@ export default class CVModel2 extends CObject3D
             this._videoElement.removeAttribute("src");
             this._videoElement.load();
             this._videoElement = null;
-        }
-
-        if (this._videoObjectUrl) {
-            URL.revokeObjectURL(this._videoObjectUrl);
-            this._videoObjectUrl = null;
         }
 
         super.dispose();
@@ -1133,7 +1126,6 @@ export default class CVModel2 extends CObject3D
 
         if (!videoURL) {
             this._videoSourceUrl = "";
-            this._videoLoadToken++;
 
             if (this._videoTexture) {
                 this._videoTexture.dispose();
@@ -1147,18 +1139,26 @@ export default class CVModel2 extends CObject3D
                 this._videoElement = null;
             }
 
-            if (this._videoObjectUrl) {
-                URL.revokeObjectURL(this._videoObjectUrl);
-                this._videoObjectUrl = null;
-            }
-
             return false;
         }
 
         const resolvedVideoURL = this.assetManager.getAssetUrl(videoURL);
         const muted = this.ins.videoMuted.value;
 
-        if (!this._videoElement) {
+        if (this._videoSourceUrl !== resolvedVideoURL) {
+            if (this._videoTexture) {
+                this._videoTexture.dispose();
+                this._videoTexture = null;
+            }
+
+            if (this._videoElement) {
+                this._videoElement.pause();
+                this._videoElement.removeEventListener("loadedmetadata", this.onVideoReady);
+                this._videoElement.removeEventListener("loadeddata", this.onVideoReady);
+                this._videoElement.removeEventListener("canplay", this.onVideoReady);
+                this._videoElement = null;
+            }
+
             this._videoElement = document.createElement("video");
             this._videoElement.crossOrigin = "anonymous";
             this._videoElement.loop = true;
@@ -1170,63 +1170,21 @@ export default class CVModel2 extends CObject3D
             this._videoElement.addEventListener("loadedmetadata", this.onVideoReady);
             this._videoElement.addEventListener("loadeddata", this.onVideoReady);
             this._videoElement.addEventListener("canplay", this.onVideoReady);
-        }
 
-        this._videoElement.muted = muted;
-
-        if (this._videoElement.dataset.videoUrl !== resolvedVideoURL) {
-            this._videoElement.dataset.videoUrl = resolvedVideoURL;
             this._videoElement.src = resolvedVideoURL;
             this._videoElement.load();
-        }
 
-        if (!this._videoTexture) {
             this._videoTexture = new VideoTexture(this._videoElement);
             this._videoTexture.flipY = false;
             this._videoTexture.colorSpace = SRGBColorSpace;
             this._videoTexture.generateMipmaps = false;
             this._videoTexture.minFilter = LinearFilter;
             this._videoTexture.magFilter = LinearFilter;
-        }
 
-        if (this._videoSourceUrl !== resolvedVideoURL) {
             this._videoSourceUrl = resolvedVideoURL;
-            this._videoLoadToken++;
-
-            const loadToken = this._videoLoadToken;
-
-            fetch(resolvedVideoURL, { credentials: "include" })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`failed to fetch video '${resolvedVideoURL}', status: ${response.status} ${response.statusText}`);
-                    }
-
-                    return response.blob();
-                })
-                .then(blob => {
-                    if (loadToken !== this._videoLoadToken || !this._videoElement) {
-                        return;
-                    }
-
-                    if (this._videoObjectUrl) {
-                        URL.revokeObjectURL(this._videoObjectUrl);
-                    }
-
-                    this._videoObjectUrl = URL.createObjectURL(blob);
-                    this._videoElement.src = this._videoObjectUrl;
-                    this._videoElement.load();
-                    return this._videoElement.play().catch(() => {
-                        // Playback can fail without a user gesture; ignore and let retries happen later.
-                    });
-                })
-                .catch(error => {
-                  if (loadToken === this._videoLoadToken) {
-                      const message = `Error loading video: ${error.message}`;
-                      console.error(message, error);
-                      Notification.show(message, "error", 10000);
-                    }
-                });
         }
+
+        this._videoElement.muted = muted;
 
         this._videoElement.play().catch(() => {
             // Playback can fail without a user gesture; ignore and let retries happen later.
