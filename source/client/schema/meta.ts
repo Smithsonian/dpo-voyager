@@ -29,7 +29,8 @@ export interface IMeta
     process?: Dictionary<any>;
     images?: IImage[];
     articles?: IArticle[];
-    audio?: IAudioClip[];
+    audio?: IMediaClip[];
+    video?: IMediaClip[];
     actions?: IAction[];
     leadArticle?: Index;
 }
@@ -81,7 +82,7 @@ export interface INote
 /**
  * Audio files referenced by the scene [narrations, audio descriptions, etc.].
  */
-export interface IAudioClip
+export interface IMediaClip
 {
     id: string;
     name: string;

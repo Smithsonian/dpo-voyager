@@ -19,6 +19,7 @@ import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CVMeta from "./CVMeta";
 import { EActionTrigger, TActionTrigger, EActionType, TActionType, EActionPlayStyle, TActionPlayStyle, IAction } from "client/schema/meta";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
+import { EShaderMode } from "client/schema/setup";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Timer, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
 import { Dictionary } from "@ff/core/types";
@@ -258,7 +259,7 @@ export default class CVActionManager extends Component
                 const loadActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
                 if(loadActions.length > 0) {
                     loadActions.forEach((action) => {
-                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
+                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType && action.type !== EActionType[EActionType.PlayVideo] as TActionType) {
                             this.playAction(model, action);
                         }
                     });
@@ -293,7 +294,7 @@ export default class CVActionManager extends Component
             const actions = meta.actions.items.filter(item => {return id.length > 0 && item.annotationId == id});
             if(actions.length > 0) {
                 actions.forEach((action) => {
-                    if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
+                    if(action.type == EActionType[EActionType.PlayAudio] as TActionType || action.type == EActionType[EActionType.PlayVideo] as TActionType) {
                         this.playAction(null, action);
                     }
                     else {
@@ -336,12 +337,14 @@ export default class CVActionManager extends Component
                 });
                 if(actions.length > 0) {
                     actions.forEach((action) => {
-                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
+                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType && action.type !== EActionType[EActionType.PlayVideo] as TActionType) {
                             const model = meta.node.getComponent(CVModel2);
                             this._animQueue.push({model: model, action: action});
                         }
                         /*else if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
                             this.setup.audio.play(action.audioId, true);
+                        } else if(action.type == EActionType[EActionType.PlayVideo] as TActionType) {
+                            this.setup.video.play(action.videoId, true);
                         }*/
                     });
                 }
@@ -369,6 +372,18 @@ export default class CVActionManager extends Component
 
         if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
             this.setup.audio.play(action.audioId, true);
+        }
+        else if(action.type == EActionType[EActionType.PlayVideo] as TActionType) {
+            const clip = this.setup.video.getVideoClip(action.videoId);
+            const clipUri = this.setup.video.getVideoClipUri(action.videoId) || Object.values(clip?.uris || {})[0];
+
+            if (!clipUri) {
+                console.warn("No playable video clip found for action", action.id, action.videoId);
+                return;
+            }
+
+            model.ins.videoURL.setValue(clipUri);
+            model.ins.shader.setValue(EShaderMode.Video);
         }
         else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
             // Don't retrigger looping actions

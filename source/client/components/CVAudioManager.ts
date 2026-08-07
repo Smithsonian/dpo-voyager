@@ -19,7 +19,7 @@ import Component, { types, IComponentEvent } from "@ff/graph/Component";
 import { IAudio } from "client/schema/setup";
 import CVMeta from "./CVMeta";
 import { Dictionary } from "client/../../libs/ff-core/source/types";
-import { IAudioClip } from "client/schema/meta";
+import { IMediaClip } from "client/schema/meta";
 import CVAssetManager from "./CVAssetManager";
 import CVLanguageManager from "./CVLanguageManager";
 import { TLanguageType, ELanguageType } from "client/schema/common";
@@ -48,7 +48,7 @@ export default class CVAudioManager extends Component
     private _activeId: string = null;
     private _audioMap: Dictionary<string> = {};
 
-    protected audioClips: Dictionary<IAudioClip> = {};
+    protected audioClips: Dictionary<IMediaClip> = {};
     protected audioPlayer: HTMLAudioElement = null;
     protected audioView: AudioView = null;
     protected audioViews: Dictionary<AudioView> = {};
@@ -240,7 +240,7 @@ export default class CVAudioManager extends Component
         }
     }
 
-    addAudioClip(clip: IAudioClip)
+    addAudioClip(clip: IMediaClip)
     {
         this.audioClips[clip.id] = clip;
         this.outs.updated.set();

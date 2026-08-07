@@ -136,6 +136,37 @@
                 "uris"
             ]
         },
+        "videoclip": {
+            "$id": "videoclip",
+            "description": "Reference to a video file",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "name": {
+                    "description": "Short name.",
+                    "type": "string"
+                },
+                "uris": {
+                    "description": "Location of the video resource, absolute URL or path relative to this document with language key",
+                    "type": "object"
+                },
+                "captionUris": {
+                    "description": "Location of the caption resource, absolute URL or path relative to this document with language key",
+                    "type": "object"
+                },
+                "durations": {
+                    "description": "Length of the video resource with language key",
+                    "type": "object"
+                }
+            },
+            "required": [
+                "id",
+                "uris"
+            ]
+        },
         "action": {
             "$id": "action",
             "description": "Reference to a Voyager action element",
@@ -168,6 +199,11 @@
                 },
                 "audioId": {
                     "description": "ID of the audio clip to play.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "videoId": {
+                    "description": "ID of the video clip to play.",
                     "type": "string",
                     "minLength": 1
                 },
@@ -248,6 +284,13 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/audioclip"
+            },
+            "minItems": 0
+        },
+        "video": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/videoclip"
             },
             "minItems": 0
         },

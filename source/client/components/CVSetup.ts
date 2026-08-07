@@ -36,6 +36,7 @@ import CVSnapshots from "./CVSnapshots";
 import CVEnvironment from "./CVEnvironment";
 import CVLanguageManager from "./CVLanguageManager";
 import CVAudioManager from "./CVAudioManager";
+import CVVideoManager from "./CVVideoManager";
 import CVDerivativesController from "./CVDerivativesController";
 import CVActionManager from "./CVActionManager";
 
@@ -73,6 +74,7 @@ export default class CVSetup extends Component
         "slicer": CVSlicer,
         "tours": CVTours,
         "audio": CVAudioManager,
+        "video": CVVideoManager,
         "actions": CVActionManager
     };
 
@@ -98,6 +100,7 @@ export default class CVSetup extends Component
     environment: CVEnvironment;
     language: CVLanguageManager;
     audio: CVAudioManager;
+    video: CVVideoManager;
     actions: CVActionManager;
 
     create()
