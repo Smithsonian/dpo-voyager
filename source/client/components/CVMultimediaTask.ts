@@ -24,6 +24,7 @@ import { Node } from "@ff/graph/Component";
 import CVDocument from "./CVDocument";
 import CVAudioManager from "./CVAudioManager";
 import CVVideoManager from "./CVVideoManager";
+import CVModel2 from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -128,6 +129,15 @@ export default class CVMultimediaTask extends CVTask
             return true;
         }
         if (ins.play.changed) {
+            if (isVideo) {
+                const clipUri = this.videoManager.getVideoClipUri(ins.activeId.value);
+                if (clipUri) {
+                    const activeModel = this.activeNode?.getComponent(CVModel2);
+                    const targetModels = activeModel ? [activeModel] : this.getGraphComponents(CVModel2);
+                    targetModels.forEach(model => model.playVideoTexture(clipUri, true));
+                }
+            }
+
             mediaManager.play(ins.activeId.value);
             return true;
         }

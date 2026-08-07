@@ -19,7 +19,6 @@ import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CVMeta from "./CVMeta";
 import { EActionTrigger, TActionTrigger, EActionType, TActionType, EActionPlayStyle, TActionPlayStyle, IAction } from "client/schema/meta";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
-import { EShaderMode } from "client/schema/setup";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Timer, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
 import { Dictionary } from "@ff/core/types";
@@ -374,16 +373,16 @@ export default class CVActionManager extends Component
             this.setup.audio.play(action.audioId, true);
         }
         else if(action.type == EActionType[EActionType.PlayVideo] as TActionType) {
-            const clip = this.setup.video.getVideoClip(action.videoId);
-            const clipUri = this.setup.video.getVideoClipUri(action.videoId) || Object.values(clip?.uris || {})[0];
-
+            const clipUri = this.setup.video.getVideoClipUri(action.videoId);
             if (!clipUri) {
                 console.warn("No playable video clip found for action", action.id, action.videoId);
                 return;
             }
 
-            model.ins.videoURL.setValue(clipUri);
-            model.ins.shader.setValue(EShaderMode.Video);
+            if (model) {
+                model.playVideoTexture(clipUri, true);
+            }
+            this.setup.video.play(action.videoId, true);
         }
         else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
             // Don't retrigger looping actions

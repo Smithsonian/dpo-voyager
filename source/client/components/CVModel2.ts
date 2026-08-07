@@ -20,7 +20,7 @@ import { Vector3, Quaternion, Box3, Group, Matrix4, Box3Helper, Object3D, FrontS
 import Notification from "@ff/ui/Notification";
 
 import { ITypedEvent, Node, types } from "@ff/graph/Component";
-import CObject3D, { IPointerEvent } from "@ff/scene/components/CObject3D";
+import CObject3D from "@ff/scene/components/CObject3D";
 
 import * as helpers from "@ff/three/helpers";
 
@@ -114,8 +114,6 @@ export default class CVModel2 extends CObject3D
         rotation: types.Vector3("Model.Rotation"),
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
-        videoURL: types.String("Material.VideoURL", ""),
-        videoMuted: types.Boolean("Material.VideoMuted", true),
         variant: types.Option("Material.Variant", [], 0),
         overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
         slicerEnabled: types.Boolean("Material.SlicerEnabled", true),
@@ -161,9 +159,7 @@ export default class CVModel2 extends CObject3D
             this.ins.roughness,
             this.ins.metalness,
             this.ins.occlusion,
-            this.ins.doubleSided,
-            this.ins.videoURL,
-            this.ins.videoMuted
+            this.ins.doubleSided
         ];
     }
 
@@ -212,9 +208,7 @@ export default class CVModel2 extends CObject3D
             this.ins.roughness,
             this.ins.metalness,
             this.ins.color,
-            this.ins.slicerEnabled,
-            this.ins.videoURL,
-            this.ins.videoMuted
+            this.ins.slicerEnabled
         ];
     }
 
@@ -226,6 +220,15 @@ export default class CVModel2 extends CObject3D
     }
     get localBoundingBox(): Readonly<Box3> {
         return this._localBoundingBox;
+    }
+
+    playVideoTexture(videoURL: string, muted = true)
+    {
+        if (!this.setupVideoTexture(videoURL, muted)) {
+            return;
+        }
+
+        this.applyVideoTextureToMaterials();
     }
 
     /**
@@ -292,8 +295,6 @@ export default class CVModel2 extends CObject3D
         // link units with annotation view
         const av = this.node.createComponent(CVAnnotationView);
         av.ins.unitScale.linkFrom(this.outs.unitScale);
-
-        this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
     }
 
@@ -380,14 +381,6 @@ export default class CVModel2 extends CObject3D
             this.updateShader();
         }
 
-        if ((ins.videoURL.changed || ins.videoMuted.changed) && ins.shader.value === EShaderMode.Video) {
-            this.updateShader();
-        }
-
-        if (ins.shader.value === EShaderMode.Video && ins.videoURL.value.trim()) {
-            this.setupVideoTexture();
-        }
-
         if (ins.overlayMap.changed) {
             this.updateOverlayMap();
         }
@@ -439,8 +432,6 @@ export default class CVModel2 extends CObject3D
 
     dispose()
     {
-        this.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
-
         this.derivatives.clear();
         this._activeDerivative = null;
         for (let key in this._overlays) {
@@ -464,39 +455,9 @@ export default class CVModel2 extends CObject3D
         super.dispose();
     }
 
-    protected onPointerUp(event: IPointerEvent)
-    {
-        if (!event.isPrimary || event.isDragging || !event.component || !event.component.is(CVModel2)) {
-            return;
-        }
-
-        if (this.ins.shader.value !== EShaderMode.Video || !this._videoElement) {
-            return;
-        }
-
-        if (this._videoElement.paused) {
-            this._videoElement.play().catch(() => {
-                // Ignore autoplay/playback restrictions; the next click can retry.
-            });
-        }
-        else {
-            this._videoElement.pause();
-        }
-    }
-
-    protected onVideoReady = () => {
-        this._videoElement?.play().catch(() => {
-            // Ignore autoplay/playback restrictions; the next readiness event or click can retry.
-        });
-
-        if (this.ins.shader.value === EShaderMode.Video) {
-            this.updateShader();
-        }
-    }
-
     tick(context: IPulseContext): boolean
     {
-        if (this.ins.shader.value !== EShaderMode.Video || !this._videoElement) {
+        if (!this._videoElement || !this._videoTexture) {
             return false;
         }
 
@@ -504,10 +465,7 @@ export default class CVModel2 extends CObject3D
             return false;
         }
 
-        if (this._videoTexture) {
-            this._videoTexture.needsUpdate = true;
-        }
-
+        this._videoTexture.needsUpdate = true;
         this.renderer?.forceRender();
         return true;
     }
@@ -1070,6 +1028,10 @@ export default class CVModel2 extends CObject3D
                 // re-apply the active shader now that the derivative materials exist
                 this.updateShader();
 
+                if (this._videoTexture && this._videoSourceUrl) {
+                    this.applyVideoTextureToMaterials();
+                }
+
                 // load overlays
                 const overlayProp = this.ins.overlayMap;
                 overlayProp.setOptions(["None"]);
@@ -1120,30 +1082,12 @@ export default class CVModel2 extends CObject3D
         });
     }
 
-    protected setupVideoTexture(): boolean
+    protected setupVideoTexture(videoURL: string, muted = true): boolean
     {
-        const videoURL = this.ins.videoURL.value.trim();
-
-        if (!videoURL) {
-            this._videoSourceUrl = "";
-
-            if (this._videoTexture) {
-                this._videoTexture.dispose();
-                this._videoTexture = null;
-            }
-
-            if (this._videoElement) {
-                this._videoElement.pause();
-                this._videoElement.removeAttribute("src");
-                this._videoElement.load();
-                this._videoElement = null;
-            }
-
+        const resolvedVideoURL = this.assetManager.getAssetUrl(videoURL.trim());
+        if (!resolvedVideoURL) {
             return false;
         }
-
-        const resolvedVideoURL = this.assetManager.getAssetUrl(videoURL);
-        const muted = this.ins.videoMuted.value;
 
         if (this._videoSourceUrl !== resolvedVideoURL) {
             if (this._videoTexture) {
@@ -1191,13 +1135,80 @@ export default class CVModel2 extends CObject3D
         });
 
         const hasFrameData = this._videoElement.readyState >= this._videoElement.HAVE_CURRENT_DATA;
-
-        if (this._videoTexture && hasFrameData) {
+        if (hasFrameData) {
             this._videoTexture.needsUpdate = true;
-            return true;
         }
 
-        return false;
+        return hasFrameData;
+    }
+
+    protected applyVideoTextureToMaterials()
+    {
+        if (!this._videoTexture) {
+            return;
+        }
+
+        const applyToMaterial = (inMaterial: Material) => {
+            const material = inMaterial as MeshStandardMaterial;
+            if (!material || (!material["isMeshStandardMaterial"] && !material["isMeshPhysicalMaterial"])) {
+                return;
+            }
+
+            if (!material.userData.videoParamCopy) {
+                material.userData.videoParamCopy = {
+                    color: material.color.clone(),
+                    emissive: material.emissive.clone(),
+                    roughness: material.roughness,
+                    metalness: material.metalness,
+                    map: material.map,
+                    aoMap: material.aoMap,
+                    emissiveMap: material.emissiveMap,
+                    normalMap: material.normalMap,
+                    transparent: material.transparent,
+                    depthWrite: material.depthWrite,
+                    blending: material.blending,
+                };
+            }
+
+            material.color.set(0xffffff);
+            material.emissive.set(0xffffff);
+            material.roughness = 1;
+            material.metalness = 0;
+            material.map = this._videoTexture;
+            material.aoMap = null;
+            material.emissiveMap = this._videoTexture;
+            material.normalMap = null;
+            material.transparent = false;
+            material.depthWrite = true;
+            material.blending = NoBlending;
+            if (material.defines) {
+                material.defines["OBJECTSPACE_NORMALMAP"] = false;
+            }
+            material.needsUpdate = true;
+        };
+
+        this.object3D.traverse(object => {
+            const material = object["material"] as Material | Material[];
+            if (!material) {
+                return;
+            }
+
+            if (Array.isArray(material)) {
+                material.forEach(applyToMaterial);
+                return;
+            }
+
+            applyToMaterial(material);
+        });
+    }
+
+    protected onVideoReady = () => {
+        this._videoElement?.play().catch(() => {
+            // Ignore autoplay/playback restrictions; next interaction can retry.
+        });
+
+        this.applyVideoTextureToMaterials();
+        this.renderer?.forceRender();
     }
 
     setShaderMode(mode: EShaderMode, inMaterial: Material)
@@ -1292,41 +1303,6 @@ export default class CVModel2 extends CObject3D
                 material.aoMap = null;
                 material.emissiveMap = null;
                 material.normalMap = null;
-                material.defines["OBJECTSPACE_NORMALMAP"] = false;
-                break;
-
-            case EShaderMode.Video:
-                material.userData.paramCopy = {
-                    color: material.color,
-                    emissive: material.emissive,
-                    roughness: material.roughness,
-                    metalness: material.metalness,
-                    map: material.map,
-                    aoMap: material.aoMap,
-                    emissiveMap: material.emissiveMap,
-                    normalMap: material.normalMap,
-                    transparent: material.transparent,
-                    depthWrite: material.depthWrite,
-                    blending: material.blending,
-                };
-                const hasVideoFrame = this.setupVideoTexture();
-                if (hasVideoFrame) {
-                    material.color.set(0xffffff);
-                    material.emissive.set(0xffffff);
-                }
-                else {
-                    material.color.copy(material.userData.paramCopy.color);
-                    material.emissive.copy(material.userData.paramCopy.emissive);
-                }
-                material.roughness = 1;
-                material.metalness = 0;
-                material.map = hasVideoFrame ? this._videoTexture : material.userData.paramCopy.map;
-                material.aoMap = null;
-                material.emissiveMap = hasVideoFrame ? this._videoTexture : material.userData.paramCopy.emissiveMap;
-                material.normalMap = null;
-                material.transparent = false;
-                material.depthWrite = true;
-                material.blending = NoBlending;
                 material.defines["OBJECTSPACE_NORMALMAP"] = false;
                 break;
         }

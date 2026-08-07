@@ -88,7 +88,10 @@ export default class PropertyView extends CustomElement
         }else if(property.type === "string" && schema.semantic === "tags"){
             return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property}></sv-property-tags>`
         }else if (schema.options) {
-            return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property}></sv-property-options>`;
+            const indexMap = property.path === "Material.Shader"
+                ? schema.options.map((option, index) => option === "Video" ? -1 : index).filter(index => index >= 0)
+                : null;
+            return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property} .indexMap=${indexMap}></sv-property-options>`;
         }else if(property.type === "boolean"){
             return html`<sv-property-boolean aria-disabled=${disabled} name=${label} .property=${property}></sv-property-boolean>`;
         }else if(property.type === "string"){
