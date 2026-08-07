@@ -238,6 +238,15 @@ export default class CVModel2 extends CObject3D
         }
     }
 
+    pauseVideoTexture()
+    {
+        if (this._videoElement) {
+            this._videoElement.pause();
+        }
+
+        this.renderer?.forceRender();
+    }
+
     stopVideoTexture()
     {
         if (this._videoElement) {

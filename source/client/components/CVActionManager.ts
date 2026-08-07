@@ -402,6 +402,14 @@ export default class CVActionManager extends Component
             this.setup.audio.play(action.audioId, true);
         }
         else if(action.type == EActionType[EActionType.PlayVideo] as TActionType) {
+            if (action.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger &&
+                this._activeVideoActionId === action.id &&
+                this.setup.video.outs.isPlaying.value) {
+                this.setup.video.pause();
+                this._activeVideoModel?.pauseVideoTexture();
+                return;
+            }
+
             const clipUri = this.setup.video.getVideoClipUri(action.videoId);
             if (!clipUri) {
                 console.warn("No playable video clip found for action", action.id, action.videoId);
