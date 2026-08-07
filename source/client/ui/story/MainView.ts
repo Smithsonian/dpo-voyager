@@ -42,6 +42,7 @@ import AssetPanel from "./AssetPanel";
 import CollectionPanel from "./CollectionPanel";
 
 import "./styles.scss";
+import StatePanel from "./StatePanel";
 
 ////////////////////////////////////////////////////////////////////////////////
 // STORY ICONS
@@ -140,6 +141,7 @@ export default class MainView extends CustomElement
         const explorer = this.application.explorer;
         registry.set("explorer", () => new ExplorerPanel(explorer));
         registry.set("tour-editor", () => new TourPanel(system));
+        registry.set("state-editor", () => new StatePanel(system));
         registry.set("task", () => new TaskPanel(system));
         registry.set("notes", () => new NotesPanel(system));
         registry.set("console", () => new ConsolePanel(system));
@@ -268,6 +270,9 @@ export default class MainView extends CustomElement
                     contentId: "tour-editor",
                     text: "Tour Editor"
                 }, {
+                    contentId: "state-editor",
+                    text: "State Editor"
+                }, {
                     contentId: "notes",
                     text: "Note Editor"
                 }]
@@ -328,6 +333,9 @@ export default class MainView extends CustomElement
                 }, {
                     contentId: "tour-editor",
                     text: "Tour Editor"
+                }, {
+                    contentId: "state-editor",
+                    text: "State Editor"
                 }, {
                     contentId: "notes",
                     text: "Note Editor"

@@ -384,6 +384,9 @@ export default class CVActionManager extends Component
             action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
             this.setAnnotationVisibility(model, action);
         }
+        else if(action.type == EActionType[EActionType.StateChange] as TActionType) {
+            this.setup.snapshots.activateStateChange(action.stateId);
+        }
 
         // fire onBegin triggers
         const onBeginTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionBegin] as TActionTrigger
