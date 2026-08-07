@@ -53,6 +53,7 @@ export default class CVActionsTask extends CVTask
         style: types.Enum("Action.Style", EActionPlayStyle, EActionPlayStyle.Single),
         speed: types.Number("Action.Speed", {preset: 1}),
         audio: types.Option("Action.Audio", ["None"], 0),
+        video: types.Option("Action.Video", ["None"], 0),
         animation: types.Option("Action.Animation", ["None"], 0),
         annotation: types.Option("Action.AnnotationT", ["None"], 0),
         actionAnnotation: types.Option("Action.Annotation", ["None"], 0),
@@ -106,6 +107,8 @@ export default class CVActionsTask extends CVTask
         super.activateTask();
         this.meta ? this.synchAnnotationOptions(this.meta.getComponent(CVModel2)) : null;
         this.synchTourOptions();
+        this.synchAudioOptions();
+        this.synchVideoOptions();
         this.synchActionOptions();
     }
 
@@ -136,6 +139,7 @@ export default class CVActionsTask extends CVTask
                     style: EActionPlayStyle[EActionPlayStyle.Single] as TActionPlayStyle,
                     speed: 1.0,
                     audioId: "",
+                    videoId: "",
                     animation: ""
                 };
                 meta.actions.items = [action];
@@ -163,11 +167,17 @@ export default class CVActionsTask extends CVTask
                 action.clamp = ins.clamp.value;
                 action.animation = EActionType[action.type] == EActionType.PlayAnimation ? ins.animation.getOptionText() : "";
                 action.audioId = EActionType[action.type] == EActionType.PlayAudio ? action.audioId : "";
+                action.videoId = EActionType[action.type] == EActionType.PlayVideo ? action.videoId : "";
             }
             if(ins.audio.changed) {
                 const audioManager = this.activeDocument.setup.audio;
                 const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
                 action.audioId = id;
+            }
+            if(ins.video.changed) {
+                const videoManager = this.activeDocument.setup.video;
+                const id = ins.video.value > 0 ? videoManager.getVideoList()[ins.video.value - 1].id : "";
+                action.videoId = id;
             }
             if(ins.syncWith.changed) {
                 action.syncWith = ins.syncWith.value > 0 ? ins.syncWith.getOptionText() : "";
@@ -197,9 +207,15 @@ export default class CVActionsTask extends CVTask
             if(ins.type.changed) {
                 if(EActionType[action.type] == EActionType.PlayAnimation) {
                     ins.audio.setValue(null , true, true);
+                    ins.video.setValue(null , true, true);
                 }
-                else {
+                else if(EActionType[action.type] == EActionType.PlayAudio) {
                     ins.animation.setValue(null , true, true);
+                    ins.video.setValue(null , true, true);
+                }
+                else if(EActionType[action.type] == EActionType.PlayVideo) {
+                    ins.animation.setValue(null , true, true);
+                    ins.audio.setValue(null , true, true);
                 }
             }
 
@@ -223,6 +239,7 @@ export default class CVActionsTask extends CVTask
             ins.trigger.setValue(EActionTrigger[action.trigger], true);
             ins.animation.setValue(action.animation ? ins.animation.schema.options.indexOf(action.animation) : 0);
             ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : 0);
+            ins.video.setValue(action.videoId ? this.activeDocument.setup.video.getVideoList().findIndex(clip => clip.id == action.videoId) + 1 : 0);
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
             ins.actionAnnotation.setValue(action.actionAnnoId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.actionAnnoId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
@@ -287,11 +304,13 @@ export default class CVActionsTask extends CVTask
 
         if (previous) {
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
+            previous.setup.video.outs.updated.off("value", this.synchVideoOptions, this);
             this.actionManager = null;
         }
         if (next) {
             this.actionManager = next.setup.actions;
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
+            next.setup.video.outs.updated.on("value", this.synchVideoOptions, this);
         }
     }
 
@@ -301,6 +320,13 @@ export default class CVActionsTask extends CVTask
         const options = ["None"];
         options.push(...audioManager.getAudioList().map(clip => clip.name));
         this.ins.audio.setOptions(options);
+    }
+
+    protected synchVideoOptions() {
+        const videoManager = this.activeDocument.setup.video;
+        const options = ["None"];
+        options.push(...videoManager.getVideoList().map(clip => clip.name));
+        this.ins.video.setOptions(options);
     }
 
     // Update annotation options

@@ -109,10 +109,11 @@ export interface IMediaClip
      speed?: number;
      clamp?: boolean;
      syncWith?: string;
+    videoId?: string;
  }
 
- export type TActionType = "PlayAnimation" | "PlayAudio" | "ShowAnnotation" | "HideAnnotation" | "ToggleAnnotation";
- export enum EActionType { PlayAnimation, PlayAudio, ShowAnnotation, HideAnnotation, ToggleAnnotation };
+ export type TActionType = "PlayAnimation" | "PlayAudio" | "PlayVideo" | "ShowAnnotation" | "HideAnnotation" | "ToggleAnnotation";
+ export enum EActionType { PlayAnimation, PlayAudio, PlayVideo, ShowAnnotation, HideAnnotation, ToggleAnnotation };
 
  export type TActionTrigger = "OnClick" | "OnLoad" | "OnAnnotation" | "OnTourStep" | "OnActionEnd" | "OnActionBegin";
  export enum EActionTrigger { OnClick, OnLoad, OnAnnotation, OnTourStep, OnActionEnd, OnActionBegin };

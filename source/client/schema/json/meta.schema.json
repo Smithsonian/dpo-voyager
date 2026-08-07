@@ -185,7 +185,7 @@
                 "type": {
                     "description": "Type of action.",
                     "type": "string",
-                    "enum": [ "PlayAnimation", "PlayAudio", "ShowAnnotation", "HideAnnotation", "ToggleAnnotation" ]
+                    "enum": [ "PlayAnimation", "PlayAudio", "PlayVideo", "ShowAnnotation", "HideAnnotation", "ToggleAnnotation" ]
                 },
                 "trigger": {
                     "description": "Method by which this action is triggered.",
