@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Component, { IComponentEvent } from "@ff/graph/Component";
+import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import { Dictionary } from "client/../../libs/ff-core/source/types";
 import { IMediaClip } from "client/schema/meta";
 import CVAssetManager from "./CVAssetManager";
@@ -45,8 +45,22 @@ interface IEventProperty
 	changed: boolean;
 }
 
+interface ISetEventProperty
+{
+	set(): void;
+}
+
 export default abstract class CVMultiMediaManager<TView extends IMediaView = IMediaView> extends Component
 {
+	protected static createCommonIns(prefix: string)
+	{
+		return {
+			reset: types.Event(`${prefix}.Reset`),
+			activeCaption: types.String(`${prefix}.ActiveCaption`),
+			captionsEnabled: types.Boolean(`${prefix}.CaptionsEnabled`, true)
+		};
+	}
+
 	protected _activeId: string = null;
 	protected clips: Dictionary<IMediaClip> = {};
 	protected player: HTMLMediaElement = null;
@@ -70,14 +84,32 @@ export default abstract class CVMultiMediaManager<TView extends IMediaView = IMe
 		return this.system.getMainComponent(CVAnalytics);
 	}
 
-	protected abstract get resetProperty(): IEventProperty;
-	protected abstract get globalPlayingProperty(): IBooleanProperty;
-	protected abstract get isPlayingProperty(): IBooleanProperty;
-	protected abstract get updatedProperty(): { set(): void };
-	protected abstract createMediaView(id: string): TView;
+	protected abstract get mediaViewCtor(): new () => TView;
+	protected abstract get mediaViewManagerKey(): string;
+	protected abstract get mediaViewIdKey(): string;
 	protected abstract getMetaClips(meta: CVMeta): Dictionary<IMediaClip>;
 	protected abstract updateClip(id: string): void;
 	abstract getDuration(id: string): string;
+
+	protected get resetProperty()
+	{
+		return (this.ins as any).reset as IEventProperty;
+	}
+
+	protected get globalPlayingProperty()
+	{
+		return (this.outs as any).globalPlaying as IBooleanProperty;
+	}
+
+	protected get isPlayingProperty()
+	{
+		return (this.outs as any).isPlaying as IBooleanProperty;
+	}
+
+	protected get updatedProperty()
+	{
+		return (this.outs as any).updated as ISetEventProperty;
+	}
 
 	get activeId() {
 		return this._activeId || "";
@@ -152,6 +184,16 @@ export default abstract class CVMultiMediaManager<TView extends IMediaView = IMe
 		}
 
 		return this.views[id];
+	}
+
+	protected createMediaView(id: string)
+	{
+		const view = new this.mediaViewCtor() as TView;
+		const mutableView = view as any;
+		mutableView[this.mediaViewManagerKey] = this;
+		mutableView[this.mediaViewIdKey] = id;
+		view.requestUpdate();
+		return view;
 	}
 
 	getTimeElapsed()

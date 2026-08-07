@@ -39,9 +39,7 @@ export default class CVVideoManager extends CVMultiMediaManager<VideoView>
     private _videoMap: Dictionary<string> = {};
 
     protected static readonly ins = {
-        reset: types.Event("Video.Reset"),
-        activeCaption: types.String("Video.ActiveCaption"),
-        captionsEnabled: types.Boolean("Video.CaptionsEnabled", true),
+        ...CVVideoManager.createCommonIns("Video"),
     };
 
     protected static readonly outs = {
@@ -54,26 +52,16 @@ export default class CVVideoManager extends CVMultiMediaManager<VideoView>
     ins = this.addInputs(CVVideoManager.ins);
     outs = this.addOutputs(CVVideoManager.outs);
 
-    protected get resetProperty() {
-        return this.ins.reset;
-    }
-    protected get globalPlayingProperty() {
-        return this.outs.globalPlaying;
-    }
-    protected get isPlayingProperty() {
-        return this.outs.isPlaying;
-    }
-    protected get updatedProperty() {
-        return this.outs.updated;
+    protected get mediaViewCtor() {
+        return VideoView;
     }
 
-    protected createMediaView(id: string)
-    {
-        const view = new VideoView;
-        view.video = this;
-        view.videoId = id;
-        view.requestUpdate();
-        return view;
+    protected get mediaViewManagerKey() {
+        return "video";
+    }
+
+    protected get mediaViewIdKey() {
+        return "videoId";
     }
 
     protected getMetaClips(meta: CVMeta)

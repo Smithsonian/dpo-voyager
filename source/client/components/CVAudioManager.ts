@@ -46,10 +46,8 @@ export default class CVAudioManager extends CVMultiMediaManager<AudioView>
     protected audioContext = null;
 
     protected static readonly ins = {
+        ...CVAudioManager.createCommonIns("Audio"),
         playNarration: types.Event("Audio.PlayNarration"),
-        reset: types.Event("Audio.Reset"),
-        activeCaption: types.String("Audio.ActiveCaption"),
-        captionsEnabled: types.Boolean("Audio.CaptionsEnabled", true),
     };
 
     protected static readonly outs = {
@@ -63,17 +61,16 @@ export default class CVAudioManager extends CVMultiMediaManager<AudioView>
     ins = this.addInputs(CVAudioManager.ins);
     outs = this.addOutputs(CVAudioManager.outs);
 
-    protected get resetProperty() {
-        return this.ins.reset;
+    protected get mediaViewCtor() {
+        return AudioView;
     }
-    protected get globalPlayingProperty() {
-        return this.outs.globalPlaying;
+
+    protected get mediaViewManagerKey() {
+        return "audio";
     }
-    protected get isPlayingProperty() {
-        return this.outs.isPlaying;
-    }
-    protected get updatedProperty() {
-        return this.outs.updated;
+
+    protected get mediaViewIdKey() {
+        return "audioId";
     }
 
     get narrationId() {
@@ -82,14 +79,6 @@ export default class CVAudioManager extends CVMultiMediaManager<AudioView>
     set narrationId( id: string ) {
         this._narrationId = id;
         this.outs.narrationEnabled.setValue(id.length > 0);
-    }
-    protected createMediaView(id: string)
-    {
-        const view = new AudioView;
-        view.audio = this;
-        view.audioId = id;
-        view.requestUpdate();
-        return view;
     }
 
     protected getMetaClips(meta: CVMeta)
