@@ -242,8 +242,17 @@ export default class CVModel2 extends CObject3D
     {
         if (this._videoElement) {
             this._videoElement.pause();
+            this._videoElement.removeAttribute("src");
+            this._videoElement.load();
             this._videoElement.currentTime = 0;
         }
+
+        if (this._videoTexture) {
+            this._videoTexture.dispose();
+            this._videoTexture = null;
+        }
+
+        this._videoSourceUrl = "";
 
         const restoreMaterial = (inMaterial: Material) => {
             const material = inMaterial as MeshStandardMaterial;

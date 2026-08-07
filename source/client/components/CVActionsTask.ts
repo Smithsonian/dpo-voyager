@@ -233,7 +233,7 @@ export default class CVActionsTask extends CVTask
                 }
             }
 
-            if(action) {
+            if(action && EActionType[action.type] == EActionType.PlayAnimation) {
                 this.actionManager.stopAction(action);
             }
         }
