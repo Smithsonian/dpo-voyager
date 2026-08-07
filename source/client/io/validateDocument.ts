@@ -23,45 +23,31 @@ import metaSchema from "client/schema/json/meta.schema.json";
 import modelSchema from "client/schema/json/model.schema.json";
 import setupSchema from "client/schema/json/setup.schema.json";
 
-import { IDocument } from "client/schema/document";
+import type { IDocument } from "client/schema/document";
 
 ////////////////////////////////////////////////////////////////////////////////
+const schemaValidator = new AjvCore({
+    schemas: [
+        documentSchema,
+        commonSchema,
+        metaSchema,
+        modelSchema,
+        setupSchema,
+    ],
+    allErrors: true
+});
 
-export default class DocumentValidator
-{
-    private _schemaValidator;
-    private _validateDocument;
-
-    constructor()
-    {
-        this._schemaValidator = new AjvCore({
-            schemas: [
-                documentSchema,
-                commonSchema,
-                metaSchema,
-                modelSchema,
-                setupSchema,
-            ],
-            allErrors: true
-        });
-
-        this._validateDocument = this._schemaValidator.getSchema(
-            "https://schemas.3d.si.edu/voyager/document.schema.json"
-        );
+/**
+ * Web worker that validates a document data against the JSON-schema
+ */
+onmessage = ({data}:MessageEvent<IDocument|undefined>) => {
+    const validateDocument = schemaValidator.getSchema(
+        "https://schemas.3d.si.edu/voyager/document.schema.json"
+    );
+    if (!validateDocument(data)) {
+        postMessage(schemaValidator.errorsText(
+            validateDocument.errors, { separator: ", ", dataVar: "document" }));
+    }else{
+        postMessage(undefined);
     }
-
-    validate(document: IDocument): boolean
-    {
-        if (!this._validateDocument(document)) {
-            console.warn(this._schemaValidator.errorsText(
-                this._validateDocument.errors, { separator: ", ", dataVar: "document" }));
-            return false;
-        }
-
-        if (ENV_DEVELOPMENT) {
-            console.log("JSONValidator.validateDocument - OK");
-        }
-
-        return true;
-    }
-}
+};

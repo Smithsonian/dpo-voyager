@@ -25,8 +25,6 @@ import { Dictionary } from "@ff/core/types";
 import { IDocument } from "client/schema/document";
 import { EDerivativeQuality } from "client/schema/model";
 
-import DocumentValidator from "../io/DocumentValidator";
-
 import NVNode, { INodeComponents } from "../nodes/NVNode";
 import NVScene from "../nodes/NVScene";
 
@@ -36,12 +34,15 @@ import CVAssetManager from "./CVAssetManager";
 import CVAnalytics from "client/components/CVAnalytics";
 import { ELanguageType } from "client/schema/common";
 import CVModel2 from "./CVModel2";
+import Notification from "@ff/ui/Notification";
+import { CORSWorker as Worker } from "client/io/Worker";
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { IDocument, INodeComponents };
 
+let _worker: Worker;
 
 /**
  * A Voyager document is a special kind of graph. Its inner graph has a standard structure, and it can
@@ -54,7 +55,6 @@ export default class CVDocument extends CRenderGraph
     static readonly mimeType = "application/si-dpo-3d.document+json";
     static readonly version = "1.0";
 
-    protected static readonly validator = new DocumentValidator();
 
     protected titles: Dictionary<string> = {};
     protected intros: Dictionary<string> = {};
@@ -179,6 +179,19 @@ export default class CVDocument extends CRenderGraph
         children.forEach(child => child.node.dispose());
     }
 
+    async validateDocument(documentData: IDocument){
+        /** Workers are a "baseline" feature since 2015 so this shouldn't happen much */
+        if(!window.Worker) return console.warn("Couldn't validate document: web workers are not supported");
+        if(!_worker){            
+            _worker = new Worker(
+                /* webpackChunkName: "validateDocument" */ 
+                new URL("../io/validateDocument.ts", import.meta.url),
+            );
+        }
+        let errString = await _worker.send(documentData);
+        if(errString) throw new Error(errString);
+    }
+
     /**
      * Loads the document from the given document data. The data is validated first.
      * If a parent node/scene is given, the data is attached to the given parent.
@@ -191,10 +204,14 @@ export default class CVDocument extends CRenderGraph
         if (ENV_DEVELOPMENT) {
             console.log("CVDocument.openDocument - assetPath: %s, mergeParent: %s", assetPath, mergeParent);
         }
-
-        if (!CVDocument.validator.validate(documentData)) {
-            throw new Error("document schema validation failed");
-        }
+        this.validateDocument(documentData).then(()=>{
+            if (ENV_DEVELOPMENT) {
+                console.log(`JSONValidator.validateDocument - OK${assetPath?` (${assetPath})`:""}`);
+            }
+        },(err)=>{
+            console.error("Document validation failed :", err);
+            Notification.show(`Document validation failed : ${err.message}`, "error");
+        });
 
         if (!mergeParent) {
             this.clearNodeTree();
