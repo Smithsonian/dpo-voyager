@@ -145,12 +145,7 @@ export default class StatePanel extends DocumentView
     {
         this._activeIndex = event.detail.index;
         const id = this.snapshots.deltaStates[this._activeIndex].id;
-        this.activeState = this.snapshots.getState(id) as IDeltaState;
-        this.snapshots.ins.id.setValue(id);
-        this.snapshots.ins.curve.setValue(this.activeState.curve);
-        this.snapshots.ins.threshold.setValue(this.activeState.threshold);
-        this.snapshots.ins.duration.setValue(this.activeState.duration);
-        this.requestUpdate();
+        this.setActiveState(id);
     }
 
     protected onClickRecord()
@@ -191,6 +186,8 @@ export default class StatePanel extends DocumentView
 
             this.snapshots.setState(newState);
             this.snapshots.deltaStates.push(newState);
+            
+            this.setActiveState(newState.id);
 
             this.requestUpdate();
         }
@@ -229,6 +226,16 @@ export default class StatePanel extends DocumentView
             );
         }
 
+        this.requestUpdate();
+    }
+
+    protected setActiveState(id: string)
+    {
+        this.activeState = this.snapshots.getState(id) as IDeltaState;
+        this.snapshots.ins.id.setValue(id);
+        this.snapshots.ins.curve.setValue(this.activeState.curve);
+        this.snapshots.ins.threshold.setValue(this.activeState.threshold);
+        this.snapshots.ins.duration.setValue(this.activeState.duration);
         this.requestUpdate();
     }
 

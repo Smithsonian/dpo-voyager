@@ -294,10 +294,12 @@ export default class CVActionsTask extends CVTask
 
         if (previous) {
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
+            previous.setup.snapshots.outs.update.off("value", this.synchStateOptions, this);
             this.actionManager = null;
         }
         if (next) {
             this.actionManager = next.setup.actions;
+            next.setup.snapshots.outs.update.on("value", this.synchStateOptions, this);
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
         }
     }
