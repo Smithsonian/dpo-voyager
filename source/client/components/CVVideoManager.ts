@@ -166,7 +166,7 @@ export default class CVVideoManager extends CVMultiMediaManager<VideoView>
         return this._activeId ? { narrationId: this._activeId } : null;
     }
 
-    play(id: string, useDefaultPlayer: boolean = false)
+    play(id: string, useDefaultPlayer: boolean = false, options: { loop?: boolean; muted?: boolean } = {})
     {
         const uri = this.getVideoClipUri(id);
         this.view = this.getPlayerById(id);
@@ -185,6 +185,8 @@ export default class CVVideoManager extends CVMultiMediaManager<VideoView>
         }
 
         this.initializeClip(id);
+        this.player.loop = !!options.loop;
+        this.player.muted = !!options.muted;
 
         this.player.play()
         .then(() => {
@@ -196,6 +198,22 @@ export default class CVVideoManager extends CVMultiMediaManager<VideoView>
             this.analytics.sendProperty("Video_Play", uri);
         })
         .catch(error => Notification.show(`Failed to play video at '${this.player.getAttribute("src")}':${error}`, "warning"));
+    }
+
+    applyPlaybackOptions(options: { loop?: boolean; muted?: boolean }, id: string = this.activeId)
+    {
+        if (!this.player || !id || this.activeId !== id) {
+            return;
+        }
+
+        if (options.loop !== undefined) {
+            this.player.loop = !!options.loop;
+        }
+        if (options.muted !== undefined) {
+            this.player.muted = !!options.muted;
+        }
+
+        this.view?.requestUpdate();
     }
 
     protected onEnd = () => {

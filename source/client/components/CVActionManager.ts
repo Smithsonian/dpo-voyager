@@ -58,6 +58,8 @@ export default class CVActionManager extends Component
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
     private _actions: {model: CVModel2, action: IAction}[] = [];
     private _visibilityCache: {annotation: Annotation, visibility: boolean}[] = [];
+    private _activeVideoActionId: string = "";
+    private _activeVideoModel: CVModel2 = null;
 
     private _animQueue = [];
 
@@ -154,6 +156,33 @@ export default class CVActionManager extends Component
                 this._activeClips.splice(idx,1);
             }
         }
+        else if (action.type == EActionType[EActionType.PlayVideo] as TActionType) {
+            this.setup.video.stop();
+            this.getGraphComponents(CVModel2).forEach(model => model.stopVideoTexture());
+
+            if (this._activeVideoActionId === action.id) {
+                this._activeVideoActionId = "";
+                this._activeVideoModel = null;
+            }
+        }
+    }
+
+    applyVideoActionOptions(action: IAction)
+    {
+        if (action.type !== EActionType[EActionType.PlayVideo] as TActionType) {
+            return;
+        }
+
+        if (this._activeVideoActionId !== action.id) {
+            return;
+        }
+
+        this.setup.video.applyPlaybackOptions({
+            loop: !!action.videoLoop,
+            muted: !!action.videoMuted
+        }, action.videoId);
+
+        this._activeVideoModel?.setVideoTextureLoop(!!action.videoLoop);
     }
 
     refreshActions() {
@@ -379,10 +408,15 @@ export default class CVActionManager extends Component
                 return;
             }
 
+            const shouldLoop = !!action.videoLoop;
+            const shouldMute = !!action.videoMuted;
+
             if (model) {
-                model.playVideoTexture(clipUri, true);
+                model.playVideoTexture(clipUri, true, shouldLoop);
             }
-            this.setup.video.play(action.videoId, true);
+            this.setup.video.play(action.videoId, true, { loop: shouldLoop, muted: shouldMute });
+            this._activeVideoActionId = action.id;
+            this._activeVideoModel = model;
         }
         else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
             // Don't retrigger looping actions

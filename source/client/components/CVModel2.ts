@@ -222,13 +222,66 @@ export default class CVModel2 extends CObject3D
         return this._localBoundingBox;
     }
 
-    playVideoTexture(videoURL: string, muted = true)
+    playVideoTexture(videoURL: string, muted = true, loop = true)
     {
-        if (!this.setupVideoTexture(videoURL, muted)) {
+        if (!this.setupVideoTexture(videoURL, muted, loop)) {
             return;
         }
 
         this.applyVideoTextureToMaterials();
+    }
+
+    setVideoTextureLoop(loop: boolean)
+    {
+        if (this._videoElement) {
+            this._videoElement.loop = loop;
+        }
+    }
+
+    stopVideoTexture()
+    {
+        if (this._videoElement) {
+            this._videoElement.pause();
+            this._videoElement.currentTime = 0;
+        }
+
+        const restoreMaterial = (inMaterial: Material) => {
+            const material = inMaterial as MeshStandardMaterial;
+            const cached = material?.userData?.videoParamCopy;
+            if (!cached) {
+                return;
+            }
+
+            material.color.copy(cached.color);
+            material.emissive.copy(cached.emissive);
+            material.roughness = cached.roughness;
+            material.metalness = cached.metalness;
+            material.map = cached.map;
+            material.aoMap = cached.aoMap;
+            material.emissiveMap = cached.emissiveMap;
+            material.normalMap = cached.normalMap;
+            material.transparent = cached.transparent;
+            material.depthWrite = cached.depthWrite;
+            material.blending = cached.blending;
+            delete material.userData.videoParamCopy;
+            material.needsUpdate = true;
+        };
+
+        this.object3D.traverse(object => {
+            const material = object["material"] as Material | Material[];
+            if (!material) {
+                return;
+            }
+
+            if (Array.isArray(material)) {
+                material.forEach(restoreMaterial);
+                return;
+            }
+
+            restoreMaterial(material);
+        });
+
+        this.renderer?.forceRender();
     }
 
     /**
@@ -1082,7 +1135,7 @@ export default class CVModel2 extends CObject3D
         });
     }
 
-    protected setupVideoTexture(videoURL: string, muted = true): boolean
+    protected setupVideoTexture(videoURL: string, muted = true, loop = true): boolean
     {
         const resolvedVideoURL = this.assetManager.getAssetUrl(videoURL.trim());
         if (!resolvedVideoURL) {
@@ -1105,7 +1158,7 @@ export default class CVModel2 extends CObject3D
 
             this._videoElement = document.createElement("video");
             this._videoElement.crossOrigin = "anonymous";
-            this._videoElement.loop = true;
+            this._videoElement.loop = loop;
             this._videoElement.muted = muted;
             this._videoElement.autoplay = true;
             this._videoElement.playsInline = true;
@@ -1129,6 +1182,7 @@ export default class CVModel2 extends CObject3D
         }
 
         this._videoElement.muted = muted;
+        this._videoElement.loop = loop;
 
         this._videoElement.play().catch(() => {
             // Playback can fail without a user gesture; ignore and let retries happen later.

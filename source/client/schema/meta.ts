@@ -109,7 +109,9 @@ export interface IMediaClip
      speed?: number;
      clamp?: boolean;
      syncWith?: string;
-    videoId?: string;
+      videoId?: string;
+      videoLoop?: boolean;
+      videoMuted?: boolean;
  }
 
  export type TActionType = "PlayAnimation" | "PlayAudio" | "PlayVideo" | "ShowAnnotation" | "HideAnnotation" | "ToggleAnnotation";

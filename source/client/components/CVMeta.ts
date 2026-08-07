@@ -114,6 +114,8 @@ export default class CVMeta extends Component
                 action.animation ??= "";
                 action.audioId ??= "";
                 action.videoId ??= "";
+                action.videoLoop ??= false;
+                action.videoMuted ??= false;
                 action.speed ??= 1;
                 actionDict[action.id] = action;
             });

@@ -71,6 +71,8 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         ` : null;
         const videoActionView = ins.type.value === EActionType.PlayVideo ? html`
             <sv-property-view .property=${ins.video}></sv-property-view>
+            <sv-property-view .property=${ins.videoLoop}></sv-property-view>
+            <sv-property-view .property=${ins.videoMuted}></sv-property-view>
         ` : null;
         const animClamp = ins.style.value === EActionPlayStyle.Single ? html`
             <sv-property-view .property=${ins.clamp}></sv-property-view>

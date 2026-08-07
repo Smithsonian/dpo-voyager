@@ -207,6 +207,16 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "videoLoop": {
+                    "description": "Whether a video action should loop.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "videoMuted": {
+                    "description": "Whether a video action should be muted.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "annotationId": {
                     "description": "ID of the annotation that triggers this action.",
                     "type": "string",
