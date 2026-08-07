@@ -15,24 +15,19 @@
  * limitations under the License.
  */
 
-import Component, { types, IComponentEvent } from "@ff/graph/Component";
+import { types } from "@ff/graph/Component";
 import { IAudio } from "client/schema/setup";
 import CVMeta from "./CVMeta";
 import { Dictionary } from "client/../../libs/ff-core/source/types";
 import { IMediaClip } from "client/schema/meta";
-import CVAssetManager from "./CVAssetManager";
-import CVLanguageManager from "./CVLanguageManager";
 import { TLanguageType, ELanguageType } from "client/schema/common";
 import Notification from "@ff/ui/Notification";
 import CustomElement, { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
-import CVAnalytics from "./CVAnalytics";
-import CVAssetReader from "./CVAssetReader";
-import CVAnnotationView from "./CVAnnotationView";
-import CVActionManager from "./CVActionManager";
+import CVMultiMediaManager from "./CVMultiMediaManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVVideoManager extends Component
+export default class CVVideoManager extends CVMultiMediaManager<VideoView>
 {
     static readonly typeName: string = "CVVideoManager";
 
@@ -41,14 +36,7 @@ export default class CVVideoManager extends Component
 
     static readonly isSystemSingleton = true;
 
-    private _activeId: string = null;
     private _videoMap: Dictionary<string> = {};
-
-    protected videoClips: Dictionary<IMediaClip> = {};
-    protected videoPlayer: HTMLVideoElement = null;
-    protected videoView: VideoView = null;
-    protected videoViews: Dictionary<VideoView> = {};
-    protected isPlaying: boolean = false;
 
     protected static readonly ins = {
         reset: types.Event("Video.Reset"),
@@ -66,92 +54,83 @@ export default class CVVideoManager extends Component
     ins = this.addInputs(CVVideoManager.ins);
     outs = this.addOutputs(CVVideoManager.outs);
 
-    protected get assetManager() {
-        return this.getMainComponent(CVAssetManager);
+    protected get resetProperty() {
+        return this.ins.reset;
     }
-    protected get assetReader() {
-        return this.getMainComponent(CVAssetReader);
+    protected get globalPlayingProperty() {
+        return this.outs.globalPlaying;
     }
-    protected get actions() {
-        return this.getGraphComponent(CVActionManager);
+    protected get isPlayingProperty() {
+        return this.outs.isPlaying;
     }
-    protected get language() {
-        return this.getGraphComponent(CVLanguageManager, true);
-    }
-    protected get analytics() {
-        return this.system.getMainComponent(CVAnalytics);
+    protected get updatedProperty() {
+        return this.outs.updated;
     }
 
-    protected get metaVideo()
+    protected createMediaView(id: string)
     {
-        const meta = this.getGraphComponent(CVMeta);
-        return meta ? meta.video : null;
+        const view = new VideoView;
+        view.video = this;
+        view.videoId = id;
+        view.requestUpdate();
+        return view;
     }
 
-    get activeId() {
-        return this._activeId || "";
+    protected getMetaClips(meta: CVMeta)
+    {
+        return meta.video.dictionary;
     }
-    set activeId(id: string) {
-        this._activeId = id;
+
+    protected updateClip(id: string)
+    {
+        this.updateVideoClip(id);
+    }
+
+    protected onBeforeAddClip(clip: IMediaClip): void
+    {
+		this.getGraphComponent(CVMeta)?.video.insert(clip);
+    }
+
+    protected onBeforeRemoveClip(id: string): void
+    {
+		this.getGraphComponent(CVMeta)?.video.remove(id);
     }
 
     create()
     {
         super.create();
-        this.graph.components.on(CVMeta, this.onMetaComponent, this);
-        this.language.outs.activeLanguage.on("value", this.onLanguageChange, this);
     }
 
     dispose()
     {
         Object.keys(this._videoMap).forEach((key) => URL.revokeObjectURL(this._videoMap[key]));
-
-        this.language.outs.activeLanguage.off("value", this.onLanguageChange, this);
-        this.graph.components.off(CVMeta, this.onMetaComponent, this);
-
-        this.stop();
         super.dispose();
     }
 
     update()
     {
-        const { ins, outs } = this;
-
-        if (ins.reset.changed) {
-            this.stop();
-            outs.globalPlaying.setValue(false);
-        }
-
-        return true;
+        return super.update();
     }
 
     getPlayerById(id: string) {
-        if (!this.videoViews.hasOwnProperty(id)) {
-            const view = this.videoViews[id] = new VideoView;
-            view.video = this;
-            view.videoId = id;
-            view.requestUpdate();
-        }
-
-        return this.videoViews[id];
+        return super.getPlayerById(id);
     }
 
     getVideoList()
     {
-        return Object.keys(this.videoClips).map(key => this.videoClips[key]);
+        return this.getMediaList();
     }
 
     getVideoClip(id: string) {
-        return this.videoClips[id];
+        return this.getMediaClip(id);
     }
 
     getVideoClipUri(id: string) {
-        const clip = this.videoClips[id];
-        return clip ? clip.uris[ELanguageType[this.language.outs.activeLanguage.value]] : null;
+        return this.getMediaClipUri(id);
     }
 
     getDuration(id: string) {
-        const clip = this.videoClips[id];
+        const clip = this.clips[id];
         const activeLanguage = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType;
         const cachedDuration = clip?.durations[activeLanguage];
         if (cachedDuration) {
@@ -179,62 +158,11 @@ export default class CVVideoManager extends Component
         return "pending";
     }
 
-    getTimeElapsed() {
-        if (this.videoPlayer) {
-            return Math.round(this.videoPlayer.currentTime * Math.pow(10, 3)) / Math.pow(10, 3);
-        }
-        return 0;
-    }
-
-    setTimeElapsed(time: number) {
-        if (this.videoPlayer && this.videoView) {
-            if (this.videoPlayer.seekable.length === 0) {
-                this.videoPlayer.addEventListener("canplay", () => this.setTimeElapsed(time), {once: true});
-            }
-            else {
-                this.videoPlayer.currentTime = time;
-                this.videoView.elapsed = time;
-                this.videoView.requestUpdate();
-            }
-        }
-    }
-
-    addVideoClip(clip: IMediaClip)
-    {
-        this.metaVideo?.insert(clip);
-        this.videoClips[clip.id] = clip;
-        this.outs.updated.set();
-    }
-
-    removeVideoClip(id: string)
-    {
-        if (this.isPlaying && id == this.activeId) {
-            this.stop();
-        }
-        this.metaVideo?.remove(id);
-        delete this.videoClips[id];
-    }
-
     updateVideoClip(id: string)
     {
-        this.videoClips[id].durations = {};
+        this.clips[id].durations = {};
         this.getDuration(id);
         this.outs.updated.set();
-    }
-
-    protected onMetaComponent(event: IComponentEvent<CVMeta>)
-    {
-        const meta = event.object;
-
-        if (meta.node.typeName === "NVScene" && event.add) {
-            this.videoClips = meta.video.dictionary;
-            meta.once("load", () => {
-                this.videoClips = meta.video.dictionary;
-                Object.keys(this.videoClips).forEach(key => {
-                    this.updateVideoClip(this.videoClips[key].id);
-                });
-            });
-        }
     }
 
     fromData(data: IAudio)
@@ -253,7 +181,7 @@ export default class CVVideoManager extends Component
     play(id: string, useDefaultPlayer: boolean = false)
     {
         const uri = this.getVideoClipUri(id);
-        this.videoView = this.getPlayerById(id);
+        this.view = this.getPlayerById(id);
 
         if (!uri) {
             Notification.show("Failed to play video clip - no uri", "warning");
@@ -261,7 +189,7 @@ export default class CVVideoManager extends Component
         }
 
         if (this.outs.isPlaying.value) {
-            this.videoPlayer.pause();
+            this.player.pause();
         }
 
         if (this.activeId !== id) {
@@ -270,64 +198,44 @@ export default class CVVideoManager extends Component
 
         this.initializeClip(id);
 
-        this.videoPlayer.play()
+        this.player.play()
         .then(() => {
             this.activeId = id;
             this.isPlaying = true;
             this.outs.isPlaying.setValue(true);
             this.outs.globalPlaying.setValue(useDefaultPlayer || this.outs.isPlaying.value);
-            Object.keys(this.videoViews).forEach((key) => this.videoViews[key].requestUpdate());
+            Object.keys(this.views).forEach((key) => this.views[key].requestUpdate());
             this.analytics.sendProperty("Video_Play", uri);
         })
-        .catch(error => Notification.show(`Failed to play video at '${this.videoPlayer.getAttribute("src")}':${error}`, "warning"));
-    }
-
-    pause()
-    {
-        if (!this.videoPlayer) {
-            return;
-        }
-        this.outs.isPlaying.setValue(false);
-        this.videoPlayer.pause();
-        this.videoView?.requestUpdate();
-    }
-
-    stop()
-    {
-        if (!this.videoPlayer) {
-            return;
-        }
-        this.pause();
-        this.setTimeElapsed(0);
-        this.onEnd();
+        .catch(error => Notification.show(`Failed to play video at '${this.player.getAttribute("src")}':${error}`, "warning"));
     }
 
     protected onEnd = () => {
         this.isPlaying = false;
         this.outs.isPlaying.setValue(false);
         this.outs.globalPlaying.setValue(false);
-        this.videoView?.requestUpdate();
+        this.view?.requestUpdate();
         this.ins.activeCaption.setValue("");
     }
 
     initializeClip(id: string) {
-        if (this.videoPlayer === null) {
+        if (this.player === null) {
             this.setupVideo();
         }
 
-        const clip = this.videoClips[id];
+        const clip = this.clips[id];
         if (clip) {
             const uri = clip.uris[ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType];
-            if (uri && this.videoPlayer.src != this.assetManager.getAssetUrl(uri)) {
-                this.videoPlayer.setAttribute("src", this.assetManager.getAssetUrl(uri));
+            if (uri && this.player.src != this.assetManager.getAssetUrl(uri)) {
+                this.player.setAttribute("src", this.assetManager.getAssetUrl(uri));
             }
         }
     }
 
     setupVideo()
     {
-        if (this.videoPlayer === null) {
-            const video = this.videoPlayer = document.createElement("video");
+        if (this.player === null) {
+            const video = this.player = document.createElement("video");
             video.onended = this.onEnd;
             video.setAttribute("controls", "");
             video.setAttribute("preload", "auto");
@@ -338,17 +246,14 @@ export default class CVVideoManager extends Component
 
     protected onTimeChange = () =>
     {
-        if (!this.videoView) {
+        if (!this.view) {
             return;
         }
 
-        this.videoView.elapsed = this.getTimeElapsed();
-        this.videoView.requestUpdate();
+        this.view.elapsed = this.getTimeElapsed();
+        this.view.requestUpdate();
     }
 
-    protected onLanguageChange() {
-        this.stop();
-    }
 }
 
 @customElement("sv-video-view")

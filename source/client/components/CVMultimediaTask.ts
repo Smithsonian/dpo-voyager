@@ -111,7 +111,7 @@ export default class CVMultimediaTask extends CVTask
             const createVideo = ins.createVideo.changed;
             const targetManager = createVideo ? this.videoManager : this.audioManager;
             const newId = Document.generateId();
-            targetManager[createVideo ? "addVideoClip" : "addAudioClip"]({
+            targetManager.addClip({
                 id: newId,
                 name: `New ${createVideo ? "Video" : "Audio"} Element`,
                 uris: {},
@@ -124,7 +124,7 @@ export default class CVMultimediaTask extends CVTask
         }
 
         if (ins.delete.changed) {
-            mediaManager[isVideo ? "removeVideoClip" : "removeAudioClip"](ins.activeId.value);
+            mediaManager.removeClip(ins.activeId.value);
             return true;
         }
         if (ins.play.changed) {
