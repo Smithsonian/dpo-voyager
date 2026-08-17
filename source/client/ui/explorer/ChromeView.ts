@@ -52,9 +52,8 @@ export default class ChromeView extends DocumentView
     protected needsSplash: boolean = true;
     protected compass: any = null;
 
+    private _compassHasDragged = -1; // negative: no drag; >= 0: mouse button that triggered the drag
     private _compassDragStartX = 0;
-    private _compassDragStartYaw = 0;
-    private _compassHasDragged = -1; // negative: no drag; >= 0: mouse button that triggered the drag (0 left, 2 right)
     private _compassLastX = 0;
     private static readonly DRAG_THRESHOLD_PX = 4;
     private static readonly DRAG_SENSITIVITY = 0.5; // degrees of yaw per pixel
@@ -89,7 +88,6 @@ export default class ChromeView extends DocumentView
         this.activeDocument.setup.audio.ins.captionsEnabled.on("value", this.onUpdate, this);
         this.system.getComponent(CVOrbitNavigation).ins.orbit.on("value", this.updateCompassRotation, this);
         this.compass.addEventListener("mousedown", this.onCompassMouseDown);
-        this.compass.addEventListener("contextmenu", this.onCompassContextMenu);
         this.titleElement = this.createElement("div", null);
         this.titleElement.classList.add("ff-ellipsis");
         this.assetPath = this.assetReader.getSystemAssetUrl("");
@@ -100,7 +98,6 @@ export default class ChromeView extends DocumentView
     {
         this.system.getComponent(CVOrbitNavigation).ins.orbit.off("value", this.updateCompassRotation, this);
         this.compass.removeEventListener("mousedown", this.onCompassMouseDown);
-        this.compass.removeEventListener("contextmenu", this.onCompassContextMenu);
         window.removeEventListener("mousemove", this.onCompassMouseMove);
         window.removeEventListener("mouseup", this.onCompassMouseUp);
         this.removeEventListener("keydown", this.onKeyDown);
@@ -297,23 +294,11 @@ export default class ChromeView extends DocumentView
         }
     };
 
-    protected onCompassContextMenu = (event: Event) => {
-        event.preventDefault();
-    };
-
     protected onCompassMouseDown = (event: MouseEvent) => {
         if (event.button == 0) {
           event.preventDefault();
-          this._compassDragStartX = event.clientX;
-          this._compassDragStartYaw = this.system.getComponent(CVOrbitNavigation).ins.orbit.value[1];
           this._compassHasDragged = -1;
-          document.body.style.cursor = "grabbing";
-          window.addEventListener("mousemove", this.onCompassMouseMove);
-          window.addEventListener("mouseup", this.onCompassMouseUp);
-        }
-        else if (event.button == 2) {
-          event.preventDefault();
-          this._compassHasDragged = 2;
+          this._compassDragStartX = event.clientX;
           this._compassLastX = event.clientX;
           document.body.style.cursor = "grabbing";
           window.addEventListener("mousemove", this.onCompassMouseMove);
@@ -322,19 +307,16 @@ export default class ChromeView extends DocumentView
     };
 
     protected onCompassMouseMove = (event: MouseEvent) => {
-        if (this._compassHasDragged == 2) {
+        if (this._compassHasDragged < 0) {
+            if (Math.abs(event.clientX - this._compassDragStartX) >= ChromeView.DRAG_THRESHOLD_PX) {
+                this._compassHasDragged = event.button;
+                this._compassLastX = event.clientX;
+            }
+        } else {
             const dx = event.clientX - this._compassLastX;
             this._compassLastX = event.clientX;
             if (dx !== 0) {
                 this.system.getComponent(CVScene)?.models.forEach(model => model.rotateAroundY(dx * ChromeView.DRAG_SENSITIVITY));
-            }
-        } else {
-            const dx = event.clientX - this._compassDragStartX;
-            if (this._compassHasDragged >= 0 || Math.abs(dx) >= ChromeView.DRAG_THRESHOLD_PX) {
-                this._compassHasDragged = 0;
-                const navIns = this.system.getComponent(CVOrbitNavigation).ins;
-                const [pitch, , roll] = navIns.orbit.value;
-                navIns.orbit.setValue([pitch, this._compassDragStartYaw + dx * ChromeView.DRAG_SENSITIVITY, roll]);
             }
         }
     };
@@ -346,6 +328,7 @@ export default class ChromeView extends DocumentView
         window.removeEventListener("mouseup", this.onCompassMouseUp);
         document.body.style.cursor = "";
         if (!hasDragged) {
+            // snap to North
             const navIns = this.system.getComponent(CVOrbitNavigation).ins;
             const [pitch, , roll] = navIns.orbit.value;
             navIns.orbit.setValue([pitch, 0, roll]);
