@@ -225,7 +225,15 @@ export default class CVSnapshots extends CTweenMachine
                 if("paths" in state) {
                     const delta = this.getState(state.id) as IDeltaState;
                     delta.title = state.title;
-                    delta.paths = state.paths;
+                    delta.paths = state.paths.map(path => {
+                        const idx = path.lastIndexOf("/");
+                        const parts = [path.slice(0, idx), path.slice(idx+1)];
+                        const component = pathMap.get(parts[0]);
+                        if(!component) {
+                            throw new Error(`registered state change component not found for path: '${parts[0]}'`);
+                        }
+                        return component.id + "/" + parts[1];
+                    });
                     this.deltaStates.push(delta);
                 }
             }
@@ -264,7 +272,15 @@ export default class CVSnapshots extends CTweenMachine
                 if ("paths" in state) {
                     const delta = state as IDeltaState;
                     if(delta.paths.length > 0) {
-                        data.paths = delta.paths;
+                        data.paths = delta.paths.map(path => {
+                            const parts = path.split('/');
+                            const component = this.getComponentById(parts[0]);
+                            const compPath = pathMap.get(component);
+                            if (!compPath) {
+                                throw new Error(`snapshot path not registered for state change '${component.displayName}'`);
+                            }
+                            return compPath + "/" + parts[1];
+                        });
                         data.title = delta.title;
                     }
                 }
