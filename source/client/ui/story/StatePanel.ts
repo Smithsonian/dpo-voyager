@@ -127,7 +127,7 @@ export default class StatePanel extends DocumentView
         this.stateTable.selectedRows = this.stateTable.rows[this._activeIndex];
 
         return html`<div class="sv-panel-header">
-            <ff-button text="${languageManager.getUILocalizedString("Record")}" selectable icon="camera" @click=${this.onClickRecord}></ff-button>
+            <ff-button class="sv-record" text="${languageManager.getUILocalizedString("Record")}" selectable icon="record" @click=${this.onClickRecord}></ff-button>
             <ff-button text="${languageManager.getUILocalizedString("Delete")}" icon="trash" ?disabled=${!activeState} @click=${this.onClickDelete}></ff-button>
         </div>
         <div class="ff-flex-item-stretch ff-flex-row">
