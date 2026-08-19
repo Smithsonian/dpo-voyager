@@ -290,7 +290,7 @@ export default class ChromeView extends DocumentView
         if (this.compass) {
             const orbit = this.system.getComponent(CVOrbitNavigation).ins.orbit.value;
             const [pitch, yaw, roll] = orbit;
-            this.compass.cameraRotation = yaw;
+            this.compass.cameraRotation = -yaw;
         }
     };
 
