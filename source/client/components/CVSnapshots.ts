@@ -127,7 +127,7 @@ export default class CVSnapshots extends CTweenMachine
         const state = this.getState(id) as IDeltaState;
         const targetCache : ITargetEntry[] = [];
         this.targets.forEach(target => { targetCache.push(target);});
-        this.targets.length = 0;console.log(state);
+        this.targets.length = 0;
         state.paths.forEach(path => {
             const pathTokens = path.split('/');
             const property = this.getProperty(pathTokens[0], pathTokens[1]);

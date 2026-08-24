@@ -16,8 +16,7 @@
  */
 
 import Subscriber from "@ff/core/Subscriber";
-import { IComponentEvent } from "@ff/graph/Component";
-import { EEasingCurve, IDeltaState, ITweenState } from "@ff/graph/components/CTweenMachine";
+import { EEasingCurve, IDeltaState } from "@ff/graph/components/CTweenMachine";
 
 import Table, { ITableColumn, ITableRowClickEvent } from "@ff/ui/Table";
 
@@ -26,7 +25,6 @@ import CVTours from "../../components/CVTours";
 
 import DocumentView, { customElement, html, TemplateResult } from "../explorer/DocumentView";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
-import Property from "@ff/graph/Property";
 import uniqueId from "@ff/core/uniqueId";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,10 +97,18 @@ export default class StatePanel extends DocumentView
         const activeState = this.activeState;
 
         const tagDisplay = activeState ? html`<div class="sv-property-tags"><div class="sv-tags-selected">
-                    ${activeState.paths.map((path, index) => html`<div class="sv-tag-chip">
-                        <span class="sv-tag-chip-label">${path.split('/').pop()}</span>
-                        <ff-button class="sv-tag-chip-remove" icon="close" title=${languageManager ? languageManager.getLocalizedString("Remove tag") : "Remove tag"} @click=${() => this.onRemoveTag(index)}></ff-button>
-                    </div>`)}
+                    ${activeState.paths.map((path, index) => {
+                            let value = activeState.values[index];
+                            if(Array.isArray(value) && value.every(item => typeof item === 'number' && !isNaN(item))) {console.log("MAPPING");
+                                value = value.map(num => Number(num.toFixed(3))); 
+                            }
+                            value = "  [" + value + "]";
+
+                            return html`<div class="sv-tag-chip">
+                            <span class="sv-tag-chip-label"><b>${path.split('/').pop()}</b><i>${value}</i></span>
+                            <ff-button class="sv-tag-chip-remove" icon="close" title=${languageManager ? languageManager.getLocalizedString("Remove tag") : "Remove tag"} @click=${() => this.onRemoveTag(index)}></ff-button>
+                        </div>`
+                    })}
                 </div></div>` : null;
         
         const stepDetailView = activeState ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
@@ -129,6 +135,8 @@ export default class StatePanel extends DocumentView
         return html`<div class="sv-panel-header">
             <ff-button class="sv-record" text="${languageManager.getUILocalizedString("Record")}" selectable icon="record" @click=${this.onClickRecord}></ff-button>
             <ff-button text="${languageManager.getUILocalizedString("Delete")}" icon="trash" ?disabled=${!activeState} @click=${this.onClickDelete}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("View")}" icon="document" ?disabled=${!activeState} @click=${this.onClickView}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("Default State")}" icon="undo" @click=${this.onClickReset}></ff-button>
         </div>
         <div class="ff-flex-item-stretch ff-flex-row">
             <div class="ff-splitter-section" style="flex-basis: 60%">
@@ -206,6 +214,16 @@ export default class StatePanel extends DocumentView
         this.activeState = null;
         this._activeIndex = null;
         this.requestUpdate();
+    }
+
+    protected onClickView()
+    {
+        this.activeState ? this.activeDocument.setup.snapshots.activateStateChange(this.activeState.id) : null;
+    }
+
+    protected onClickReset()
+    {
+        this.activeDocument.setup.ins.restoreState.set();
     }
 
     protected onRemoveTag(idx: number)
