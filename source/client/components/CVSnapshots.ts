@@ -26,7 +26,7 @@ import { ISnapshots } from "client/schema/setup";
 
 import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";
-import Property, { IPropertyDisposeEvent } from "@ff/graph/Property";
+import Property from "@ff/graph/Property";
 import CVTours from "./CVTours";
 import CVAnnotationView from "./CVAnnotationView";
 
@@ -132,7 +132,6 @@ export default class CVSnapshots extends CTweenMachine
             const pathTokens = path.split('/');
             const property = this.getProperty(pathTokens[0], pathTokens[1]);
             
-            property.on<IPropertyDisposeEvent>("dispose", this.onPropertyDispose, this);
             const isNumber = property.type === "number" && !property.schema.options;
             const isArray = property.isArray();
             this.targets.push({ property, isNumber, isArray });

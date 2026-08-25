@@ -26,6 +26,8 @@ import CVTours from "../../components/CVTours";
 import DocumentView, { customElement, html, TemplateResult } from "../explorer/DocumentView";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 import uniqueId from "@ff/core/uniqueId";
+import CVModel2 from "client/components/CVModel2";
+import CLight from "@ff/scene/components/CLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -99,13 +101,19 @@ export default class StatePanel extends DocumentView
         const tagDisplay = activeState ? html`<div class="sv-property-tags"><div class="sv-tags-selected">
                     ${activeState.paths.map((path, index) => {
                             let value = activeState.values[index];
-                            if(Array.isArray(value) && value.every(item => typeof item === 'number' && !isNaN(item))) {console.log("MAPPING");
+                            if(Array.isArray(value) && value.every(item => typeof item === 'number' && !isNaN(item))) {
                                 value = value.map(num => Number(num.toFixed(3))); 
                             }
                             value = "  [" + value + "]";
 
+                            const component = machine.getComponentById(path.split('/')[0]);
+                            let componentName = "";
+                            if(component.is(CVModel2) || component.is(CLight)) {
+                                componentName = component.node.name.toLowerCase() + " ";
+                            }
+
                             return html`<div class="sv-tag-chip">
-                            <span class="sv-tag-chip-label"><b>${path.split('/').pop()}</b><i>${value}</i></span>
+                            <span class="sv-tag-chip-label"><b>${componentName}${path.split('/').pop()}</b><i>${value}</i></span>
                             <ff-button class="sv-tag-chip-remove" icon="close" title=${languageManager ? languageManager.getLocalizedString("Remove tag") : "Remove tag"} @click=${() => this.onRemoveTag(index)}></ff-button>
                         </div>`
                     })}
@@ -256,16 +264,6 @@ export default class StatePanel extends DocumentView
         this.snapshots.ins.duration.setValue(this.activeState.duration);
         this.requestUpdate();
     }
-
-    /*protected onTextEdit(event: ILineEditChangeEvent)
-    {
-            const target = event.target;
-            const text = event.detail.text;
-
-            if (target.name === "altText") {
-                //this.toursTask.ins.stepAltText.setValue(text);
-            }
-    }*/
 
     protected onTitleEdit(event: ILineEditChangeEvent)
     {
