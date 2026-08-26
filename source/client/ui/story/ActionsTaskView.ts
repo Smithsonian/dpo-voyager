@@ -92,6 +92,9 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         const actionEventView = ins.trigger.value === EActionTrigger.OnActionEnd || ins.trigger.value === EActionTrigger.OnActionBegin ? html`
             <sv-property-view .property=${ins.action}></sv-property-view>
         ` : null;
+        const actionTargetView = ins.type.value === EActionType.DisableAction || ins.type.value === EActionType.EnableAction ? html`
+            <sv-property-view .property=${ins.actionTarget}></sv-property-view>
+        ` : null;
 
         const detailView = actionElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             ${accessibilityNotice}
@@ -104,6 +107,8 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
             ${audioActionView}
             ${animActionView}
             ${annoActionView}
+            ${actionTargetView}
+            <sv-property-view .property=${ins.enabled}></sv-property-view>
         </div>` : null;
 
         return html`<div class="sv-commands">
@@ -168,7 +173,7 @@ export class ActionList extends List<IAction>
 
     protected renderItem(item: IAction)
     {
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.name}</div><div class="sv-task-item sv-item-border-l">${item.type}/${item.trigger}</div></div>`;
+        return html`<div class="ff-flex-row ff-group ${item.enabled ? "" : "sv-disabled"}"><div class="sv-task-item">${item.name}</div><div class="sv-task-item sv-item-border-l">${item.type}/${item.trigger}</div></div>`;
     }
 
     protected isItemSelected(item: IAction)
