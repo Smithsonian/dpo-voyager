@@ -196,7 +196,7 @@ export default class StatePanel extends DocumentView
                 curve: EEasingCurve.EaseOutQuad,
                 duration: 1.5,
                 threshold: 0.5,
-                title: "State"+this.snapshots.deltaStates.length,
+                title: "State"+(this.snapshots.deltaStates.length + 1),
                 paths: deltaPaths
             };
 
