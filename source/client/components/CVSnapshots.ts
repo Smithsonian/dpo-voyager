@@ -97,12 +97,17 @@ export default class CVSnapshots extends CTweenMachine
                     const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
 
                     // set non camera properties to null to skip them
-                    const values = this.states[anno.data.viewId].values;
-                    values.forEach((v, idx) => {
-                        if(idx != orbitIdx && idx != offsetIdx) {
-                            values[idx] = null;
-                        }
-                    });
+                    const values = this.states[anno.data.viewId]?.values;
+                    if(values) {
+                        values.forEach((v, idx) => {
+                            if(idx != orbitIdx && idx != offsetIdx) {
+                                values[idx] = null;
+                            }
+                        });
+                    }
+                    else {
+                        console.warn("Unknown view state for anno: " + anno.title);
+                    }
                 }
             });
         });
