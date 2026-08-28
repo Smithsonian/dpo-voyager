@@ -30,6 +30,7 @@ import { EDerivativeUsage } from "client/schema/model";
 import CSelection from "@ff/graph/components/CSelection";
 import CVMeta from "./CVMeta";
 import Article from "client/models/Article";
+import CVEnvironment from "./CVEnvironment";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,6 +53,9 @@ export default class CVMediaManager extends CAssetManager
     }
     protected get assetManager() {
         return this.system.getMainComponent(CVAssetManager);
+    }
+    protected get environment() {
+      return this.system.getComponent(CVEnvironment);
     }
     protected get metas() {
         return this.system.getComponents(CVMeta);
@@ -204,7 +208,14 @@ export default class CVMediaManager extends CAssetManager
             ; // TODO - considering removing this support
         }
         else {
-            return super.uploadFiles(files, folder);
+          return super.uploadFiles(files, folder).then(() => {
+            Array.from(files).forEach(file => {
+              if (file.name.toLowerCase().endsWith(".hdr")) {
+                const file_uri = folder.info.path + file.name;
+                this.environment.addImage(file_uri);
+              }
+            });
+          });
         }
     }
 
