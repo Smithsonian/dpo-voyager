@@ -985,6 +985,11 @@ export default class CVModel2 extends CObject3D
                 if(this.ins.renderOrder.value !== 0)
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
 
+                // update shader for potential non-standard initial value
+                if(this.ins.shader.value !== EShaderMode.Default) {
+                    this.updateShader();
+                }
+
                 // load overlays
                 const overlayProp = this.ins.overlayMap;
                 overlayProp.setOptions(["None"]);
