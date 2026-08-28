@@ -466,7 +466,7 @@ export default class CVActionManager extends Component
             clip.reset();
             // handle ping-pong directions
             if(action.style == EActionPlayStyle[EActionPlayStyle.PingPong] as TActionPlayStyle) {
-                const clipName = clip.getClip().name;
+                const clipName = clip.getClip().name+action.id;
                 clip.clampWhenFinished = true;
                 if(Object.keys(this._direction).includes(clipName)) {
                     this._direction[clipName] *= -1;
