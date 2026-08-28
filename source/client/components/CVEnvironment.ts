@@ -292,11 +292,34 @@ export default class CVEnvironment extends Component
         }
     }
 
-  addImage(image_uri: string)
-  {
-    this._imageOptions.push(image_uri);
-    this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
-  }
+    addImage(image_uri: string)
+    {
+      if (this._imageOptions.indexOf(image_uri) == -1){
+        this._imageOptions.push(image_uri);
+        this._updateImageIndex();
+      } else {
+        console.debug(image_uri + " already exists, skipping.")
+      }
+    }
+  
+    deleteImage(image_uri: string)
+    {
+      const index = this._imageOptions.indexOf(image_uri);
+      if (index == -1) {
+        console.error("Trying to remove environment image that is not registered in the options list: " + image_uri)
+      } else {
+        if (index == this.ins.imageIndex.value) {
+          this.ins.imageIndex.setOption("0");
+          this.ins.visible.set(false);
+        }
+        this._imageOptions.splice(index, 1);
+        this._updateImageIndex();
+      }
+    }
+  
+    protected _updateImageIndex() {
+      this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
+    }
     
     protected addLightComponent(enabled: boolean) {
         const lightNode = this.graph.findNodeByName("Lights") as NVNode;

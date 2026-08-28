@@ -286,15 +286,19 @@ export default class CVMediaManager extends CAssetManager
 
     deleteSelected()
     {
+        const selected = this.selectedAssets;
         const standaloneManager = this.standaloneFileManager;
         if(standaloneManager) {
-            const selected = this.selectedAssets;
             selected.forEach(file => standaloneManager.deleteFile(file.info.url));
 
             return this.refresh();
         }
         else {
-            return super.deleteSelected();
+            return super.deleteSelected().then(() => {
+              selected
+                .filter(asset => asset.info.name.toLowerCase().endsWith(".hdr"))
+                .forEach(asset => this.environment.deleteImage(asset.info.path));
+            });
         }
     }
 
