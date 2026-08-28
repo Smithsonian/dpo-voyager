@@ -108,6 +108,14 @@ export default class AnnotationSprite extends HTMLSprite<IAnnotationEventMap>
         this.updateMatrix();
     }
 
+    dispose()
+    {
+        this.assetManager = null;
+        this.audioManager = null;
+        
+        super.dispose();
+    }
+
     emitClickEvent()
     {
         const event: IAnnotationClickEvent = { type: "click", annotation: this.annotation, sprite: this };

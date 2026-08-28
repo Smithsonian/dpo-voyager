@@ -52,7 +52,10 @@ export default class CVToursTask extends CVTask
         moveStepDown: types.Event("Step.MoveDown"),
         stepTitle: types.String("Step.Title"),
         stepCurve: types.Enum("Step.Curve", EEasingCurve),
-        stepDuration: types.Number("Step.Duration", 1),
+        stepDuration: types.Number("Step.Duration", {
+            preset:1,
+            min: 0,
+        }),
         stepThreshold: types.Percent("Step.Threshold", 0.5),
         stepAltText: types.String("Step.AltText")
     };
@@ -130,16 +133,16 @@ export default class CVToursTask extends CVTask
             }
 
             if (step) {
-                if (ins.stepTitle.changed || ins.stepCurve.changed ||
-                        ins.stepDuration.changed || ins.stepThreshold.changed || 
-                        ins.stepAltText.changed) {
-
+                if (ins.stepTitle.changed || ins.stepCurve.changed || ins.stepAltText.changed) {
                     tours.stepTitle = ins.stepTitle.value;
                     tours.stepAltText = ins.stepAltText.value;
                     machine.ins.curve.setValue(ins.stepCurve.value);
+                    tours.ins.stepIndex.setValue(stepIndex);
+                    return true;
+                }
+                if(ins.stepDuration.changed || ins.stepThreshold.changed) {
                     machine.ins.duration.setValue(ins.stepDuration.value);
                     machine.ins.threshold.setValue(ins.stepThreshold.value);
-                    tours.ins.stepIndex.setValue(stepIndex);
                     return true;
                 }
 

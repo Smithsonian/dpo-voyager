@@ -47,6 +47,7 @@ export default class CaptionView extends DocumentView
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
+            this.audioManager = null;
             this.documentProps.off();
         }
         if (next) {

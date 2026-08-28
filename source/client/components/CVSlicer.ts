@@ -142,15 +142,13 @@ export default class CVSlicer extends Component
 
         // set the slicing plane in the Uber materials of each scene model
         models.forEach(model => {
-            if(model.ins.slicerEnabled.value) {
-                const object = model.object3D;
-                object.traverse((mesh: Mesh) => {
-                    if (mesh.isMesh) {
-                        const material = mesh.material as Material;
-                        this.updateMaterial(model, material);
-                    }
-                });
-            }
+            const object = model.object3D;
+            object.traverse((mesh: Mesh) => {
+                if (mesh.isMesh) {
+                    const material = mesh.material as Material;
+                    this.updateMaterial(model, material);
+                }
+            });
         });
 
         return true;
@@ -187,9 +185,9 @@ export default class CVSlicer extends Component
         const ins = this.ins;
 
         if (ins.enabled.changed) {
-            const enabled = ins.enabled.value;
+            const enabled = ins.enabled.value && model.ins.slicerEnabled.value;
             const renderer = this.getMainComponent(CRenderer);
-            renderer.views.forEach(view => view.renderer.localClippingEnabled = ins.enabled.value);
+            renderer.views.forEach(view => view.renderer.localClippingEnabled = enabled);
 
             // configure material
             material.defines["CUT_PLANE"] = enabled;
@@ -209,10 +207,12 @@ export default class CVSlicer extends Component
 
         if (event.add) {
             component.outs.variant.on("value", this.refreshMaterial, this);
+            component.ins.slicerEnabled.on("value", this.refreshMaterial, this);
             component.on<IModelLoadEvent>("model-load", this.refreshMaterial, this);
         }
         else if (event.remove) {
             component.off<IModelLoadEvent>("model-load", this.refreshMaterial, this);
+            component.ins.slicerEnabled.off("value", this.refreshMaterial, this);
             component.outs.variant.off("value", this.refreshMaterial, this);
         }
     }
