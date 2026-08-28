@@ -258,15 +258,20 @@ export default class CVEnvironment extends Component
             meta.once("load", () => {
                 const images = meta.images.dictionary;
                 Object.keys(images).forEach(key => {
-                    const image =  images[key];
-                    if(image.usage && image.usage === "Environment") {
-                        this._imageOptions.push(image.uri);
-                        this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
-                    }
+                  const image =  images[key];
+                  if (image.usage && image.usage === "Environment") {
+                    this.addImage(image.uri);
+                  }
                 });
             });
         }
     }
+
+  addImage(image_uri: string)
+  {
+    this._imageOptions.push(image_uri);
+    this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
+  }
     
     protected addLightComponent(enabled: boolean) {
         const lightNode = this.graph.findNodeByName("Lights") as NVNode;
