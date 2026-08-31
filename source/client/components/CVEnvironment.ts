@@ -55,6 +55,7 @@ export default class CVEnvironment extends Component
     private _target: WebGLRenderTarget = null;
     private _pmremGenerator :PMREMGenerator = null;
     private _currentIdx = 0;
+    private _loadRequestId = 0;
     private _imageOptions: string[] = images.slice();
     private _loadingCount = 0;
     private _hasContent = false;
@@ -141,6 +142,9 @@ export default class CVEnvironment extends Component
         {
             const rot = ins.rotation.value;
             _euler.set(rot[0]*DEG2RAD,rot[1]*DEG2RAD,rot[2]*DEG2RAD); 
+            this.sceneNode.scene.environmentRotation = _euler;
+            this.sceneNode.scene.backgroundRotation = _euler;
+            this.renderer.forceRender();
         }
         if(ins.enabled.changed) {
             if(ins.enabled.value && this._hasContent) 
@@ -214,35 +218,56 @@ export default class CVEnvironment extends Component
             }
 
             const mapName = this._imageOptions[ins.imageIndex.value];
+            if(!mapName) {
+                throw new Error("Error loading map name for image index " + ins.imageIndex.value);
+            }
+
+            const requestId = ++this._loadRequestId;
 
             if(images.includes(mapName)) {
                 this._loadingCount++;
                 this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
+                    this.updateEnvironmentMap(texture, mapName, requestId);
                 });
             }
             else {
                 this._loadingCount++;
                 this.assetReader.getTexture(mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
+                    this.updateEnvironmentMap(texture, mapName, requestId);
                 });
             }
             this._currentIdx = ins.imageIndex.value;
         }
     }
 
-    protected updateEnvironmentMap(texture: Texture, name: string)
+    protected updateEnvironmentMap(texture: Texture, name: string, requestId: number)
     {
         const ins = this.ins;
         const mapIdx = this._imageOptions.indexOf(name);
 
-        if(mapIdx == ins.imageIndex.value) {
-            this._target = this._pmremGenerator.fromEquirectangular(texture, this._target);
+        if(requestId === this._loadRequestId && mapIdx == ins.imageIndex.value) {
+            const previousTarget = this._target;
+            this._target = this._pmremGenerator.fromEquirectangular(texture);
+
+            this.sceneNode.scene.environment = null;
+            this.sceneNode.scene.background = null;
             this.sceneNode.scene.environment = ins.enabled.value ? this._target.texture : null;
             this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
+            if(this.sceneNode.scene.environment) {
+                (this.sceneNode.scene.environment as Texture).needsUpdate = true;
+            }
+            if(this.sceneNode.scene.background) {
+                (this.sceneNode.scene.background as Texture).needsUpdate = true;
+            }
             this.sceneNode.scene.environmentRotation = _euler;
             this.sceneNode.scene.backgroundRotation = _euler;
             this.renderer.forceRender();
+
+            if(previousTarget && previousTarget !== this._target) {
+                previousTarget.dispose();
+            }
+
+            this._currentIdx = ins.imageIndex.value;
         }
 
         texture.dispose();
@@ -258,14 +283,42 @@ export default class CVEnvironment extends Component
             meta.once("load", () => {
                 const images = meta.images.dictionary;
                 Object.keys(images).forEach(key => {
-                    const image =  images[key];
-                    if(image.usage && image.usage === "Environment") {
-                        this._imageOptions.push(image.uri);
-                        this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
-                    }
+                  const image =  images[key];
+                  if (image.usage && image.usage === "Environment") {
+                    this.addImage(image.uri);
+                  }
                 });
             });
         }
+    }
+
+    addImage(image_uri: string)
+    {
+      if (this._imageOptions.indexOf(image_uri) == -1){
+        this._imageOptions.push(image_uri);
+        this._updateImageIndex();
+      } else {
+        console.debug(image_uri + " already exists, skipping.")
+      }
+    }
+  
+    deleteImage(image_uri: string)
+    {
+      const index = this._imageOptions.indexOf(image_uri);
+      if (index == -1) {
+        console.error("Trying to remove environment image that is not registered in the options list: " + image_uri)
+      } else {
+        if (index == this.ins.imageIndex.value) {
+          this.ins.imageIndex.setOption("0");
+          this.ins.visible.set(false);
+        }
+        this._imageOptions.splice(index, 1);
+        this._updateImageIndex();
+      }
+    }
+  
+    protected _updateImageIndex() {
+      this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
     }
     
     protected addLightComponent(enabled: boolean) {
