@@ -138,7 +138,7 @@ export default class CVMediaManager extends CAssetManager
             const cleanfileName = decodeURI(file.name);
             const filenameLower = cleanfileName.toLowerCase();
             
-            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt)$/)) {
+            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt|hdr)$/)) {
 
                 if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
                     path = CVMediaManager.articleFolder + "/" + cleanfileName;
@@ -160,6 +160,9 @@ export default class CVMediaManager extends CAssetManager
                 }
                 else if (!documentProvided && filenameLower.match(/\.(gltf|glb)$/)) {
                     this.uploadFile(normalizedPath, file, this.root).then(() => this.handleModelImport(normalizedPath));
+                }
+                else if (!documentProvided && filenameLower.match(/\.(hdr)$/)) {
+                    this.uploadFile(normalizedPath, file, this.root).then(() => this.environment.addImage(normalizedPath));
                 }
                 else {
                     this.uploadFile(normalizedPath, file, this.root);

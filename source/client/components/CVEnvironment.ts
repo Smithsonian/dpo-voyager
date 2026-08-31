@@ -28,6 +28,7 @@ import CVMeta from "./CVMeta";
 import NVNode from "client/nodes/NVNode";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
+import { TImageQuality, TImageUsage } from "client/schema/meta";
 
 
 const images = ["studio_small_08_1k.hdr", "capture_tent_mockup-v2-1k.hdr", "spruit_sunrise_1k_HDR.hdr"];
@@ -142,8 +143,8 @@ export default class CVEnvironment extends Component
         {
             const rot = ins.rotation.value;
             _euler.set(rot[0]*DEG2RAD,rot[1]*DEG2RAD,rot[2]*DEG2RAD); 
-            this.sceneNode.scene.environmentRotation = _euler;
-            this.sceneNode.scene.backgroundRotation = _euler;
+            //this.sceneNode.scene.environmentRotation = _euler;
+            //this.sceneNode.scene.backgroundRotation = _euler;
             this.renderer.forceRender();
         }
         if(ins.enabled.changed) {
@@ -249,8 +250,8 @@ export default class CVEnvironment extends Component
             const previousTarget = this._target;
             this._target = this._pmremGenerator.fromEquirectangular(texture);
 
-            this.sceneNode.scene.environment = null;
-            this.sceneNode.scene.background = null;
+            //this.sceneNode.scene.environment = null;
+            //this.sceneNode.scene.background = null;
             this.sceneNode.scene.environment = ins.enabled.value ? this._target.texture : null;
             this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
             if(this.sceneNode.scene.environment) {
@@ -283,10 +284,10 @@ export default class CVEnvironment extends Component
             meta.once("load", () => {
                 const images = meta.images.dictionary;
                 Object.keys(images).forEach(key => {
-                  const image =  images[key];
-                  if (image.usage && image.usage === "Environment") {
-                    this.addImage(image.uri);
-                  }
+                    const image =  images[key];
+                    if (image.usage && image.usage === "Environment") {
+                        this.addImage(image.uri);
+                    }
                 });
             });
         }
@@ -294,31 +295,42 @@ export default class CVEnvironment extends Component
 
     addImage(image_uri: string)
     {
-      if (this._imageOptions.indexOf(image_uri) == -1){
-        this._imageOptions.push(image_uri);
-        this._updateImageIndex();
-      } else {
-        console.debug(image_uri + " already exists, skipping.")
-      }
+        if (this._imageOptions.indexOf(image_uri) == -1){
+            const meta = this.getGraphComponent(CVMeta);
+            if(meta) { 
+                meta.images.insert({
+                    uri: image_uri,
+                    usage: "Environment" as TImageUsage,
+                    quality: "HDR" as TImageQuality,
+                    byteSize: 4096,
+                    width: 1024,
+                    height: 1024,
+                }, "HDR");
+            }
+            this._imageOptions.push(image_uri);
+            this._updateImageIndex();
+        } else {
+            console.debug(image_uri + " already exists, skipping.")
+        }
     }
   
     deleteImage(image_uri: string)
     {
-      const index = this._imageOptions.indexOf(image_uri);
-      if (index == -1) {
-        console.error("Trying to remove environment image that is not registered in the options list: " + image_uri)
-      } else {
-        if (index == this.ins.imageIndex.value) {
-          this.ins.imageIndex.setOption("0");
-          this.ins.visible.set(false);
+        const index = this._imageOptions.indexOf(image_uri);
+        if (index == -1) {
+            console.error("Trying to remove environment image that is not registered in the options list: " + image_uri)
+        } else {
+            if (index == this.ins.imageIndex.value) {
+                this.ins.imageIndex.setOption("0");
+                this.ins.visible.set(false);
+            }
+            this._imageOptions.splice(index, 1);
+            this._updateImageIndex();
         }
-        this._imageOptions.splice(index, 1);
-        this._updateImageIndex();
-      }
     }
   
     protected _updateImageIndex() {
-      this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
+        this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
     }
     
     protected addLightComponent(enabled: boolean) {
