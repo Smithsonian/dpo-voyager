@@ -299,22 +299,52 @@ export default class CVEnvironment extends Component
     addImage(image_uri: string)
     {
         if (this._imageOptions.indexOf(image_uri) == -1){
-          this.meta?.images.insert(
-            {
+            this.readHdrDimensions(image_uri).then(({ width, height, size }) => {
+                this.meta?.images.insert({
                     uri: image_uri,
                     usage: "Environment" as TImageUsage,
                     quality: "HDR" as TImageQuality,
-                    byteSize: 4096,
-                    width: 1024,
-                    height: 1024,
-            }, "HDR");
-            
+                    byteSize: size,
+                    width: width,
+                    height: height,
+                }, "HDR");
+            });
+
             this._imageOptions.push(image_uri);
             this._updateImageIndex();
         } else {
             console.debug(image_uri + " already exists, skipping.")
         }
     }
+    
+  async readHdrDimensions(filePath: string): Promise<{ width: number; height: number, size: number } | undefined> {
+    const HEADER_LENGTH = 8192;
+    const FALLBACK_DIMENSIONS = { width: 1024, height: 1024, size: 4096 };
+    
+    const response = await fetch(filePath, {
+      headers: { Range: `bytes=0-${HEADER_LENGTH - 1}` },
+    });
+  
+    if (response.ok) {;
+      const size = parseInt(response.headers.get('Content-Length') || response.headers.get('Content-Range')?.split('/').pop() || '0', 10);
+    
+      const bytes = await response.arrayBuffer();
+      const text = new TextDecoder('latin1').decode(bytes);
+    
+      const match = text.match(/^([-+])([xy])\s+(\d+)\s+([-+])([XY])\s+(\d+)/m);
+      if (match) {
+        const first = parseInt(match[3], 10);
+        const second = parseInt(match[6], 10);
+        const dims = match[2] === 'x'
+          ? { width: first, height: second }
+          : { width: second, height: first };
+      
+          return { ...dims, size };
+      }
+    }
+    console.warn('Failed to read image dimensions from header in: ', filePath)
+    return FALLBACK_DIMENSIONS;
+  }
   
     deleteImage(image_uri: string)
     {
