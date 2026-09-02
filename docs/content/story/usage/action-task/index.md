@@ -25,6 +25,9 @@ Use the Action Task to link triggers with actions like animation, audio, etc, to
         - *ShowAnnotation* - shows the defined annotation.
         - *ToggleAnnotation* - toggles visibility of the defined annotation. **Tip:** Annotation hide/show can be useful for coordinating dependent animations. Toggle works will alongside "PingPong" style animations. 
 E.g. an annotation that triggers removing an item from a drawer is not visible until the animation opening the drawer has completed.
+        - *EnableAction* - sets enabled to true for the action defined by "ActionTarget".
+        - *DisableAction* - sets enabled to false for the action defined by "ActionTarget". **Tip:** Enable/Disable action types are useful for coordinating context-specific triggers. For instance, multiple click triggers on the same object could
+be handled by enabling the one appropriate to the current user context and disabling all others on-the-fly.
     - **Style** - How the action plays. Options include:
         - *Single* - Plays one time.
         - *Loop* - Plays continuously. **Tip:** once started, looping actions play continuously. If shorter loops are needed, try chaining actions.
@@ -36,6 +39,7 @@ E.g. an annotation that triggers removing an item from a drawer is not visible u
     - **Action** - For trigger type "OnActionBegin" or "OnActionEnd", select the triggering action from the dropdown list.
     - **Audio** - For action type "PlayAudio", select the audio element from the dropdown list.
     - **SyncWith** - For action type "PlayAudio", select an object animation to sync the audio with from the dropdown list. **Tip:** Synching the audio ensures it will stay aligned with the animation through any audio pause/play interaction.
+    - **Enabled** - Whether this action will be executed when triggered.
 
 Test the action by performing the designated trigger in the Explorer preview pane.
 

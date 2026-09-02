@@ -20,7 +20,7 @@ import CVMeta from "./CVMeta";
 import { EActionTrigger, TActionTrigger, EActionType, TActionType, EActionPlayStyle, TActionPlayStyle, IAction } from "client/schema/meta";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import { IPointerEvent } from "@ff/scene/RenderView";
-import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Clock, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
+import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Timer, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
 import { Dictionary } from "@ff/core/types";
 import { Annotation, AnnotationElement } from "client/annotations/AnnotationSprite";
 import CVAnnotationView from "./CVAnnotationView";
@@ -28,6 +28,7 @@ import CVSnapshots from "./CVSnapshots";
 import CVSetup from "./CVSetup";
 import CVScene from "./CVScene";
 import CVTours from "./CVTours";
+import { IPulseContext } from "@ff/graph/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +49,7 @@ export default class CVActionManager extends Component
 
     static readonly isSystemSingleton = true;
 
-    private _clock: Clock = new Clock();
+    private _clock: Timer = new Timer();
     private _mixer: AnimationMixer = null;
     private _activeClips: {id: string, clip: AnimationAction}[] = [];
     private _direction: Dictionary<number> = {};
@@ -63,8 +64,12 @@ export default class CVActionManager extends Component
     protected static readonly ins = {
         reset: types.Event("Actions.Reset")
     };
+    protected static readonly outs = {
+        fired: types.Event("Actions.Fired")
+    };
 
     ins = this.addInputs(CVActionManager.ins);
+    outs = this.addInputs(CVActionManager.outs);
 
     protected get setup() {
         return this.getGraphComponent(CVSetup);
@@ -123,6 +128,8 @@ export default class CVActionManager extends Component
         this._mixer = null;
         this._actions.length = 0;
         this._visibilityCache.length = 0;
+        
+        Object.keys(this._animMap).forEach(( key ) => this._animMap[key] = null);
         
         super.dispose();
     }
@@ -196,8 +203,9 @@ export default class CVActionManager extends Component
         }
     }
 
-    tick() : boolean
+    tick(context: IPulseContext) : boolean
     {   
+        this._clock.update(context.time.getTime());
         const delta = this._clock.getDelta();
 
         if(this._activeClips.length > 0) {
@@ -239,7 +247,7 @@ export default class CVActionManager extends Component
         model.object3D.traverse(object => {
             if (object.animations.length > 0) {
                 object.animations.forEach((anim) => {
-                    this._animMap[anim.name] = object;
+                    this._animMap[model.node.id + anim.name] = object;
                 })
             }
         });
@@ -313,7 +321,11 @@ export default class CVActionManager extends Component
     protected onTourStep() 
     {
         if(this.tours.activeTour) {
-            // Set any currently active animations to their finish state
+            // Set any currently active or queued animations to their finish state
+            while(this._animQueue.length > 0) {
+                const action = this._animQueue.pop();
+                this.playAction(action.model, action.action);
+            }
             this._activeClips.forEach(item => {
                 item.clip.time = item.clip.timeScale > 0 ? item.clip.getClip().duration : 0;
             });
@@ -325,7 +337,7 @@ export default class CVActionManager extends Component
             
             this.getGraphComponents(CVMeta).forEach((meta) => {
                 const actions = meta.actions.items.filter(action => {return action.trigger === EActionTrigger[EActionTrigger.OnTourStep] as TActionTrigger
-                    && ((action.triggerDetail.split("\x1F")[0] === tour && action.triggerDetail.split("\x1F")[1] === (step+1).toString())  // DEPRECATED SUPPORT - REMOVE IN v0.64
+                    && ((action.triggerDetail?.split("\x1F")[0] === tour && action.triggerDetail?.split("\x1F")[1] === (step+1).toString())  // DEPRECATED SUPPORT - REMOVE IN v0.64
                     || action.triggerDetail === stepId)
                 });
                 if(actions.length > 0) {
@@ -354,6 +366,11 @@ export default class CVActionManager extends Component
 
     protected playAction(model: CVModel2, action: IAction)
     {
+        // Don't play disabled actions
+        if(!action.enabled) {
+            return;
+        }
+
         // Don't allow user-facing triggers during a tour
         if(this.setup.tours.ins.enabled.value &&
             (action.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger ||
@@ -378,6 +395,18 @@ export default class CVActionManager extends Component
             action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
             this.setAnnotationVisibility(model, action);
         }
+        else if(action.type == EActionType[EActionType.EnableAction] as TActionType ||
+            action.type == EActionType[EActionType.DisableAction] as TActionType) {
+            const targetAction = this._actions.find(element => element.action.id === action.actionTargetId)?.action;
+            if(targetAction) {
+                targetAction.enabled = action.type == EActionType[EActionType.EnableAction] as TActionType;
+            }
+            else {
+                console.warn("Specified action not found.");
+            }
+        }
+
+        this.outs.fired.set();
 
         // fire onBegin triggers
         const onBeginTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionBegin] as TActionTrigger
@@ -388,7 +417,7 @@ export default class CVActionManager extends Component
 
     protected playAnimation(component: CVModel2, action: IAction) 
     {
-        const mesh = this._animMap[action.animation];
+        const mesh = this._animMap[component.node.id + action.animation];
 
         if(!mesh) {
             console.warn("No playable animation found!");
@@ -437,7 +466,7 @@ export default class CVActionManager extends Component
             clip.reset();
             // handle ping-pong directions
             if(action.style == EActionPlayStyle[EActionPlayStyle.PingPong] as TActionPlayStyle) {
-                const clipName = clip.getClip().name;
+                const clipName = clip.getClip().name+action.id;
                 clip.clampWhenFinished = true;
                 if(Object.keys(this._direction).includes(clipName)) {
                     this._direction[clipName] *= -1;

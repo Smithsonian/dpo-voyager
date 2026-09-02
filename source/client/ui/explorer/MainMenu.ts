@@ -132,13 +132,7 @@ export default class MainMenu extends DocumentView
 
         const language = setup.language;
 
-        // TODO - push to ARManager?
-        const models = scene.getGraphComponents(CVModel2);
-        let hasARderivatives = false;
-        models.forEach(model => {
-            hasARderivatives = model.derivatives.getByQuality(EDerivativeQuality.AR).length > 0 ? true : hasARderivatives;
-        });
-        const arButtonVisible = (this.arManager.outs.available.value || this.arManager.arCodeImage ) && hasARderivatives && models.length >= 1;
+        const arButtonVisible = (this.arManager.outs.available.value || this.arManager.arCodeImage ) && this.arManager.hasPlatformSpecificAR();
 
 
         return html`

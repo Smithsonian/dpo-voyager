@@ -209,6 +209,27 @@ export default class CVARManager extends Component
         return true;
     }
 
+    hasPlatformSpecificAR() : boolean {
+        const models = this.sceneNode.getGraphComponents(CVModel2);
+        let hasARderivatives = false;
+        models.forEach(model => {
+            if(!IS_MOBILE) {
+                hasARderivatives = model.derivatives.getByQuality(EDerivativeQuality.AR).length > 0 ? true : hasARderivatives;
+            }
+            else if(IS_WEBXR_AR_CANDIDATE) {
+                hasARderivatives = model.derivatives.getByUsage(EDerivativeUsage.Web3D).length > 0 ? true : hasARderivatives;
+            }
+            else if(IS_ANDROID) {
+                hasARderivatives = model.derivatives.getByUsage(EDerivativeUsage.App3D).length > 0 ? true : hasARderivatives;
+            }
+            else if(IS_IOS && IS_AR_QUICKLOOK_CANDIDATE) {
+                hasARderivatives = model.derivatives.getByUsage(EDerivativeUsage.iOSApp3D).length > 0 ? true : hasARderivatives;
+            }
+        });
+
+        return hasARderivatives;
+    }
+
     protected launchWebXR() {
         const renderer = this.renderer?.views[0].renderer;
         const sceneComponent = this.vScene = this.renderer?.activeSceneComponent;

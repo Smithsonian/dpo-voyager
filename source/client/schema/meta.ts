@@ -103,15 +103,17 @@ export interface IAudioClip
      audioId?: string;
      annotationId?: string;
      actionAnnoId?: string;
+     actionTargetId?: string;
      animation?: string;
      style?: TActionPlayStyle;
      speed?: number;
      clamp?: boolean;
      syncWith?: string;
+     enabled?: boolean;
  }
 
- export type TActionType = "PlayAnimation" | "PlayAudio" | "ShowAnnotation" | "HideAnnotation" | "ToggleAnnotation";
- export enum EActionType { PlayAnimation, PlayAudio, ShowAnnotation, HideAnnotation, ToggleAnnotation };
+ export type TActionType = "PlayAnimation" | "PlayAudio" | "ShowAnnotation" | "HideAnnotation" | "ToggleAnnotation" | "EnableAction" | "DisableAction";
+ export enum EActionType { PlayAnimation, PlayAudio, ShowAnnotation, HideAnnotation, ToggleAnnotation, EnableAction, DisableAction };
 
  export type TActionTrigger = "OnClick" | "OnLoad" | "OnAnnotation" | "OnTourStep" | "OnActionEnd" | "OnActionBegin";
  export enum EActionTrigger { OnClick, OnLoad, OnAnnotation, OnTourStep, OnActionEnd, OnActionBegin };
