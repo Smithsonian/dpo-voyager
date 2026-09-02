@@ -138,6 +138,7 @@ export interface ILight
     spot?: ISpotLightProps;
     hemisphere?: IHemisphereLightProps;
     sun?: ISunLightProps;
+    raking?: IRakingLightProps;
 }
 
 /**
@@ -160,6 +161,18 @@ export interface ISpotLightProps extends IPointLightProps
 
 export interface IHemisphereLightProps {
     ground :ColorRGB;
+}
+
+/**
+ * Properties for the raking-light mode of a directional light.
+ * When enabled, the light direction is derived from azimuth (horizontal
+ * rotation, 0–360°) and elevation (angle above the horizontal plane, 0–90°)
+ * instead of the node's transform/rotation.
+ */
+export interface IRakingLightProps {
+    enabled: boolean;
+    azimuth: number;    // degrees, 0-360
+    elevation: number;  // degrees, 0-90
 }
 
 export interface ISunLightProps {
