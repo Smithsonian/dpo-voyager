@@ -78,6 +78,9 @@ export default class CVEnvironment extends Component
     protected get background() {
         return this.getSystemComponent(CVBackground);
     }
+    protected get meta() {
+      return this.getComponent(CVMeta);
+    }
     protected get sceneNode() {
         return this.getSystemComponent(CScene);
     }
@@ -296,17 +299,16 @@ export default class CVEnvironment extends Component
     addImage(image_uri: string)
     {
         if (this._imageOptions.indexOf(image_uri) == -1){
-            const meta = this.getGraphComponent(CVMeta);
-            if(meta) { 
-                meta.images.insert({
+          this.meta?.images.insert(
+            {
                     uri: image_uri,
                     usage: "Environment" as TImageUsage,
                     quality: "HDR" as TImageQuality,
                     byteSize: 4096,
                     width: 1024,
                     height: 1024,
-                }, "HDR");
-            }
+            }, "HDR");
+            
             this._imageOptions.push(image_uri);
             this._updateImageIndex();
         } else {
@@ -326,6 +328,8 @@ export default class CVEnvironment extends Component
             }
             this._imageOptions.splice(index, 1);
             this._updateImageIndex();
+          
+            this.meta?.images.remove("HDR");
         }
     }
   
