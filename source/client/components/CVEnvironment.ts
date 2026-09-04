@@ -18,6 +18,7 @@
 import { PMREMGenerator, WebGLRenderTarget, Texture, Euler } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
 import { IEnvironment } from "client/schema/setup";
 import CScene from "client/../../libs/ff-scene/source/components/CScene";
@@ -28,6 +29,7 @@ import CVMeta from "./CVMeta";
 import NVNode from "client/nodes/NVNode";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
+import { TImageQuality, TImageUsage } from "client/schema/meta";
 
 
 const images = ["studio_small_08_1k.hdr", "capture_tent_mockup-v2-1k.hdr", "spruit_sunrise_1k_HDR.hdr"];
@@ -55,6 +57,7 @@ export default class CVEnvironment extends Component
     private _target: WebGLRenderTarget = null;
     private _pmremGenerator :PMREMGenerator = null;
     private _currentIdx = 0;
+    private _loadRequestId = 0;
     private _imageOptions: string[] = images.slice();
     private _loadingCount = 0;
     private _hasContent = false;
@@ -69,12 +72,17 @@ export default class CVEnvironment extends Component
             this.ins.visible
         ];
     }
-
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
+    }
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
     }
     protected get background() {
         return this.getSystemComponent(CVBackground);
+    }
+    protected get meta() {
+      return this.getComponent(CVMeta);
     }
     protected get sceneNode() {
         return this.getSystemComponent(CScene);
@@ -141,6 +149,9 @@ export default class CVEnvironment extends Component
         {
             const rot = ins.rotation.value;
             _euler.set(rot[0]*DEG2RAD,rot[1]*DEG2RAD,rot[2]*DEG2RAD); 
+            //this.sceneNode.scene.environmentRotation = _euler;
+            //this.sceneNode.scene.backgroundRotation = _euler;
+            this.renderer.forceRender();
         }
         if(ins.enabled.changed) {
             if(ins.enabled.value && this._hasContent) 
@@ -214,35 +225,56 @@ export default class CVEnvironment extends Component
             }
 
             const mapName = this._imageOptions[ins.imageIndex.value];
+            if(!mapName) {
+                throw new Error("Error loading map name for image index " + ins.imageIndex.value);
+            }
+
+            const requestId = ++this._loadRequestId;
 
             if(images.includes(mapName)) {
                 this._loadingCount++;
                 this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
+                    this.updateEnvironmentMap(texture, mapName, requestId);
                 });
             }
             else {
                 this._loadingCount++;
                 this.assetReader.getTexture(mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
+                    this.updateEnvironmentMap(texture, mapName, requestId);
                 });
             }
             this._currentIdx = ins.imageIndex.value;
         }
     }
 
-    protected updateEnvironmentMap(texture: Texture, name: string)
+    protected updateEnvironmentMap(texture: Texture, name: string, requestId: number)
     {
         const ins = this.ins;
         const mapIdx = this._imageOptions.indexOf(name);
 
-        if(mapIdx == ins.imageIndex.value) {
-            this._target = this._pmremGenerator.fromEquirectangular(texture, this._target);
+        if(requestId === this._loadRequestId && mapIdx == ins.imageIndex.value) {
+            const previousTarget = this._target;
+            this._target = this._pmremGenerator.fromEquirectangular(texture);
+
+            //this.sceneNode.scene.environment = null;
+            //this.sceneNode.scene.background = null;
             this.sceneNode.scene.environment = ins.enabled.value ? this._target.texture : null;
             this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
+            if(this.sceneNode.scene.environment) {
+                (this.sceneNode.scene.environment as Texture).needsUpdate = true;
+            }
+            if(this.sceneNode.scene.background) {
+                (this.sceneNode.scene.background as Texture).needsUpdate = true;
+            }
             this.sceneNode.scene.environmentRotation = _euler;
             this.sceneNode.scene.backgroundRotation = _euler;
             this.renderer.forceRender();
+
+            if(previousTarget && previousTarget !== this._target) {
+                previousTarget.dispose();
+            }
+
+            this._currentIdx = ins.imageIndex.value;
         }
 
         texture.dispose();
@@ -259,13 +291,92 @@ export default class CVEnvironment extends Component
                 const images = meta.images.dictionary;
                 Object.keys(images).forEach(key => {
                     const image =  images[key];
-                    if(image.usage && image.usage === "Environment") {
-                        this._imageOptions.push(image.uri);
-                        this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
+                    if (image.usage && image.usage === "Environment") {
+                        this.addImage(image.uri);
                     }
                 });
             });
         }
+    }
+
+    addImage(image_uri: string)
+    {
+      if (this._imageOptions.indexOf(image_uri) == -1) {
+            const url = this.assetManager.getAssetUrl(image_uri);
+            this.readHdrDimensions(url).then(({ width, height, size }) => {
+                this.meta?.images.insert({
+                    uri: image_uri,
+                    usage: "Environment" as TImageUsage,
+                    quality: "HDR" as TImageQuality,
+                    byteSize: size,
+                    width: width,
+                    height: height,
+                }, "HDR");
+            });
+
+            this._imageOptions.push(image_uri);
+            this._updateImageIndex();
+        } else {
+            console.debug(image_uri + " already exists, skipping.")
+        }
+    }
+    
+  async readHdrDimensions(image_url: string): Promise<{ width: number; height: number, size: number } | undefined> {
+    const HEADER_LENGTH = 8192;
+    const FALLBACK_DIMENSIONS = { width: 1024, height: 1024, size: 4096 };
+    
+    let size = FALLBACK_DIMENSIONS.size;
+    try {
+      const headResponse = await fetch(image_url, { method: "HEAD" });
+      if (headResponse.ok) {
+        size = parseInt(headResponse.headers.get('Content-Length') || '0');
+      }
+    } catch(e) {
+      console.error('Failed to get file size via HEAD request for: ', image_url, e);
+    }
+
+    const response = await fetch(image_url, {
+      headers: { Range: `bytes=0-${HEADER_LENGTH - 1}` },
+    });
+  
+    if (response.ok) {    
+      const bytes = await response.arrayBuffer();
+      const text = new TextDecoder('latin1').decode(bytes);
+    
+      const match = text.match(/^([-+])([xyXY])\s+(\d+)\s+([-+])([xyXY])\s+(\d+)/m);
+      if (match) {
+        const first = parseInt(match[3], 10);
+        const second = parseInt(match[6], 10);
+        const dims = match[2].toLowerCase() === 'x'
+          ? { width: first, height: second }
+          : { width: second, height: first };
+      
+          return { ...dims, size };
+      }
+    }
+    console.warn('Failed to read image dimensions from header in: ', image_url)
+    return FALLBACK_DIMENSIONS;
+  }
+  
+    deleteImage(image_uri: string)
+    {
+        const index = this._imageOptions.indexOf(image_uri);
+        if (index == -1) {
+            console.error("Trying to remove environment image that is not registered in the options list: " + image_uri)
+        } else {
+            if (index == this.ins.imageIndex.value) {
+                this.ins.imageIndex.setOption("0");
+                this.ins.visible.set(false);
+            }
+            this._imageOptions.splice(index, 1);
+            this._updateImageIndex();
+          
+            this.meta?.images.remove("HDR");
+        }
+    }
+  
+    protected _updateImageIndex() {
+        this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
     }
     
     protected addLightComponent(enabled: boolean) {

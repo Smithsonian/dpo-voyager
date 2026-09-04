@@ -30,6 +30,7 @@ import { EDerivativeUsage } from "client/schema/model";
 import CSelection from "@ff/graph/components/CSelection";
 import CVMeta from "./CVMeta";
 import Article from "client/models/Article";
+import CVEnvironment from "./CVEnvironment";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,6 +53,9 @@ export default class CVMediaManager extends CAssetManager
     }
     protected get assetManager() {
         return this.system.getMainComponent(CVAssetManager);
+    }
+    protected get environment() {
+      return this.system.getComponent(CVEnvironment);
     }
     protected get metas() {
         return this.system.getComponents(CVMeta);
@@ -134,7 +138,7 @@ export default class CVMediaManager extends CAssetManager
             const cleanfileName = decodeURI(file.name);
             const filenameLower = cleanfileName.toLowerCase();
             
-            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt)$/)) {
+            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt|hdr)$/)) {
 
                 if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
                     path = CVMediaManager.articleFolder + "/" + cleanfileName;
@@ -156,6 +160,9 @@ export default class CVMediaManager extends CAssetManager
                 }
                 else if (!documentProvided && filenameLower.match(/\.(gltf|glb)$/)) {
                     this.uploadFile(normalizedPath, file, this.root).then(() => this.handleModelImport(normalizedPath));
+                }
+                else if (!documentProvided && filenameLower.match(/\.(hdr)$/)) {
+                    this.uploadFile(normalizedPath, file, this.root).then(() => this.environment.addImage(normalizedPath));
                 }
                 else {
                     this.uploadFile(normalizedPath, file, this.root);
@@ -204,7 +211,14 @@ export default class CVMediaManager extends CAssetManager
             ; // TODO - considering removing this support
         }
         else {
-            return super.uploadFiles(files, folder);
+          return super.uploadFiles(files, folder).then(() => {
+            Array.from(files).forEach(file => {
+              if (file.name.toLowerCase().endsWith(".hdr")) {
+                const file_uri = folder.info.path + file.name;
+                this.environment.addImage(file_uri);
+              }
+            });
+          });
         }
     }
 
@@ -275,15 +289,19 @@ export default class CVMediaManager extends CAssetManager
 
     deleteSelected()
     {
+        const selected = this.selectedAssets;
         const standaloneManager = this.standaloneFileManager;
         if(standaloneManager) {
-            const selected = this.selectedAssets;
             selected.forEach(file => standaloneManager.deleteFile(file.info.url));
 
             return this.refresh();
         }
         else {
-            return super.deleteSelected();
+            return super.deleteSelected().then(() => {
+              selected
+                .filter(asset => asset.info.name.toLowerCase().endsWith(".hdr"))
+                .forEach(asset => this.environment.deleteImage(asset.info.path));
+            });
         }
     }
 
