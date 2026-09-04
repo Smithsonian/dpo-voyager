@@ -18,6 +18,7 @@
 import { PMREMGenerator, WebGLRenderTarget, Texture, Euler } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
 import { IEnvironment } from "client/schema/setup";
 import CScene from "client/../../libs/ff-scene/source/components/CScene";
@@ -71,7 +72,9 @@ export default class CVEnvironment extends Component
             this.ins.visible
         ];
     }
-
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
+    }
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
     }
@@ -298,8 +301,9 @@ export default class CVEnvironment extends Component
 
     addImage(image_uri: string)
     {
-        if (this._imageOptions.indexOf(image_uri) == -1){
-            this.readHdrDimensions(image_uri).then(({ width, height, size }) => {
+      if (this._imageOptions.indexOf(image_uri) == -1) {
+            const url = this.assetManager.getAssetUrl(image_uri);
+            this.readHdrDimensions(url).then(({ width, height, size }) => {
                 this.meta?.images.insert({
                     uri: image_uri,
                     usage: "Environment" as TImageUsage,
