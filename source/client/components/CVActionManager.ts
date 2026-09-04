@@ -58,6 +58,8 @@ export default class CVActionManager extends Component
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
     private _actions: {model: CVModel2, action: IAction}[] = [];
     private _visibilityCache: {annotation: Annotation, visibility: boolean}[] = [];
+    private _activeVideoActionId: string = "";
+    private _activeVideoModel: CVModel2 = null;
 
     private _animQueue = [];
 
@@ -160,6 +162,33 @@ export default class CVActionManager extends Component
                 this._activeClips.splice(idx,1);
             }
         }
+        else if (action.type == EActionType[EActionType.PlayVideo] as TActionType) {
+            this.setup.video.stop();
+            this.getGraphComponents(CVModel2).forEach(model => model.stopVideoTexture());
+
+            if (this._activeVideoActionId === action.id) {
+                this._activeVideoActionId = "";
+                this._activeVideoModel = null;
+            }
+        }
+    }
+
+    applyVideoActionOptions(action: IAction)
+    {
+        if (action.type !== EActionType[EActionType.PlayVideo] as TActionType) {
+            return;
+        }
+
+        if (this._activeVideoActionId !== action.id) {
+            return;
+        }
+
+        this.setup.video.applyPlaybackOptions({
+            loop: !!action.videoLoop,
+            muted: !!action.videoMuted
+        }, action.videoId);
+
+        this._activeVideoModel?.setVideoTextureLoop(!!action.videoLoop);
     }
 
     refreshActions() {
@@ -264,7 +293,7 @@ export default class CVActionManager extends Component
                 const loadActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
                 if(loadActions.length > 0) {
                     loadActions.forEach((action) => {
-                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
+                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType && action.type !== EActionType[EActionType.PlayVideo] as TActionType) {
                             this.playAction(model, action);
                         }
                     });
@@ -299,7 +328,7 @@ export default class CVActionManager extends Component
             const actions = meta.actions.items.filter(item => {return id.length > 0 && item.annotationId == id});
             if(actions.length > 0) {
                 actions.forEach((action) => {
-                    if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
+                    if(action.type == EActionType[EActionType.PlayAudio] as TActionType || action.type == EActionType[EActionType.PlayVideo] as TActionType) {
                         this.playAction(null, action);
                     }
                     else {
@@ -342,12 +371,14 @@ export default class CVActionManager extends Component
                 });
                 if(actions.length > 0) {
                     actions.forEach((action) => {
-                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
+                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType && action.type !== EActionType[EActionType.PlayVideo] as TActionType) {
                             const model = meta.node.getComponent(CVModel2);
                             this._animQueue.push({model: model, action: action});
                         }
                         /*else if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
                             this.setup.audio.play(action.audioId, true);
+                        } else if(action.type == EActionType[EActionType.PlayVideo] as TActionType) {
+                            this.setup.video.play(action.videoId, true);
                         }*/
                     });
                 }
@@ -380,6 +411,31 @@ export default class CVActionManager extends Component
 
         if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
             this.setup.audio.play(action.audioId, true);
+        }
+        else if(action.type == EActionType[EActionType.PlayVideo] as TActionType) {
+            if (action.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger &&
+                this._activeVideoActionId === action.id &&
+                this.setup.video.outs.isPlaying.value) {
+                this.setup.video.pause();
+                this._activeVideoModel?.pauseVideoTexture();
+                return;
+            }
+
+            const clipUri = this.setup.video.getVideoClipUri(action.videoId);
+            if (!clipUri) {
+                console.warn("No playable video clip found for action", action.id, action.videoId);
+                return;
+            }
+
+            const shouldLoop = !!action.videoLoop;
+            const shouldMute = !!action.videoMuted;
+
+            if (model) {
+                model.playVideoTexture(clipUri, true, shouldLoop);
+            }
+            this.setup.video.play(action.videoId, true, { loop: shouldLoop, muted: shouldMute });
+            this._activeVideoActionId = action.id;
+            this._activeVideoModel = model;
         }
         else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
             // Don't retrigger looping actions

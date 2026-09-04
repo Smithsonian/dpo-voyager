@@ -20,7 +20,7 @@ import UnorderedCollection from "@ff/core/UnorderedCollection";
 import Component from "@ff/graph/Component";
 
 import { IDocument, INode, IScene } from "client/schema/document";
-import { IMeta, IImage, INote, IAudioClip, IAction } from "client/schema/meta";
+import { IMeta, IImage, INote, IMediaClip, IAction } from "client/schema/meta";
 
 import Article from "../models/Article";
 import { ELanguageType } from "client/schema/common";
@@ -43,7 +43,8 @@ export default class CVMeta extends Component
     articles = new OrderedCollection<Article>();
     leadArticle: Article = null;
     notes: INote[] = [];
-    audio = new UnorderedCollection<IAudioClip>();
+    audio = new UnorderedCollection<IMediaClip>();
+    video = new UnorderedCollection<IMediaClip>();
     actions = new UnorderedCollection<IAction>();
 
     protected get language() {
@@ -96,6 +97,15 @@ export default class CVMeta extends Component
             });
             this.audio.dictionary = audioDict;
         }
+        if (data.video) {
+            const videoDict = {};
+            data.video.forEach(clip => {
+                clip.captionUris = clip.captionUris || {};
+                clip.durations = {};
+                videoDict[clip.id] = clip;
+            });
+            this.video.dictionary = videoDict;
+        }
         if (data.actions) {
             let count = 0;
             const actionDict = {};
@@ -103,6 +113,9 @@ export default class CVMeta extends Component
                 action.name ??= "Action" + count++;
                 action.animation ??= "";
                 action.audioId ??= "";
+                action.videoId ??= "";
+                action.videoLoop ??= false;
+                action.videoMuted ??= false;
                 action.speed ??= 1;
                 action.enabled ??= true;
                 actionDict[action.id] = action;
@@ -146,12 +159,20 @@ export default class CVMeta extends Component
                 clip.durations = {}; // don't save durations
             });
         }
+        if (this.video.length > 0) {
+            data = data || {};
+            data.video = this.video.items;
+            data.video.forEach(clip => {
+                clip.durations = {}; // don't save durations
+            });
+        }
         if (this.actions.length > 0) {
             data = data || {};
             data.actions = this.actions.items;
             data.actions.forEach(action => {
                 action.animation?.length < 1 ? delete action.animation : null;
                 action.audioId?.length < 1 ? delete action.audioId : null;
+                action.videoId?.length < 1 ? delete action.videoId : null;
                 action.annotationId?.length < 1 ? delete action.annotationId : null;
                 action.actionAnnoId?.length < 1 ? delete action.actionAnnoId : null;
                 action.triggerDetail?.length < 1 ? delete action.triggerDetail : null;

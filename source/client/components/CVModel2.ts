@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Quaternion, Box3, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, Texture, Material, MeshStandardMaterial, NoBlending, AdditiveBlending, Color, MeshPhysicalMaterial, ObjectSpaceNormalMap } from "three";
+import { Vector3, Quaternion, Box3, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, Texture, Material, MeshStandardMaterial, NoBlending, AdditiveBlending, Color, MeshPhysicalMaterial, ObjectSpaceNormalMap, VideoTexture, SRGBColorSpace, LinearFilter } from "three";
 
 import Notification from "@ff/ui/Notification";
 
@@ -41,6 +41,7 @@ import CVEnvironment from "./CVEnvironment";
 import CVSetup from "./CVSetup";
 import { Dictionary } from "client/../../libs/ff-core/source/types";
 import Asset from "client/models/Asset";
+import { IPulseContext } from "@ff/graph/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -184,6 +185,9 @@ export default class CVModel2 extends CObject3D
     private _wireColor = new Color("#004966").convertLinearToSRGB();
     private _wireEmissiveColor = new Color("#004966").convertLinearToSRGB();
     private _overlays: Dictionary<IOverlay> = {};
+    private _videoElement: HTMLVideoElement | null = null;
+    private _videoTexture: VideoTexture | null = null;
+    private _videoSourceUrl: string = "";
 
     constructor(node: Node, id: string)
     {
@@ -216,6 +220,86 @@ export default class CVModel2 extends CObject3D
     }
     get localBoundingBox(): Readonly<Box3> {
         return this._localBoundingBox;
+    }
+
+    playVideoTexture(videoURL: string, muted = true, loop = true)
+    {
+        if (!this.setupVideoTexture(videoURL, muted, loop)) {
+            return;
+        }
+
+        this.applyVideoTextureToMaterials();
+    }
+
+    setVideoTextureLoop(loop: boolean)
+    {
+        if (this._videoElement) {
+            this._videoElement.loop = loop;
+        }
+    }
+
+    pauseVideoTexture()
+    {
+        if (this._videoElement) {
+            this._videoElement.pause();
+        }
+
+        this.renderer?.forceRender();
+    }
+
+    stopVideoTexture()
+    {
+        if (this._videoElement) {
+            this._videoElement.pause();
+            this._videoElement.removeAttribute("src");
+            this._videoElement.load();
+            this._videoElement.currentTime = 0;
+        }
+
+        if (this._videoTexture) {
+            this._videoTexture.dispose();
+            this._videoTexture = null;
+        }
+
+        this._videoSourceUrl = "";
+
+        const restoreMaterial = (inMaterial: Material) => {
+            const material = inMaterial as MeshStandardMaterial;
+            const cached = material?.userData?.videoParamCopy;
+            if (!cached) {
+                return;
+            }
+
+            material.color.copy(cached.color);
+            material.emissive.copy(cached.emissive);
+            material.roughness = cached.roughness;
+            material.metalness = cached.metalness;
+            material.map = cached.map;
+            material.aoMap = cached.aoMap;
+            material.emissiveMap = cached.emissiveMap;
+            material.normalMap = cached.normalMap;
+            material.transparent = cached.transparent;
+            material.depthWrite = cached.depthWrite;
+            material.blending = cached.blending;
+            delete material.userData.videoParamCopy;
+            material.needsUpdate = true;
+        };
+
+        this.object3D.traverse(object => {
+            const material = object["material"] as Material | Material[];
+            if (!material) {
+                return;
+            }
+
+            if (Array.isArray(material)) {
+                material.forEach(restoreMaterial);
+                return;
+            }
+
+            restoreMaterial(material);
+        });
+
+        this.renderer?.forceRender();
     }
 
     /**
@@ -427,7 +511,34 @@ export default class CVModel2 extends CObject3D
             }
         }
 
+        if (this._videoTexture) {
+            this._videoTexture.dispose();
+            this._videoTexture = null;
+        }
+
+        if (this._videoElement) {
+            this._videoElement.pause();
+            this._videoElement.removeAttribute("src");
+            this._videoElement.load();
+            this._videoElement = null;
+        }
+
         super.dispose();
+    }
+
+    tick(context: IPulseContext): boolean
+    {
+        if (!this._videoElement || !this._videoTexture) {
+            return false;
+        }
+
+        if (this._videoElement.paused || this._videoElement.ended) {
+            return false;
+        }
+
+        this._videoTexture.needsUpdate = true;
+        this.renderer?.forceRender();
+        return true;
     }
 
     center()
@@ -1038,6 +1149,136 @@ export default class CVModel2 extends CObject3D
                 this.registerPickableObject3D(node, true);
             }
         });
+    }
+
+    protected setupVideoTexture(videoURL: string, muted = true, loop = true): boolean
+    {
+        const resolvedVideoURL = this.assetManager.getAssetUrl(videoURL.trim());
+        if (!resolvedVideoURL) {
+            return false;
+        }
+
+        if (this._videoSourceUrl !== resolvedVideoURL) {
+            if (this._videoTexture) {
+                this._videoTexture.dispose();
+                this._videoTexture = null;
+            }
+
+            if (this._videoElement) {
+                this._videoElement.pause();
+                this._videoElement.removeEventListener("loadedmetadata", this.onVideoReady);
+                this._videoElement.removeEventListener("loadeddata", this.onVideoReady);
+                this._videoElement.removeEventListener("canplay", this.onVideoReady);
+                this._videoElement = null;
+            }
+
+            this._videoElement = document.createElement("video");
+            this._videoElement.crossOrigin = "anonymous";
+            this._videoElement.loop = loop;
+            this._videoElement.muted = muted;
+            this._videoElement.autoplay = true;
+            this._videoElement.playsInline = true;
+            this._videoElement.preload = "auto";
+
+            this._videoElement.addEventListener("loadedmetadata", this.onVideoReady);
+            this._videoElement.addEventListener("loadeddata", this.onVideoReady);
+            this._videoElement.addEventListener("canplay", this.onVideoReady);
+
+            this._videoElement.src = resolvedVideoURL;
+            this._videoElement.load();
+
+            this._videoTexture = new VideoTexture(this._videoElement);
+            this._videoTexture.flipY = false;
+            this._videoTexture.colorSpace = SRGBColorSpace;
+            this._videoTexture.generateMipmaps = false;
+            this._videoTexture.minFilter = LinearFilter;
+            this._videoTexture.magFilter = LinearFilter;
+
+            this._videoSourceUrl = resolvedVideoURL;
+        }
+
+        this._videoElement.muted = muted;
+        this._videoElement.loop = loop;
+
+        this._videoElement.play().catch(() => {
+            // Playback can fail without a user gesture; ignore and let retries happen later.
+        });
+
+        const hasFrameData = this._videoElement.readyState >= this._videoElement.HAVE_CURRENT_DATA;
+        if (hasFrameData) {
+            this._videoTexture.needsUpdate = true;
+        }
+
+        return hasFrameData;
+    }
+
+    protected applyVideoTextureToMaterials()
+    {
+        if (!this._videoTexture) {
+            return;
+        }
+
+        const applyToMaterial = (inMaterial: Material) => {
+            const material = inMaterial as MeshStandardMaterial;
+            if (!material || (!material["isMeshStandardMaterial"] && !material["isMeshPhysicalMaterial"])) {
+                return;
+            }
+
+            if (!material.userData.videoParamCopy) {
+                material.userData.videoParamCopy = {
+                    color: material.color.clone(),
+                    emissive: material.emissive.clone(),
+                    roughness: material.roughness,
+                    metalness: material.metalness,
+                    map: material.map,
+                    aoMap: material.aoMap,
+                    emissiveMap: material.emissiveMap,
+                    normalMap: material.normalMap,
+                    transparent: material.transparent,
+                    depthWrite: material.depthWrite,
+                    blending: material.blending,
+                };
+            }
+
+            material.color.set(0xffffff);
+            material.emissive.set(0xffffff);
+            material.roughness = 1;
+            material.metalness = 0;
+            material.map = this._videoTexture;
+            material.aoMap = null;
+            material.emissiveMap = this._videoTexture;
+            material.normalMap = null;
+            material.transparent = false;
+            material.depthWrite = true;
+            material.blending = NoBlending;
+            if (material.defines) {
+                material.defines["OBJECTSPACE_NORMALMAP"] = false;
+            }
+            material.needsUpdate = true;
+        };
+
+        this.object3D.traverse(object => {
+            const material = object["material"] as Material | Material[];
+            if (!material) {
+                return;
+            }
+
+            if (Array.isArray(material)) {
+                material.forEach(applyToMaterial);
+                return;
+            }
+
+            applyToMaterial(material);
+        });
+    }
+
+    protected onVideoReady = () => {
+        this._videoElement?.play().catch(() => {
+            // Ignore autoplay/playback restrictions; next interaction can retry.
+        });
+
+        this.applyVideoTextureToMaterials();
+        this.renderer?.forceRender();
     }
 
     setShaderMode(mode: EShaderMode, inMaterial: Material)

@@ -18,24 +18,26 @@
 import Document from "@ff/core/Document";
 
 import CVTask, { types } from "./CVTask";
-import AudioTaskView from "../ui/story/AudioTaskView";
+import MultimediaTaskView from "../ui/story/MultimediaTaskView";
 
 import { Node } from "@ff/graph/Component";
 import CVDocument from "./CVDocument";
 import CVAudioManager from "./CVAudioManager";
-import { DEFAULT_LANGUAGE, ELanguageStringType, ELanguageType } from "client/schema/common";
+import CVVideoManager from "./CVVideoManager";
+import CVModel2 from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVAudioTask extends CVTask
+export default class CVMultimediaTask extends CVTask
 {
-    static readonly typeName: string = "CVAudioTask";
+    static readonly typeName: string = "CVMultimediaTask";
 
-    static readonly text: string = "Audio";
+    static readonly text: string = "Multimedia";
     static readonly icon: string = "audio";
 
     protected static readonly ins = {
-        create: types.Event("Audio.Create"),
+        createAudio: types.Event("Audio.Create"),
+        createVideo: types.Event("Video.Create"),
         delete: types.Event("Audio.Delete"),
         play: types.Event("Audio.Play"),
         stop: types.Event("Audio.Stop"),
@@ -49,10 +51,12 @@ export default class CVAudioTask extends CVTask
     protected static readonly outs = {
     };
 
-    ins = this.addInputs<CVTask, typeof CVAudioTask.ins>(CVAudioTask.ins);
-    outs = this.addOutputs<CVTask, typeof CVAudioTask.outs>(CVAudioTask.outs);
+    ins = this.addInputs<CVTask, typeof CVMultimediaTask.ins>(CVMultimediaTask.ins);
+    outs = this.addOutputs<CVTask, typeof CVMultimediaTask.outs>(CVMultimediaTask.outs);
 
     audioManager: CVAudioManager = null;
+    videoManager: CVVideoManager = null;
+    protected _videoMode = false;
 
     constructor(node: Node, id: string)
     {
@@ -73,57 +77,72 @@ export default class CVAudioTask extends CVTask
 
     createView()
     {
-        return new AudioTaskView(this);
+        return new MultimediaTaskView(this);
     }
 
-    activateTask()
+    protected getActiveClip(id: string = this.ins.activeId.value)
     {
-        // automatically select scene node
-        //this.nodeProvider.activeNode = this.nodeProvider.scopedNodes[0];
-        
-        super.activateTask();
-    }
+        const videoClip = this.videoManager?.getVideoClip(id);
+        if (videoClip) {
+            return { clip: videoClip, isVideo: true };
+        }
 
-    deactivateTask()
-    {
-        super.deactivateTask();
+        const audioClip = this.audioManager?.getAudioClip(id);
+        if (audioClip) {
+            return { clip: audioClip, isVideo: false };
+        }
+
+        return { clip: null, isVideo: this._videoMode };
     }
 
     update()
     {
         const { ins } = this;
-        const audioManager = this.audioManager;
+        const { clip, isVideo } = this.getActiveClip();
+        const mediaManager = isVideo ? this.videoManager : this.audioManager;
 
-        if(!audioManager) {
+        if(!mediaManager) {
             return false;
         }
 
-        const clip = audioManager.getAudioClip(ins.activeId.value);
         const languageManager = this.activeDocument.setup.language;
         const activeLanguage = languageManager.codeString();
 
-        if (ins.create.changed) {
+        if (ins.createAudio.changed || ins.createVideo.changed) {
+            const createVideo = ins.createVideo.changed;
+            const targetManager = createVideo ? this.videoManager : this.audioManager;
             const newId = Document.generateId();
-            audioManager.addAudioClip({
+            targetManager.addClip({
                 id: newId,
-                name: "New Audio Element",
+                name: `New ${createVideo ? "Video" : "Audio"} Element`,
                 uris: {},
                 captionUris: {},
                 durations: {}
             });
+            this._videoMode = createVideo;
             ins.activeId.setValue(newId);
             return true;
         }
+
         if (ins.delete.changed) {
-            audioManager.removeAudioClip(ins.activeId.value);
+            mediaManager.removeClip(ins.activeId.value);
             return true;
         }
         if (ins.play.changed) {
-            audioManager.play(ins.activeId.value);
+            if (isVideo) {
+                const clipUri = this.videoManager.getVideoClipUri(ins.activeId.value);
+                if (clipUri) {
+                    const activeModel = this.activeNode?.getComponent(CVModel2);
+                    const targetModels = activeModel ? [activeModel] : this.getGraphComponents(CVModel2);
+                    targetModels.forEach(model => model.playVideoTexture(clipUri, true));
+                }
+            }
+
+            mediaManager.play(ins.activeId.value);
             return true;
         }
         if (ins.stop.changed) {
-            audioManager.stop();
+            mediaManager.stop();
             return true;
         }
 
@@ -131,10 +150,10 @@ export default class CVAudioTask extends CVTask
             clip.name = ins.title.value;
             clip.uris[activeLanguage] = ins.filepath.value;
             clip.captionUris[activeLanguage] = ins.captionPath.value;
-            audioManager.updateAudioClip(clip.id);
+            mediaManager[isVideo ? "updateVideoClip" : "updateAudioClip"](clip.id);
         }
-        if (ins.isNarration.changed) {
-            audioManager.narrationId = ins.isNarration.value ? clip.id : "";
+        if (!isVideo && ins.isNarration.changed) {
+            this.audioManager.narrationId = ins.isNarration.value ? clip.id : "";
         }
 
         return true;
@@ -145,35 +164,42 @@ export default class CVAudioTask extends CVTask
         super.onActiveDocument(previous, next);
 
         if (previous) {
-            this.ins.activeId.off("value", this.onAudioChange, this);
+            this.ins.activeId.off("value", this.onMediaChange, this);
             previous.setup.language.outs.activeLanguage.off("value", this.onDocumentLanguageChange, this);
 
             this.audioManager = null;
+            this.videoManager = null;
         }
         if (next) {
             this.audioManager = next.setup.audio;
+            this.videoManager = next.setup.video;
 
-            this.ins.activeId.on("value", this.onAudioChange, this);
+            this.ins.activeId.on("value", this.onMediaChange, this);
             next.setup.language.outs.activeLanguage.on("value", this.onDocumentLanguageChange, this);
         }
     }
 
-    protected onAudioChange()
+    protected onMediaChange()
     {
         const ins = this.ins;
-        const audioManager = this.audioManager;
-        const clip = audioManager.getAudioClip(ins.activeId.value);
+        const { clip, isVideo } = this.getActiveClip(ins.activeId.value);
+        this._videoMode = isVideo;
         const languageManager = this.activeDocument.setup.language;
         const activeLanguage = languageManager.codeString();
 
         ins.title.setValue(clip ? clip.name : "", true);
         ins.filepath.setValue(clip ? clip.uris[activeLanguage] : "", true);
         ins.captionPath.setValue(clip ? clip.captionUris[activeLanguage] : "", true);
-        ins.isNarration.setValue(clip ? this.audioManager.narrationId === clip.id : false, true);
+        if (!isVideo) {
+            ins.isNarration.setValue(clip ? this.audioManager.narrationId === clip.id : false, true);
+        }
+        else {
+            ins.isNarration.setValue(false, true);
+        }
     }
 
     protected onDocumentLanguageChange()
     {
-        this.onAudioChange();
+        this.onMediaChange();
     }
 }

@@ -29,7 +29,8 @@ export interface IMeta
     process?: Dictionary<any>;
     images?: IImage[];
     articles?: IArticle[];
-    audio?: IAudioClip[];
+    audio?: IMediaClip[];
+    video?: IMediaClip[];
     actions?: IAction[];
     leadArticle?: Index;
 }
@@ -81,7 +82,7 @@ export interface INote
 /**
  * Audio files referenced by the scene [narrations, audio descriptions, etc.].
  */
-export interface IAudioClip
+export interface IMediaClip
 {
     id: string;
     name: string;
@@ -109,11 +110,15 @@ export interface IAudioClip
      speed?: number;
      clamp?: boolean;
      syncWith?: string;
+      videoId?: string;
+      videoLoop?: boolean;
+      videoMuted?: boolean;
      enabled?: boolean;
  }
 
- export type TActionType = "PlayAnimation" | "PlayAudio" | "ShowAnnotation" | "HideAnnotation" | "ToggleAnnotation" | "EnableAction" | "DisableAction";
- export enum EActionType { PlayAnimation, PlayAudio, ShowAnnotation, HideAnnotation, ToggleAnnotation, EnableAction, DisableAction };
+ 
+ export type TActionType = "PlayAnimation" | "PlayAudio"| "PlayVideo" | "ShowAnnotation" | "HideAnnotation" | "ToggleAnnotation" | "EnableAction" | "DisableAction";
+ export enum EActionType { PlayAnimation, PlayAudio, PlayVideo, ShowAnnotation, HideAnnotation, ToggleAnnotation, EnableAction, DisableAction };
 
  export type TActionTrigger = "OnClick" | "OnLoad" | "OnAnnotation" | "OnTourStep" | "OnActionEnd" | "OnActionBegin";
  export enum EActionTrigger { OnClick, OnLoad, OnAnnotation, OnTourStep, OnActionEnd, OnActionBegin };

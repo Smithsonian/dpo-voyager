@@ -23,7 +23,7 @@ import "./PropertyView";
 import CVActionsTask from "../../components/CVActionsTask";
 import { TaskView, customElement, html, property } from "../../components/CVTask";
 import List from "client/../../libs/ff-ui/source/List";
-import { EActionPlayStyle, EActionTrigger, EActionType, IAction, IAudioClip, TActionType } from "client/schema/meta";
+import { EActionPlayStyle, EActionTrigger, EActionType, IAction, IMediaClip, TActionType } from "client/schema/meta";
 //import Notification from "@ff/ui/Notification";
 import CVAnnotationView from "client/components/CVAnnotationView";
 
@@ -69,6 +69,11 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
             <sv-property-view .property=${ins.audio}></sv-property-view>
             <sv-property-view .property=${ins.syncWith}></sv-property-view>
         ` : null;
+        const videoActionView = ins.type.value === EActionType.PlayVideo ? html`
+            <sv-property-view .property=${ins.video}></sv-property-view>
+            <sv-property-view .property=${ins.videoLoop}></sv-property-view>
+            <sv-property-view .property=${ins.videoMuted}></sv-property-view>
+        ` : null;
         const animClamp = ins.style.value === EActionPlayStyle.Single ? html`
             <sv-property-view .property=${ins.clamp}></sv-property-view>
         ` : null;
@@ -105,6 +110,7 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
             ${actionEventView}
             <sv-property-view .property=${ins.type}></sv-property-view>
             ${audioActionView}
+            ${videoActionView}
             ${animActionView}
             ${annoActionView}
             ${actionTargetView}

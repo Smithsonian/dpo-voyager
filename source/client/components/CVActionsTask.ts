@@ -53,12 +53,15 @@ export default class CVActionsTask extends CVTask
         style: types.Enum("Action.Style", EActionPlayStyle, EActionPlayStyle.Single),
         speed: types.Number("Action.Speed", {preset: 1}),
         audio: types.Option("Action.Audio", ["None"], 0),
+        video: types.Option("Action.Video", ["None"], 0),
         animation: types.Option("Action.Animation", ["None"], 0),
         annotation: types.Option("Action.AnnotationT", ["None"], 0),
         actionAnnotation: types.Option("Action.Annotation", ["None"], 0),
         tour: types.Option("Action.Tour", ["None"], 0),
         tourStep: types.Option("Action.TourStep", ["None"], 0),
         syncWith: types.Option("Action.SyncWith", ["None"], 0),
+        videoLoop: types.Boolean("Action.VideoLoop", false),
+        videoMuted: types.Boolean("Action.VideoMuted", false),
         action: types.Option("Action.Action", ["None"], 0),
         actionTarget: types.Option("Action.ActionTarget", ["None"], 0),
         clamp: types.Boolean("Action.ClampOnEnd", false),
@@ -108,6 +111,8 @@ export default class CVActionsTask extends CVTask
         super.activateTask();
         this.meta ? this.synchAnnotationOptions(this.meta.getComponent(CVModel2)) : null;
         this.synchTourOptions();
+        this.synchAudioOptions();
+        this.synchVideoOptions();
         this.synchActionOptions();
     }
 
@@ -138,6 +143,9 @@ export default class CVActionsTask extends CVTask
                     style: EActionPlayStyle[EActionPlayStyle.Single] as TActionPlayStyle,
                     speed: 1.0,
                     audioId: "",
+                    videoId: "",
+                    videoLoop: false,
+                    videoMuted: false,
                     animation: "",
                     enabled: true
                 };
@@ -149,6 +157,10 @@ export default class CVActionsTask extends CVTask
                 return true;
             }
             if (ins.delete.changed) {
+                const action = meta.actions.get(ins.activeId.value);
+                if (action) {
+                    this.actionManager.stopAction(action);
+                }
                 meta.actions.remove(ins.activeId.value);
                 ins.activeId.setValue("");
                 this.synchActionOptions();
@@ -158,19 +170,31 @@ export default class CVActionsTask extends CVTask
 
             const action = meta.actions.get(ins.activeId.value);
             if (action && (ins.type.changed || ins.trigger.changed || ins.animation.changed || ins.style.changed 
-                || ins.speed.changed || ins.clamp.changed)) {
+                || ins.speed.changed || ins.clamp.changed || ins.videoLoop.changed || ins.videoMuted.changed)) {
                 action.type = EActionType[ins.type.value] as TActionType;
                 action.trigger = EActionTrigger[ins.trigger.value] as TActionTrigger;
                 action.style = EActionPlayStyle[ins.style.value] as TActionPlayStyle;
                 action.speed = ins.speed.value;
                 action.clamp = ins.clamp.value;
+                action.videoLoop = ins.videoLoop.value;
+                action.videoMuted = ins.videoMuted.value;
                 action.animation = EActionType[action.type] == EActionType.PlayAnimation ? ins.animation.getOptionText() : "";
                 action.audioId = EActionType[action.type] == EActionType.PlayAudio ? action.audioId : "";
+                action.videoId = EActionType[action.type] == EActionType.PlayVideo ? action.videoId : "";
+
+                if (EActionType[action.type] == EActionType.PlayVideo && (ins.videoLoop.changed || ins.videoMuted.changed)) {
+                    this.actionManager.applyVideoActionOptions(action);
+                }
             }
             if(ins.audio.changed) {
                 const audioManager = this.activeDocument.setup.audio;
                 const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
                 action.audioId = id;
+            }
+            if(ins.video.changed) {
+                const videoManager = this.activeDocument.setup.video;
+                const id = ins.video.value > 0 ? videoManager.getVideoList()[ins.video.value - 1].id : "";
+                action.videoId = id;
             }
             if(ins.syncWith.changed) {
                 action.syncWith = ins.syncWith.value > 0 ? ins.syncWith.getOptionText() : "";
@@ -206,13 +230,19 @@ export default class CVActionsTask extends CVTask
             if(ins.type.changed) {
                 if(EActionType[action.type] == EActionType.PlayAnimation) {
                     ins.audio.setValue(null , true, true);
+                    ins.video.setValue(null , true, true);
                 }
-                else {
+                else if(EActionType[action.type] == EActionType.PlayAudio) {
                     ins.animation.setValue(null , true, true);
+                    ins.video.setValue(null , true, true);
+                }
+                else if(EActionType[action.type] == EActionType.PlayVideo) {
+                    ins.animation.setValue(null , true, true);
+                    ins.audio.setValue(null , true, true);
                 }
             }
 
-            if(action) {
+            if(action && EActionType[action.type] == EActionType.PlayAnimation) {
                 this.actionManager.stopAction(action);
             }
         }
@@ -232,6 +262,7 @@ export default class CVActionsTask extends CVTask
             ins.trigger.setValue(EActionTrigger[action.trigger], true);
             ins.animation.setValue(action.animation ? ins.animation.schema.options.indexOf(action.animation) : 0);
             ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : 0);
+            ins.video.setValue(action.videoId ? this.activeDocument.setup.video.getVideoList().findIndex(clip => clip.id == action.videoId) + 1 : 0);
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
             ins.actionAnnotation.setValue(action.actionAnnoId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.actionAnnoId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
@@ -239,6 +270,8 @@ export default class CVActionsTask extends CVTask
             ins.clamp.setValue(action.clamp);
             ins.enabled.setValue(action.enabled);
             ins.syncWith.setValue(action.syncWith ? ins.syncWith.schema.options.indexOf(action.syncWith) : 0);
+            ins.videoLoop.setValue(!!action.videoLoop);
+            ins.videoMuted.setValue(!!action.videoMuted);
             ins.action.setValue(ins.trigger.value === EActionTrigger.OnActionEnd || ins.trigger.value === EActionTrigger.OnActionBegin ? 
                 this._actionIds.indexOf(action.triggerDetail) : 0);
             ins.actionTarget.setValue(ins.type.value === EActionType.EnableAction || ins.type.value === EActionType.DisableAction ? 
@@ -300,6 +333,7 @@ export default class CVActionsTask extends CVTask
         if (previous) {
             previous.setup.actions.outs.fired.off("value", this.updateUI, this);
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
+            previous.setup.video.outs.updated.off("value", this.synchVideoOptions, this);
             this.actionManager = null;
         }
         if (next) {
@@ -319,6 +353,13 @@ export default class CVActionsTask extends CVTask
         const options = ["None"];
         options.push(...audioManager.getAudioList().map(clip => clip.name));
         this.ins.audio.setOptions(options);
+    }
+
+    protected synchVideoOptions() {
+        const videoManager = this.activeDocument.setup.video;
+        const options = ["None"];
+        options.push(...videoManager.getVideoList().map(clip => clip.name));
+        this.ins.video.setOptions(options);
     }
 
     // Update annotation options
