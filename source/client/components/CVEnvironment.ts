@@ -325,13 +325,21 @@ export default class CVEnvironment extends Component
     const HEADER_LENGTH = 8192;
     const FALLBACK_DIMENSIONS = { width: 1024, height: 1024, size: 4096 };
     
+    let size = FALLBACK_DIMENSIONS.size;
+    try {
+      const headResponse = await fetch(filePath, { method: "HEAD" });
+      if (headResponse.ok) {
+        size = parseInt(headResponse.headers.get('Content-Length'));
+      }
+    } catch(e) {
+      console.error('Failed to get file size via HEAD request for: ', filePath, e);
+    }
+
     const response = await fetch(filePath, {
       headers: { Range: `bytes=0-${HEADER_LENGTH - 1}` },
     });
   
-    if (response.ok) {;
-      const size = parseInt(response.headers.get('Content-Length') || response.headers.get('Content-Range')?.split('/').pop() || '0', 10);
-    
+    if (response.ok) {    
       const bytes = await response.arrayBuffer();
       const text = new TextDecoder('latin1').decode(bytes);
     
