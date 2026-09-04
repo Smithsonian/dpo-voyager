@@ -63,7 +63,9 @@ export default class CVActionsTask extends CVTask
         videoLoop: types.Boolean("Action.VideoLoop", false),
         videoMuted: types.Boolean("Action.VideoMuted", false),
         action: types.Option("Action.Action", ["None"], 0),
+        actionTarget: types.Option("Action.ActionTarget", ["None"], 0),
         clamp: types.Boolean("Action.ClampOnEnd", false),
+        enabled: types.Boolean("Action.Enabled", true),
     };
 
     protected static readonly outs = {
@@ -144,7 +146,8 @@ export default class CVActionsTask extends CVTask
                     videoId: "",
                     videoLoop: false,
                     videoMuted: false,
-                    animation: ""
+                    animation: "",
+                    enabled: true
                 };
                 meta.actions.items = [action];
                 ins.activeId.setValue(action.id);
@@ -208,6 +211,9 @@ export default class CVActionsTask extends CVTask
                 action.name = ins.name.value;
                 this.synchActionOptions();
             }
+            if(ins.enabled.changed) {
+                action.enabled = ins.enabled.value;
+            }
             if(ins.tour.changed || ins.tourStep.changed) {
                 if(ins.tour.changed) {
                     this.synchTourStepOptions();
@@ -216,6 +222,9 @@ export default class CVActionsTask extends CVTask
             }
             if(ins.action.changed) {
                 action.triggerDetail = ins.action.value > 0 ? this._actionIds[ins.action.value] : undefined;
+            }
+            if(ins.actionTarget.changed) {
+                action.actionTargetId = ins.actionTarget.value > 0 ? this._actionIds[ins.actionTarget.value] : undefined;
             }
             // handle action types UI update
             if(ins.type.changed) {
@@ -259,11 +268,14 @@ export default class CVActionsTask extends CVTask
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
             ins.speed.setValue(action.speed);
             ins.clamp.setValue(action.clamp);
+            ins.enabled.setValue(action.enabled);
             ins.syncWith.setValue(action.syncWith ? ins.syncWith.schema.options.indexOf(action.syncWith) : 0);
             ins.videoLoop.setValue(!!action.videoLoop);
             ins.videoMuted.setValue(!!action.videoMuted);
             ins.action.setValue(ins.trigger.value === EActionTrigger.OnActionEnd || ins.trigger.value === EActionTrigger.OnActionBegin ? 
                 this._actionIds.indexOf(action.triggerDetail) : 0);
+            ins.actionTarget.setValue(ins.type.value === EActionType.EnableAction || ins.type.value === EActionType.DisableAction ? 
+                this._actionIds.indexOf(action.actionTargetId) : 0);
 
             const isTour = ins.trigger.value === EActionTrigger.OnTourStep;
             if(action.triggerDetail?.includes("\x1F")) {
@@ -319,6 +331,7 @@ export default class CVActionsTask extends CVTask
         super.onActiveDocument(previous, next);
 
         if (previous) {
+            previous.setup.actions.outs.fired.off("value", this.updateUI, this);
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
             previous.setup.video.outs.updated.off("value", this.synchVideoOptions, this);
             this.actionManager = null;
@@ -326,8 +339,12 @@ export default class CVActionsTask extends CVTask
         if (next) {
             this.actionManager = next.setup.actions;
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
-            next.setup.video.outs.updated.on("value", this.synchVideoOptions, this);
+            next.setup.actions.outs.fired.on("value", this.updateUI, this);
         }
+    }
+
+    protected updateUI() {
+        this.emit("update");
     }
 
     // Update audio options
@@ -388,5 +405,6 @@ export default class CVActionsTask extends CVTask
             this._actionIds.push(...meta.actions.items.map(action => action.id));
         });
         this.ins.action.setOptions(actionOptions);
+        this.ins.actionTarget.setOptions(actionOptions);
     }
 }

@@ -66,8 +66,12 @@ export default class CVActionManager extends Component
     protected static readonly ins = {
         reset: types.Event("Actions.Reset")
     };
+    protected static readonly outs = {
+        fired: types.Event("Actions.Fired")
+    };
 
     ins = this.addInputs(CVActionManager.ins);
+    outs = this.addInputs(CVActionManager.outs);
 
     protected get setup() {
         return this.getGraphComponent(CVSetup);
@@ -126,6 +130,8 @@ export default class CVActionManager extends Component
         this._mixer = null;
         this._actions.length = 0;
         this._visibilityCache.length = 0;
+        
+        Object.keys(this._animMap).forEach(( key ) => this._animMap[key] = null);
         
         super.dispose();
     }
@@ -391,6 +397,11 @@ export default class CVActionManager extends Component
 
     protected playAction(model: CVModel2, action: IAction)
     {
+        // Don't play disabled actions
+        if(!action.enabled) {
+            return;
+        }
+
         // Don't allow user-facing triggers during a tour
         if(this.setup.tours.ins.enabled.value &&
             (action.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger ||
@@ -440,6 +451,18 @@ export default class CVActionManager extends Component
             action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
             this.setAnnotationVisibility(model, action);
         }
+        else if(action.type == EActionType[EActionType.EnableAction] as TActionType ||
+            action.type == EActionType[EActionType.DisableAction] as TActionType) {
+            const targetAction = this._actions.find(element => element.action.id === action.actionTargetId)?.action;
+            if(targetAction) {
+                targetAction.enabled = action.type == EActionType[EActionType.EnableAction] as TActionType;
+            }
+            else {
+                console.warn("Specified action not found.");
+            }
+        }
+
+        this.outs.fired.set();
 
         // fire onBegin triggers
         const onBeginTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionBegin] as TActionTrigger
@@ -499,7 +522,7 @@ export default class CVActionManager extends Component
             clip.reset();
             // handle ping-pong directions
             if(action.style == EActionPlayStyle[EActionPlayStyle.PingPong] as TActionPlayStyle) {
-                const clipName = clip.getClip().name;
+                const clipName = clip.getClip().name+action.id;
                 clip.clampWhenFinished = true;
                 if(Object.keys(this._direction).includes(clipName)) {
                     this._direction[clipName] *= -1;

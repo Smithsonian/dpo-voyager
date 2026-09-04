@@ -1096,11 +1096,9 @@ export default class CVModel2 extends CObject3D
                 if(this.ins.renderOrder.value !== 0)
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
 
-                // re-apply the active shader now that the derivative materials exist
-                this.updateShader();
-
-                if (this._videoTexture && this._videoSourceUrl) {
-                    this.applyVideoTextureToMaterials();
+                // update shader for potential non-standard initial value
+                if(this.ins.shader.value !== EShaderMode.Default) {
+                    this.updateShader();
                 }
 
                 // load overlays

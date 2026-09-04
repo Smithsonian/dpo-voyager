@@ -305,13 +305,14 @@ export default class CVDocument extends CRenderGraph
         const meta = event.object;
         const propTitle = this.ins.title;
         const propIntro = this.ins.intro;
-        const language = this.setup.language;
 
         if(this._meta === null) {
             this._meta=meta;
         }
 
         if (event.add && !propTitle.value) {
+            const language = this.setup.language;
+
             meta.once("load", () => {
                 this.titles = meta.collection.get("titles") || {};
                 this.intros = meta.collection.get("intros") || {};

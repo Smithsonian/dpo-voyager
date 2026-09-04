@@ -185,7 +185,7 @@
                 "type": {
                     "description": "Type of action.",
                     "type": "string",
-                    "enum": [ "PlayAnimation", "PlayAudio", "PlayVideo", "ShowAnnotation", "HideAnnotation", "ToggleAnnotation" ]
+                    "enum": [ "PlayAnimation", "PlayAudio", "ShowAnnotation", "HideAnnotation", "ToggleAnnotation", "EnableAction", "DisableAction" ]
                 },
                 "trigger": {
                     "description": "Method by which this action is triggered.",
@@ -245,7 +245,7 @@
                 "clamp": {
                     "description": "Flag to clamp an animation on the last frame",
                     "type": "boolean",
-                    "default": 1
+                    "default": false
                 },
                 "syncWith": {
                     "description": "Name of an animation to sync audio with",
