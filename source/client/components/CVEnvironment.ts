@@ -321,21 +321,21 @@ export default class CVEnvironment extends Component
         }
     }
     
-  async readHdrDimensions(filePath: string): Promise<{ width: number; height: number, size: number } | undefined> {
+  async readHdrDimensions(image_url: string): Promise<{ width: number; height: number, size: number } | undefined> {
     const HEADER_LENGTH = 8192;
     const FALLBACK_DIMENSIONS = { width: 1024, height: 1024, size: 4096 };
     
     let size = FALLBACK_DIMENSIONS.size;
     try {
-      const headResponse = await fetch(filePath, { method: "HEAD" });
+      const headResponse = await fetch(image_url, { method: "HEAD" });
       if (headResponse.ok) {
         size = parseInt(headResponse.headers.get('Content-Length'));
       }
     } catch(e) {
-      console.error('Failed to get file size via HEAD request for: ', filePath, e);
+      console.error('Failed to get file size via HEAD request for: ', image_url, e);
     }
 
-    const response = await fetch(filePath, {
+    const response = await fetch(image_url, {
       headers: { Range: `bytes=0-${HEADER_LENGTH - 1}` },
     });
   
@@ -354,7 +354,7 @@ export default class CVEnvironment extends Component
           return { ...dims, size };
       }
     }
-    console.warn('Failed to read image dimensions from header in: ', filePath)
+    console.warn('Failed to read image dimensions from header in: ', image_url)
     return FALLBACK_DIMENSIONS;
   }
   
