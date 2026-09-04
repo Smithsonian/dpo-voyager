@@ -329,7 +329,7 @@ export default class CVEnvironment extends Component
     try {
       const headResponse = await fetch(image_url, { method: "HEAD" });
       if (headResponse.ok) {
-        size = parseInt(headResponse.headers.get('Content-Length'));
+        size = parseInt(headResponse.headers.get('Content-Length') || '0');
       }
     } catch(e) {
       console.error('Failed to get file size via HEAD request for: ', image_url, e);
