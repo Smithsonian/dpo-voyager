@@ -335,11 +335,11 @@ export default class CVEnvironment extends Component
       const bytes = await response.arrayBuffer();
       const text = new TextDecoder('latin1').decode(bytes);
     
-      const match = text.match(/^([-+])([xy])\s+(\d+)\s+([-+])([XY])\s+(\d+)/m);
+      const match = text.match(/^([-+])([xyXY])\s+(\d+)\s+([-+])([xyXY])\s+(\d+)/m);
       if (match) {
         const first = parseInt(match[3], 10);
         const second = parseInt(match[6], 10);
-        const dims = match[2] === 'x'
+        const dims = match[2].toLowerCase() === 'x'
           ? { width: first, height: second }
           : { width: second, height: first };
       
