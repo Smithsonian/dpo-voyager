@@ -72,6 +72,8 @@ export interface IScene
  */
 export interface INode
 {
+    /** Identifier for this node, stable across a load/save round-trip. */
+    id?: string;
     name?: string;
     children?: Index[];
 

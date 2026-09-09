@@ -31,6 +31,10 @@
             "$id": "#node",
             "type": "object",
             "properties": {
+                "id": {
+                    "description": "Identifier for this node, stable across load/save round-trips.",
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },

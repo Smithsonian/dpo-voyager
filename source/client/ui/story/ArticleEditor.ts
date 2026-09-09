@@ -47,11 +47,12 @@ import SystemView, { customElement } from "@ff/scene/ui/SystemView";
 
 import CVAssetManager from "../../components/CVAssetManager";
 import CVAssetReader from "../../components/CVAssetReader";
-import CVAssetWriter from "../../components/CVAssetWriter";
+import CVAssetWriter, { WriteConflictError } from "../../components/CVAssetWriter";
 
 import CVMediaManager, { IAssetOpenEvent, IAssetRenameEvent } from "../../components/CVMediaManager";
 import CVStandaloneFileManager from "../../components/CVStandaloneFileManager";
 import CVReader from "../../components/CVReader";
+import CVLanguageManager from "../../components/CVLanguageManager";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,6 +82,9 @@ export default class ArticleEditor extends SystemView
     protected get articleReader() {
         return this.system.getComponent(CVReader);
     }
+    protected get language() {
+        return this.system.getComponent(CVLanguageManager);
+    }
 
     openArticle(assetPath: string)
     {
@@ -103,7 +107,8 @@ export default class ArticleEditor extends SystemView
         if (tinymce.activeEditor.isDirty() && this._assetPath) {
             return MessageBox.show("Close Article", "Would you like save your changes?", "warning", "yes-no").then(result => {
                 if (result.ok) {
-                    return this.writeArticle().then(() => this.clearArticle());
+                    // only close over content that made it to the server
+                    return this.writeArticle().then(saved => saved ? this.clearArticle() : undefined);
                 }
                 else {
                     return this.clearArticle();
@@ -156,7 +161,12 @@ export default class ArticleEditor extends SystemView
         return Promise.resolve(content);
     }
 
-    protected writeArticle()
+    /**
+     * Writes the article in the editor back to the server.
+     * @returns whether the article is now stored. Callers must not discard the editor's
+     * content when it is not.
+     */
+    protected writeArticle(): Promise<boolean>
     {
         const basePath = this.assetManager.getAssetBasePath(this._assetPath);
 
@@ -173,15 +183,74 @@ export default class ArticleEditor extends SystemView
             return pre + this.assetManager.getRelativeAssetPath(assetUrl, basePath) + post;
         });
 
-        return this.assetWriter.putText(content, this._assetPath)
-            .then(() => {
-                tinymce.activeEditor.setDirty(false);
-                this.articleReader.ins.articleId.set();
-                new Notification(`Article successfully written to '${this._assetPath}'`, "info");
-            })
-            .catch(error => {
-                new Notification(`Failed to write article to '${this._assetPath}': ${error.message}`, "error");
+        const assetPath = this._assetPath;
+
+        return this.assetWriter.putText(content, assetPath)
+            .then(response => this.onArticleWritten(response, assetPath))
+            .catch(error => this.onArticleWriteFailed(error, content, assetPath));
+    }
+
+    /**
+     * Reports what the server did with an article we just wrote. `205 Reset Content` means what
+     * is stored is our text combined with somebody else's, not the text we sent.
+     */
+    protected onArticleWritten(response: Response, assetPath: string): Promise<boolean>
+    {
+        tinymce.activeEditor.setDirty(false);
+        this.articleReader.ins.articleId.set();
+
+        if (response.status === 205) {
+            return MessageBox.show(this.language.getUILocalizedString("Article merged"),
+                this.language.getUILocalizedString({
+                    key: "article.merged",
+                    text: "Somebody else changed '{0}' while you were editing it. Your text was "
+                        + "saved and combined with theirs, so the article in the editor is not the "
+                        + "one that is stored. Load the merged article now?",
+                    args: [assetPath],
+                }),
+                "warning", "yes-no")
+            .then(result => result.ok ? this.readArticle(assetPath) : undefined)
+            .then(() => true);
+        }
+
+        new Notification(this.language.getUILocalizedString({ text: "Article successfully written to '{0}'", args: [assetPath] }), "info");
+        return Promise.resolve(true);
+    }
+
+    /**
+     * Reports a write that did not happen. On a {@link WriteConflictError} nothing was stored,
+     * so the editor keeps its content either way.
+     */
+    protected onArticleWriteFailed(error: Error, content: string, assetPath: string): Promise<boolean>
+    {
+        if (!(error instanceof WriteConflictError)) {
+            new Notification(this.language.getUILocalizedString({ text: "Failed to write article to '{0}': {1}", args: [assetPath, error.message] }), "error");
+            return Promise.resolve(false);
+        }
+
+        return MessageBox.show(this.language.getUILocalizedString("Save refused"),
+            this.language.getUILocalizedString({
+                key: "article.refused",
+                text: "Somebody else changed '{0}' since you opened it, so nothing was saved. "
+                    + "Save your version over theirs? Choose No to keep editing — your text is "
+                    + "still in the editor.",
+                args: [assetPath],
+            }),
+            "warning", "yes-no")
+        .then(result => {
+            if (!result.ok) {
+                new Notification(this.language.getUILocalizedString({ text: "'{0}' was not saved.", args: [assetPath] }), "warning", 8000);
+                return false;
+            }
+
+            this.assetWriter.forgetRevision(assetPath);
+            return this.assetWriter.putText(content, assetPath)
+            .then(response => this.onArticleWritten(response, assetPath))
+            .catch(retryError => {
+                new Notification(this.language.getUILocalizedString({ text: "Failed to write article to '{0}': {1}", args: [assetPath, retryError.message] }), "error");
+                return false;
             });
+        });
     }
 
     protected clearArticle()

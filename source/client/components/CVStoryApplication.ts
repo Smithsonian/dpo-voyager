@@ -21,15 +21,18 @@ import { downloadZip } from "client-zip";
 import Component, { Node, types } from "@ff/graph/Component";
 
 import Notification from "@ff/ui/Notification";
+import MessageBox from "@ff/ui/MessageBox";
 
 import CVAssetManager from "./CVAssetManager";
-import CVAssetWriter from "./CVAssetWriter";
+import CVAssetReader from "./CVAssetReader";
+import CVAssetWriter, { WriteConflictError } from "./CVAssetWriter";
 import CVTaskProvider from "./CVTaskProvider";
 import CVDocumentProvider from "./CVDocumentProvider";
-import { INodeComponents } from "./CVDocument";
+import CVDocument, { INodeComponents } from "./CVDocument";
 
 import { ETaskMode } from "../applications/taskSets";
 
+import CVLanguageManager from "./CVLanguageManager";
 import CVMediaManager from "./CVMediaManager";
 import CVMeta from "./CVMeta";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
@@ -62,8 +65,14 @@ export default class CVStoryApplication extends Component
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
+    }
     protected get assetWriter() {
         return this.getMainComponent(CVAssetWriter);
+    }
+    protected get language() {
+        return this.system.getComponent(CVLanguageManager);
     }
     protected get mediaManager() {
         return this.system.getMainComponent(CVMediaManager);
@@ -118,8 +127,8 @@ export default class CVStoryApplication extends Component
 
                 if(storyMode !== ETaskMode.Standalone) {
                     this.assetWriter.putJSON(json, cvDocument.assetPath)
-                    .then(() => new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000))
-                    .catch(e => new Notification(`Failed to upload file to '${cvDocument.assetPath}'`, "error", 8000));
+                    .then(response => this.onDocumentSaved(response, cvDocument))
+                    .catch(error => this.onDocumentSaveFailed(error, cvDocument, json));
                 }
                 else {
                     // Standalone save
@@ -152,6 +161,81 @@ export default class CVStoryApplication extends Component
 
 
         return false;
+    }
+
+    /**
+     * Reports what the server did with a document we just saved. `205 Reset Content` means what
+     * is stored is our changes combined with somebody else's, so the scene on screen is stale.
+     */
+    protected onDocumentSaved(response: Response, cvDocument: CVDocument): Promise<void>
+    {
+        const assetPath = cvDocument.assetPath;
+
+        if (response.status !== 205) {
+            new Notification(this.language.getUILocalizedString({ text: "Successfully uploaded file to '{0}'", args: [assetPath] }), "info", 4000);
+            return Promise.resolve();
+        }
+
+        return MessageBox.show(this.language.getUILocalizedString("Scene merged"),
+            this.language.getUILocalizedString({
+                key: "save.merged",
+                text: "Somebody else changed '{0}' while you were editing it. Load the merged version now?",
+                args: [assetPath],
+            }),
+            "warning", "yes-no")
+        .then(result => {
+            if (!result.ok) {
+                new Notification(this.language.getUILocalizedString({ text: "Kept your version of '{0}'.", args: [assetPath] }), "warning", 8000);
+                return;
+            }
+
+            return this.reloadDocument(cvDocument)
+            .then(() => { new Notification(this.language.getUILocalizedString({ text: "Loaded the merged version of '{0}'", args: [assetPath] }), "info", 4000); })
+            .catch(() => { new Notification(this.language.getUILocalizedString({ text: "Failed to reload '{0}'", args: [assetPath] }), "error", 8000); });
+        });
+    }
+
+    /**
+     * Reports a save that did not happen. A {@link WriteConflictError} means nothing was stored
+     * and the only copy of the change is the one on screen.
+     */
+    protected onDocumentSaveFailed(error: Error, cvDocument: CVDocument, json: string): Promise<void>
+    {
+        const assetPath = cvDocument.assetPath;
+
+        if (!(error instanceof WriteConflictError)) {
+            new Notification(this.language.getUILocalizedString({ text: "Failed to upload file to '{0}'", args: [assetPath] }), "error", 8000);
+            return Promise.resolve();
+        }
+
+        return MessageBox.show(this.language.getUILocalizedString("Save refused"),
+            this.language.getUILocalizedString({
+                key: "save.refused",
+                text: "Somebody else changed '{0}' since you opened it, so nothing was saved. "
+                    + "Save your version over theirs?",
+                args: [assetPath],
+            }),
+            "warning", "yes-no")
+        .then(result => {
+            if (!result.ok) {
+                new Notification(this.language.getUILocalizedString({ text: "'{0}' was not saved.", args: [assetPath] }), "warning", 8000);
+                return;
+            }
+
+            this.assetWriter.forgetRevision(assetPath);
+            return this.assetWriter.putJSON(json, assetPath)
+            .then(response => this.onDocumentSaved(response, cvDocument))
+            .catch(() => { new Notification(this.language.getUILocalizedString({ text: "Failed to upload file to '{0}'", args: [assetPath] }), "error", 8000); });
+        });
+    }
+
+    /** Replaces the active document with the one on the server, rebuilding the whole node tree. */
+    protected reloadDocument(cvDocument: CVDocument): Promise<CVDocument>
+    {
+        const assetPath = cvDocument.assetPath;
+
+        return this.assetReader.getJSON(assetPath)
+        .then(data => this.documentProvider.amendDocument(data, assetPath, false));
     }
 
     /**

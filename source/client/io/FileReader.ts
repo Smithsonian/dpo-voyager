@@ -17,6 +17,8 @@
 
 import { LoadingManager } from "three";
 
+import { assetRevisions } from "./AssetRevisions";
+
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * Most generic loader, for files that require little to no processing.
@@ -31,24 +33,44 @@ export default class FileReader
         this._loadingManager = loadingManager;
     }
 
+    /**
+     * Fetches a file and hands back the whole response, for callers that need more than the
+     * body. Throws on any status other than 2xx.
+     *
+     * Reading a file is also how we learn which revision of it we hold, so the response's
+     * entity-tag is recorded here for anyone who later writes the same URL back.
+     */
+    async getResponse(url: string, accept: string): Promise<Response>
+    {
+        const result = await fetch(url, {
+            headers: {
+                "Accept": accept
+            }
+        });
+
+        if (!result.ok) {
+            throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
+        }
+
+        assetRevisions.update(url, result);
+        return result;
+    }
+
     async getJSON(url: string): Promise<any>
     {
         this._loadingManager.itemStart(url);
 
-        return fetch(url, {
-            headers: {
-                "Accept": "application/json"
-            }
-        }).then(result => {
-            if (!result.ok) {
-                this._loadingManager.itemError(url);
-                this._loadingManager.itemEnd(url);
-                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
-            }
-
+        try {
+            const result = await this.getResponse(url, "application/json");
+            return await result.json();
+        }
+        catch (error) {
+            this._loadingManager.itemError(url);
+            throw error;
+        }
+        finally {
             this._loadingManager.itemEnd(url);
-            return result.json();
-        });
+        }
     }
 
     /**
@@ -56,21 +78,7 @@ export default class FileReader
      */
     async getText(url: string): Promise<any>
     {
-        //this._loadingManager.itemStart(url);
-
-        return fetch(url, {
-            headers: {
-                "Accept": url.endsWith(".html")?"text/html":"text/plain"
-            }
-        }).then(result => {
-            if (!result.ok) {
-                //this._loadingManager.itemError(url);
-                //this._loadingManager.itemEnd(url);
-                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
-            }
-
-            //this._loadingManager.itemEnd(url);
-            return result.text();
-        });
+        const result = await this.getResponse(url, url.endsWith(".html") ? "text/html" : "text/plain");
+        return result.text();
     }
 }

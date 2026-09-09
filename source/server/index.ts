@@ -23,6 +23,8 @@ import * as http from "http";
 import * as https from "https";
 import * as fs from "fs";
 
+import { pipeline } from "stream/promises";
+
 import * as express from "express";
 import * as morgan from "morgan";
 import { v2 as webdav } from "webdav-server";
@@ -77,6 +79,122 @@ app.use("/", express.static(staticDir));
 // documentation server
 app.use("/doc", express.static(docDir));
 
+////////////////////////////////////////////////////////////////////////////////
+// FILE SERVER
+//
+// GET and PUT of the file directory are handled here; the WebDAV server below serves everything
+// else. Both are registered first so they see a request before it does.
+
+/** Resolves a request path inside the file directory, or null if it escapes it. */
+function resolveFilePath(pathname: string): string {
+    let relative: string;
+    try {
+        relative = decodeURIComponent(pathname).replace(/[\\/]+/g, "/");
+    }
+    catch (error) {
+        return null; // malformed percent-encoding
+    }
+
+    if (relative.indexOf("\0") !== -1) {
+        return null;
+    }
+
+    const fullPath = path.join(fileDir, relative);
+    if (fullPath !== fileDir && !fullPath.startsWith(fileDir + path.sep)) {
+        return null;
+    }
+
+    return fullPath;
+}
+
+/**
+ * Strong entity-tag for a file, from its size and modification time — the validator express
+ * computes for static files, minus the `W/` that marks it weak. `If-Match` requires strong
+ * comparison (RFC 9110 13.1.1), so a weak tag would leave every write unconditional.
+ */
+function fileEtag(stats): string {
+    return `"${stats.size.toString(16)}-${stats.mtime.getTime().toString(16)}"`;
+}
+
+async function statOrNull(fullPath: string) {
+    try {
+        return await fs.promises.stat(fullPath);
+    }
+    catch (error) {
+        if (error.code === "ENOENT") {
+            return null;
+        }
+        throw error;
+    }
+}
+
+/**
+ * Conditional PUT, which WebDAV's does not do:
+ *
+ *  - no `If-Match`, or one that matches -- written; `201` if new, `204` if it replaced
+ *    something, carrying the entity-tag of what is now stored
+ *  - an `If-Match` that does not match  -- `412`, and nothing is written
+ */
+async function handlePut(req, res, next) {
+    if (req.method !== "PUT") {
+        return next();
+    }
+
+    const fullPath = resolveFilePath(req.path);
+    if (!fullPath) {
+        return res.sendStatus(400);
+    }
+
+    const stats = await statOrNull(fullPath);
+    if (stats && !stats.isFile()) {
+        return res.status(405).send("not a file");
+    }
+
+    const ifMatch = req.get("If-Match");
+    if (ifMatch !== undefined) {
+        const current = stats ? fileEtag(stats) : null;
+        const matched = ifMatch.trim() === "*"
+            ? !!current
+            : !!current && ifMatch.split(",").some(tag => tag.trim() === current);
+
+        if (!matched) {
+            if (current) {
+                res.set("ETag", current);
+            }
+            return res.status(412).send(`'${req.path}' has changed since it was read`);
+        }
+    }
+
+    // WebDAV answers 409 for a missing parent collection, which collides with the 409 a client
+    // reads as "could not reconcile". Create the folder instead.
+    await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
+
+    // write beside the target and rename over it, so a failed upload can't truncate the file
+    const tempPath = `${fullPath}.${process.pid}.tmp`;
+    try {
+        await pipeline(req, fs.createWriteStream(tempPath));
+        await fs.promises.rename(tempPath, fullPath);
+    }
+    catch (error) {
+        await fs.promises.rm(tempPath, { force: true });
+        throw error;
+    }
+
+    res.set("ETag", fileEtag(await fs.promises.stat(fullPath)));
+    res.status(stats ? 204 : 201).end();
+}
+
+app.use(handlePut);
+
+// Reads. Supplies the entity-tag a write quotes back, and brings range requests and `304`
+// handling with it. Directories fall through to WebDAV, so listings still work.
+app.use(express.static(fileDir, {
+    etag: false,
+    index: false,
+    redirect: false,
+    setHeaders: (res, filePath, stats) => res.setHeader("ETag", fileEtag(stats)),
+}));
+
 // WebDAV file server
 const webDAVServer = new webdav.WebDAVServer();
 webDAVServer.setFileSystem("/", new webdav.PhysicalFileSystem(fileDir), success => {
@@ -93,15 +211,7 @@ webDAVServer.setFileSystem("/", new webdav.PhysicalFileSystem(fileDir), success 
 
         const validator = function(req, res, next) {
 
-            const tempPath = decodeURIComponent(req.url).replace(/[\\/]+/g, '/');
-            if (tempPath.indexOf('\0') !== -1) {
-                return res.sendStatus(400);
-            }
-              
-            const rootDirectory = `${fileDir}`;
-              
-            const fullPath = path.join(rootDirectory, tempPath);
-            if (fullPath.indexOf(rootDirectory) !== 0) {
+            if (!resolveFilePath(req.path)) {
                 return res.sendStatus(400);
             }
 

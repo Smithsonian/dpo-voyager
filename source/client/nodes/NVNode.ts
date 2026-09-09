@@ -117,11 +117,31 @@ export default class NVNode extends Node
         const childIndices = node.children;
         if (childIndices) {
             childIndices.forEach(childIndex => {
-                const childNode = this.graph.createCustomNode(NVNode);
+                const childNode = this.createChildNode(document, childIndex);
                 this.transform.addChild(childNode.transform);
                 childNode.fromDocument(document, childIndex, pathMap);
             });
         }
+    }
+
+    /**
+     * Creates the node for one entry of the document's node list, keeping the id the document
+     * carries. An id already in use is dropped rather than reused: the node registry throws on
+     * a duplicate, which would fail the whole load.
+     */
+    protected createChildNode(document: IDocument, nodeIndex: number): NVNode
+    {
+        const id = document.nodes[nodeIndex].id;
+
+        if (!id || this.system.nodes.getById(id)) {
+            return this.graph.createCustomNode(NVNode);
+        }
+
+        // createCustomNode() skips createComponents() when given an id, expecting fromJSON() to
+        // restore them. fromDocument() builds its own, but needs the transform to exist first.
+        const node = this.graph.createCustomNode(NVNode, undefined, id);
+        node.createComponents();
+        return node;
     }
 
     toDocument(document: IDocument, pathMap: Map<Component, string>, components?: INodeComponents)
@@ -140,6 +160,8 @@ export default class NVNode extends Node
         document.nodes.push(node);
 
         pathMap.set(this.transform, `node/${nodeIndex}`);
+
+        node.id = this.id;
 
         if (this.name) {
             node.name = this.name;

@@ -24,6 +24,30 @@ import { enumToArray } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * A string to display, with what is needed to translate it.
+ *
+ * Short text is its own dictionary key. Anything long enough that editing a word would invalidate
+ * every translation of it, or that reads badly as a key, gets an explicit `key` instead and keeps
+ * `text` as what to show while no translation exists. `args` fill the `{0}`, `{1}`, ...
+ * placeholders after the lookup, so a message that names a file stays a single key.
+ */
+export interface ILocalizedString {
+    /** Text to display where the dictionary has no entry. */
+    text: string;
+    /** Dictionary key. Defaults to `text`. */
+    key?: string;
+    /** Values for the `{0}`, `{1}`, ... placeholders. */
+    args?: (string | number)[];
+}
+
+/** Substitutes `{0}`, `{1}`, ... in `text` with `args`. Unmatched placeholders are left alone. */
+function format(text: string, args: (string | number)[]): string
+{
+    return text.replace(/\{(\d+)\}/g, (placeholder, index) =>
+        args[index] !== undefined ? String(args[index]) : placeholder);
+}
+
 export interface ITranslation {
     [key: string]: string;
 }
@@ -166,9 +190,17 @@ export default class CVLanguageManager extends Component
         return  this.getLocalizedStringIn (text, this._activeSeneLanguageTranslations, ELanguageType[this.outs.activeLanguage.value]);
     }
 
-    getUILocalizedString(text: string): string
+    getUILocalizedString(text: string | ILocalizedString): string
     {   
-        return this.getLocalizedStringIn(text, this._uiLanguageTranslations, ELanguageType[this.outs.uiLanguage.value]);
+        const string :ILocalizedString = typeof text === "string" ? { text } : text;
+        const key = string.key ?? string.text;
+
+        const localized = this.getLocalizedStringIn(key, this._uiLanguageTranslations, ELanguageType[this.outs.uiLanguage.value]);
+        // getLocalizedStringIn() echoes the key back when the dictionary has no entry for it.
+        // An explicit key is an identifier, not display text, so `text` is what to show instead.
+        const result = localized === key ? string.text : localized;
+
+        return string.args ? format(result, string.args) : result;
     }
 
     getSceneSetupLocalizedString(text: string): string
