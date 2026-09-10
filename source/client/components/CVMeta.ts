@@ -71,7 +71,11 @@ export default class CVMeta extends Component
         }
         if (data.images) {
             const imageDict = {};
-            data.images.forEach(image => imageDict[image.quality] = image);
+            data.images.forEach(image => {
+                image.usage ??= "Render";
+                const key = image.usage === "Render" ? image.quality : image.uri;
+                imageDict[key] = image;
+            });
             this.images.dictionary = imageDict;
         }
         if (data.articles) {

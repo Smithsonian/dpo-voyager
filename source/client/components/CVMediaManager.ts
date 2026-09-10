@@ -26,11 +26,16 @@ import MainView from "client/ui/explorer/MainView";
 import CVDocumentProvider from "./CVDocumentProvider";
 import ImportMenu from "client/ui/story/ImportMenu";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
-import { EDerivativeUsage } from "client/schema/model";
+import { EAssetType, EDerivativeQuality, EDerivativeUsage, EMapType } from "client/schema/model";
 import CSelection from "@ff/graph/components/CSelection";
 import CVMeta from "./CVMeta";
 import Article from "client/models/Article";
 import CVEnvironment from "./CVEnvironment";
+import ImageImportMenu from "client/ui/story/ImageImportMenu";
+import { BufferAttribute, BufferGeometry, DoubleSide, Mesh, MeshStandardMaterial, Vector3 } from "three";
+import CVAssetReader from "./CVAssetReader";
+import NVNode from "client/nodes/NVNode";
+import CVImagePlane from "./CVImagePlane";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,6 +58,9 @@ export default class CVMediaManager extends CAssetManager
     }
     protected get assetManager() {
         return this.system.getMainComponent(CVAssetManager);
+    }
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
     }
     protected get environment() {
       return this.system.getComponent(CVEnvironment);
@@ -161,8 +169,8 @@ export default class CVMediaManager extends CAssetManager
                 else if (!documentProvided && filenameLower.match(/\.(gltf|glb)$/)) {
                     this.uploadFile(normalizedPath, file, this.root).then(() => this.handleModelImport(normalizedPath));
                 }
-                else if (!documentProvided && filenameLower.match(/\.(hdr)$/)) {
-                    this.uploadFile(normalizedPath, file, this.root).then(() => this.environment.addImage(normalizedPath));
+                else if (!documentProvided && filenameLower.match(/\.(hdr|jpg|jpeg|png)$/)) {
+                    this.uploadFile(normalizedPath, file, this.root).then(() => this.handleImageImport(normalizedPath));
                 }
                 else {
                     this.uploadFile(normalizedPath, file, this.root);
@@ -200,6 +208,41 @@ export default class CVMediaManager extends CAssetManager
                 model.outs.updated.set();
                 model.once<IModelLoadEvent>("model-load", () => {selection.selectNode(model.node); 
                     this.assetManager.outs.initialLoad.setValue(false)}, this);
+            }
+        }).catch(e => {});
+    }
+
+    protected handleImageImport(filepath: string) {
+        const mainView : MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
+        const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
+        const filename = filepath.substr(filepath.lastIndexOf("/") + 1);
+
+        ImageImportMenu.show(mainView, activeDoc.setup.language, filename).then((returnVals) => {
+            const type = returnVals[0];
+            switch(type) {
+                case "environment":
+                    this.environment.addImage(filepath);
+                    break;
+                case "overlay":
+                    const parentName = returnVals[1];
+                    const model = this.getSystemComponents(CVModel2).find(element => element.node.name === parentName);
+                    const newAsset = model.activeDerivative.createAsset(EAssetType.Image, filepath);
+                    newAsset.data.mapType = EMapType.Zone;
+                    const overlay = model.getOverlay(filepath);
+                    overlay.asset = newAsset;
+                    overlay.fromFile = true;
+                    model.ins.overlayMap.setValue(model.getOverlays().length);
+                    break;
+                case "plane":   
+                    const nvNode = activeDoc.root.graph.createCustomNode(NVNode);
+                    const plane = nvNode.transform.createComponent(CVImagePlane);
+                    const derivative = plane.derivatives.getOrCreate(EDerivativeUsage.Image2D, EDerivativeQuality.High);
+                    derivative.createAsset(EAssetType.Image, filepath);
+                    activeDoc.root.scene.transform.addChild(plane.transform);
+                    nvNode.name = "ImagePlane";
+                    plane.ins.name.setValue(nvNode.name);
+                    plane.setImage(filepath);
+                    break;
             }
         }).catch(e => {});
     }

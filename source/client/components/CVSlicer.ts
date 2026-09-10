@@ -184,7 +184,7 @@ export default class CVSlicer extends Component
     {
         const ins = this.ins;
 
-        if (ins.enabled.changed) {
+        if (ins.enabled.changed && material.defines) {
             const enabled = ins.enabled.value && model.ins.slicerEnabled.value;
             const renderer = this.getMainComponent(CRenderer);
             renderer.views.forEach(view => view.renderer.localClippingEnabled = enabled);
