@@ -274,6 +274,10 @@ button, input {
   overflow-y: auto;
 }
 
+.ff-scroll-x{
+  overflow-x: auto;
+}
+
 .ff-position-above {
   position: absolute;
   bottom: 0;
@@ -443,16 +447,21 @@ button, input {
     }
   }
 
-  & > .ff-text {
+  & .ff-text {
     margin: 3px;
     white-space: nowrap;
+    display: inline-block;
   }
   & > .ff-icon {
     margin: 3px;
     height: 1.3em;
   }
-  & > .ff-caret-down {
+  & .ff-caret-container {
+    white-space: nowrap;
+  }
+  & .ff-caret-down {
     margin: 3px;
+    display: inline-block;
   }
 
   &.ff-disabled {
@@ -483,6 +492,9 @@ button, input {
     justify-content: flex-start;
     margin: 0;
     padding: 4px 4px;
+    &.ff-control{
+      flex-wrap: nowrap;
+    }
 
     .ff-icon {
       height: 1.2em;
