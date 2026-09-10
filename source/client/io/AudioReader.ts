@@ -36,15 +36,17 @@ export default class AudioReader
             request.responseType = 'arraybuffer';
             request.onload = () => {
                 if (request.status >= 200 && request.status < 300) {
-                    this.loadingManager.itemEnd(url)
+                    this.loadingManager.itemEnd(url);
                     resolve(request.response); 
                 } else {
                     this.loadingManager.itemError(url);
+                    this.loadingManager.itemEnd(url);
                     reject(Error(request.statusText));
                 }
             };
             request.onerror = () => {
                 this.loadingManager.itemError(url);
+                this.loadingManager.itemEnd(url);
                 reject(Error("Possible network error"));
             };
             request.send();
