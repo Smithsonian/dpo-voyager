@@ -248,6 +248,7 @@ export default class CVEnvironment extends Component
         texture.dispose();
         texture = null;
         this._loadingCount--;
+        this.ins.visible.set();
     }
 
     protected onMetaComponent(event: IComponentEvent<CVMeta>)
