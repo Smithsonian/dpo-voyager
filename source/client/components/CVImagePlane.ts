@@ -128,13 +128,13 @@ export default class CVImagePlane extends CVModel2
 
         if (data.translation) {
             ins.position.copyValue(data.translation);
-            //this._prevPosition.fromArray(data.translation);
+            this._prevPosition.fromArray(data.translation);
         }
 
         if (data.rotation) {
             _quat.fromArray(data.rotation);
             helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, ins.rotation.value);
-            //this._prevRotation.fromArray(ins.rotation.value);
+            this._prevRotation.fromArray(ins.rotation.value);
             ins.rotation.set();
         }
 

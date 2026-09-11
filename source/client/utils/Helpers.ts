@@ -33,8 +33,8 @@ export function getMeshTransform(root : Object3D, current: Object3D)
     var tempMatrix = new Matrix4();
 
     result.identity();
-console.log(root);
-    do {console.log(current);
+
+    do {
         tempMatrix.compose(current.position, current.quaternion, current.scale);
         result.multiply(tempMatrix.invert());
 
