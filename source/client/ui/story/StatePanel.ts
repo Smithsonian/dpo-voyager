@@ -203,9 +203,8 @@ export default class StatePanel extends DocumentView
             this.snapshots.setState(newState);
             this.snapshots.deltaStates.push(newState);
             
+            this._activeIndex = this.snapshots.deltaStates.length - 1;
             this.setActiveState(newState.id);
-
-            this.requestUpdate();
         }
 
         Object.keys(this.snapshots.targetFeatures).forEach(key => this.snapshots.targetFeatures[key] = featureCache[key]);
