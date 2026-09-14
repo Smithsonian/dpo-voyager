@@ -420,6 +420,22 @@ $color-component-meta-light: #d9d998;
   }
 }
 
+.sv-state-panel {
+  .sv-record.ff-button.ff-control {
+    &[selected] {
+      background-color: transparent;
+
+      &:hover {
+        background-color: common.$color-background-lighter;
+      }
+
+      .ff-icon {
+        fill: red;
+      }
+    }
+  }
+}
+
 .sv-panel {
   display: flex;
   flex-direction: column;

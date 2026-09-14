@@ -56,6 +56,7 @@ export default class CVActionsTask extends CVTask
         animation: types.Option("Action.Animation", ["None"], 0),
         annotation: types.Option("Action.AnnotationT", ["None"], 0),
         actionAnnotation: types.Option("Action.Annotation", ["None"], 0),
+        state: types.Option("Action.State", ["None"], 0),
         tour: types.Option("Action.Tour", ["None"], 0),
         tourStep: types.Option("Action.TourStep", ["None"], 0),
         syncWith: types.Option("Action.SyncWith", ["None"], 0),
@@ -109,6 +110,7 @@ export default class CVActionsTask extends CVTask
         this.meta ? this.synchAnnotationOptions(this.meta.getComponent(CVModel2)) : null;
         this.synchTourOptions();
         this.synchActionOptions();
+        this.synchStateOptions();
     }
 
     deactivateTask()
@@ -183,6 +185,10 @@ export default class CVActionsTask extends CVTask
                 const id = ins.actionAnnotation.value > 0 ? meta.getComponent(CVAnnotationView).getAnnotations()[ins.actionAnnotation.value - 1].id : undefined;
                 action.actionAnnoId = id;
             }
+            if(ins.state.changed) {
+                const id = ins.state.value > 0 ? this.activeDocument.setup.snapshots.deltaStates[ins.state.value - 1].id : undefined;
+                action.stateId = id;
+            }
             if(ins.name.changed) {
                 action.name = ins.name.value;
                 this.synchActionOptions();
@@ -234,6 +240,7 @@ export default class CVActionsTask extends CVTask
             ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : 0);
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
             ins.actionAnnotation.setValue(action.actionAnnoId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.actionAnnoId) + 1 : null);
+            ins.state.setValue(action.stateId ? this.activeDocument.setup.snapshots.deltaStates.findIndex(state => state.id == action.stateId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
             ins.speed.setValue(action.speed);
             ins.clamp.setValue(action.clamp);
@@ -300,10 +307,12 @@ export default class CVActionsTask extends CVTask
         if (previous) {
             previous.setup.actions.outs.fired.off("value", this.updateUI, this);
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
+            previous.setup.snapshots.outs.update.off("value", this.synchStateOptions, this);
             this.actionManager = null;
         }
         if (next) {
             this.actionManager = next.setup.actions;
+            next.setup.snapshots.outs.update.on("value", this.synchStateOptions, this);
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
             next.setup.actions.outs.fired.on("value", this.updateUI, this);
         }
@@ -365,5 +374,13 @@ export default class CVActionsTask extends CVTask
         });
         this.ins.action.setOptions(actionOptions);
         this.ins.actionTarget.setOptions(actionOptions);
+    }
+
+    // Update state options
+    protected synchStateOptions() {
+        const states = this.activeDocument.setup.snapshots.deltaStates;
+        const stateOptions = ["None"];
+        stateOptions.push(...states.map(state => state.title));
+        this.ins.state.setOptions(stateOptions);
     }
 }

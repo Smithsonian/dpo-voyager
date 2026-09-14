@@ -42,6 +42,12 @@ export interface ITweenState
     threshold: number;
 }
 
+export interface IDeltaState extends ITweenState
+{
+    title: string;
+    paths: string[]
+}
+
 export interface ITweenTarget
 {
     /** Target component id. */
@@ -75,6 +81,7 @@ export default class CTweenMachine extends Component
 
     protected static readonly outs = {
         count: types.Integer("Snapshots.Count"),
+        update: types.Event("Snapshot.Update"),
         tweening: types.Boolean("Tween.IsTweening"),
         time: types.Number("Tween.Time"),
         completed: types.Percent("Tween.Completed"),
@@ -173,6 +180,7 @@ export default class CTweenMachine extends Component
                 state.curve = ins.curve.value;
                 state.duration = ins.duration.value;
                 state.threshold = ins.threshold.value;
+                this.outs.update.set();
             }
             if (ins.store.changed) {
                 state.values = this.getCurrentValues();
