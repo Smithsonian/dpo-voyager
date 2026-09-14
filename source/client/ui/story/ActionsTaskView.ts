@@ -54,9 +54,10 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
 
         const node = this.activeNode;
         const actionList = node && node.hasComponent(CVAnnotationView) && this.task.actions;
+        const languageManager = this.activeDocument.setup.language;
 
         if (!actionList) {
-            return html`<div class="sv-placeholder">Please select a model node to edit its actions.</div>`;
+            return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a model node to edit its actions.")}</div>`;
         }
 
         const accessibilityNotice = ins.type.value === EActionType.PlayAudio && 
