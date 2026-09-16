@@ -434,6 +434,15 @@ $color-component-meta-light: #d9d998;
       }
     }
   }
+
+  .ff-button.ff-control {
+    &:focus {
+      background-color: transparent;
+    }
+    &:hover {
+      background-color: common.$color-background-lighter;
+    }
+  }
 }
 
 .sv-panel {

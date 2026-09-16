@@ -432,13 +432,13 @@ button, input {
   background: $color-background-light;
   transition: background-color 0.2s;
 
-  &:hover {
+  &:hover, &:focus {
     background-color: $color-background-lighter;
   }
   &[selected] {
     background-color: $color-primary;
 
-    &:hover {
+    &:hover, &:focus {
       background-color: $color-primary-light;
     }
   }

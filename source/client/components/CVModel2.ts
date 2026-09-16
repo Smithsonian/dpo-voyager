@@ -1044,7 +1044,7 @@ export default class CVModel2 extends CObject3D
     {
         const material = inMaterial as MeshStandardMaterial;
         Object.assign(material, material.userData.paramCopy);
-
+console.log(material.userData.paramCopy);
         material.defines["MODE_NORMALS"] = false;
         material.defines["MODE_XRAY"] = false;
         material.defines["OBJECTSPACE_NORMALMAP"] = !!(material.normalMap && material.normalMapType === ObjectSpaceNormalMap);
@@ -1057,7 +1057,7 @@ export default class CVModel2 extends CObject3D
         switch(mode) {
             case EShaderMode.Clay:
                 material.userData.paramCopy = {
-                    color: material.color,
+                    color: material.color.clone(),
                     map: material.map,
                     roughness: material.roughness,
                     metalness: material.metalness,
@@ -1075,7 +1075,7 @@ export default class CVModel2 extends CObject3D
                 }
 
                 material.envMap = null;
-                material.color = this._clayColor;
+                material.color.copy(this._clayColor);
                 material.map = null;
                 material.roughness = 1;
                 material.metalness = 0;
@@ -1113,7 +1113,7 @@ export default class CVModel2 extends CObject3D
 
             case EShaderMode.Wireframe:
                 material.userData.paramCopy = {
-                    color: material.color,
+                    color: material.color.clone(),
                     emissive: material.emissive,
                     roughness: material.roughness,
                     metalness: material.metalness,
@@ -1123,7 +1123,7 @@ export default class CVModel2 extends CObject3D
                     emissiveMap: material.emissiveMap,
                     normalMap: material.normalMap,
                 };
-                material.color = this._wireColor;
+                material.color.copy(this._wireColor);
                 material.emissive = this._wireEmissiveColor;
                 material.roughness = 0.8;
                 material.metalness = 0.1;

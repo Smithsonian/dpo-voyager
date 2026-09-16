@@ -102,9 +102,7 @@ export default class CVActionManager extends Component
             }
 
             // fire onEnd triggers
-            const onEndTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionEnd] as TActionTrigger
-                && element.action.triggerDetail === finishedId);
-            onEndTriggers.forEach(trigger => this.playAction(trigger.model, trigger.action));
+            this.fireOnEndTriggers(finishedId);
         });
 
         this.graph.components.on(CVModel2, this.onModelComponent, this);
@@ -409,11 +407,7 @@ export default class CVActionManager extends Component
             }
 
             machine.activateStateChange(action.stateId);
-            machine.outs.end.once("value", () => {
-                const onEndTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionEnd] as TActionTrigger
-                    && element.action.triggerDetail === action.id);
-                onEndTriggers.forEach(trigger => this.playAction(trigger.model, trigger.action));
-            });
+            machine.outs.end.once("value", () => this.fireOnEndTriggers(action.id));
         }
         else if(action.type == EActionType[EActionType.EnableAction] as TActionType ||
             action.type == EActionType[EActionType.DisableAction] as TActionType) {
@@ -520,6 +514,12 @@ export default class CVActionManager extends Component
                 !annotation.data.visible : action.type == EActionType[EActionType.ShowAnnotation] as TActionType;
             annotation?.set("visible", isVisible);
         }
+    }
+
+    protected fireOnEndTriggers(actionID: string) {
+        const onEndTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionEnd] as TActionTrigger
+            && element.action.triggerDetail === actionID);
+        onEndTriggers.forEach(trigger => this.playAction(trigger.model, trigger.action));
     }
 
     // To save/load future configuration options
