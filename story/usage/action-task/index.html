@@ -327,6 +327,10 @@
 		</li>
 		
 		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/state-editor/">State Editor</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/story/usage/scene-name/">Scene Title</a>
 		</li>
 		
@@ -385,6 +389,10 @@ Task in the task bar.</li>
 <li><em>ShowAnnotation</em> - shows the defined annotation.</li>
 <li><em>ToggleAnnotation</em> - toggles visibility of the defined annotation. <strong>Tip:</strong> Annotation hide/show can be useful for coordinating dependent animations. Toggle works will alongside &ldquo;PingPong&rdquo; style animations. 
 E.g. an annotation that triggers removing an item from a drawer is not visible until the animation opening the drawer has completed.</li>
+<li><em>StateChange</em> - Triggers a predefined state change created with the <a href="../state-editor/">State Editor</a>.</li>
+<li><em>EnableAction</em> - sets enabled to true for the action defined by &ldquo;ActionTarget&rdquo;.</li>
+<li><em>DisableAction</em> - sets enabled to false for the action defined by &ldquo;ActionTarget&rdquo;. <strong>Tip:</strong> Enable/Disable action types are useful for coordinating context-specific triggers. For instance, multiple click triggers on the same object could
+be handled by enabling the one appropriate to the current user context and disabling all others on-the-fly.</li>
 </ul>
 </li>
 <li><strong>Style</strong> - How the action plays. Options include:
@@ -400,7 +408,9 @@ E.g. an annotation that triggers removing an item from a drawer is not visible u
 <li><strong>Annotation</strong> - For trigger type &ldquo;OnAnnotation&rdquo;, select the triggering annotation from the dropdown list.</li>
 <li><strong>Action</strong> - For trigger type &ldquo;OnActionBegin&rdquo; or &ldquo;OnActionEnd&rdquo;, select the triggering action from the dropdown list.</li>
 <li><strong>Audio</strong> - For action type &ldquo;PlayAudio&rdquo;, select the audio element from the dropdown list.</li>
+<li><strong>State</strong> - For action type &ldquo;StateChange&rdquo;, select the state element from the dropdown list.</li>
 <li><strong>SyncWith</strong> - For action type &ldquo;PlayAudio&rdquo;, select an object animation to sync the audio with from the dropdown list. <strong>Tip:</strong> Synching the audio ensures it will stay aligned with the animation through any audio pause/play interaction.</li>
+<li><strong>Enabled</strong> - Whether this action will be executed when triggered.</li>
 </ul>
 </li>
 </ol>

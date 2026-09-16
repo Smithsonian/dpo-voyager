@@ -160,6 +160,15 @@
     </item>
     
     <item>
+      <title>State Editor</title>
+      <link>https://smithsonian.github.io/dpo-voyager/story/usage/state-editor/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://smithsonian.github.io/dpo-voyager/story/usage/state-editor/</guid>
+      <description>Create state change snapshots for dynamic triggering.</description>
+    </item>
+    
+    <item>
       <title>Scene Title</title>
       <link>https://smithsonian.github.io/dpo-voyager/story/usage/scene-name/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Explorer - Voyager Documentation</title>
+  <title>State Editor - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -20,7 +20,7 @@
 
 </head>
 
-<body class='page page-default-list'>
+<body class='page page-default-single'>
   <div id="main-menu-mobile" class="main-menu-mobile">
   <ul>
     
@@ -37,7 +37,7 @@
       </a>
     </li>
     
-    <li class="menu-item-explorer active">
+    <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
       </a>
@@ -91,7 +91,7 @@
       </a>
     </li>
     
-    <li class="menu-item-explorer active">
+    <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
       </a>
@@ -134,9 +134,9 @@
       
     
       
-        
-      
     
+      
+        
       
     
       
@@ -326,7 +326,7 @@
 		  <a href="/dpo-voyager/story/usage/language-support/">Multilingual Support</a>
 		</li>
 		
-		<li style="padding-left: 15px" class="">
+		<li style="padding-left: 15px" class="active ">
 		  <a href="/dpo-voyager/story/usage/state-editor/">State Editor</a>
 		</li>
 		
@@ -360,63 +360,24 @@
         </div>
         <div class="col-12 col-md-9">
           
+<h1 class="title">State Editor</h1>
+<div class="content">
+  <p>The State Editor tab allows you to create and save scene snapshots that can be dynamically triggered through Voyager actions.
+This could be changin the camera view, light color, material property, etc. - anything that can be changed in a tour step.</p>
+<p>Unlike tours, the state editor does not require you to enable the &lsquo;categories&rsquo; of properties that you want to save. Anything change 
+while the &lsquo;record&rsquo; button is active will be saved to the snapshot. If anything unintentional was saved (a common example being a camera change), 
+you can remove those properties by going to the state details in the lower right and clicking the &lsquo;x&rsquo; by that specific change.</p>
+<p>See the annotated image below for more details:</p>
+<p><img src="state-editor.png" alt="State Editor screen shot with numbered labels"></p>
+<ol>
+<li>The state editor exists in a new tab, next to the tour editor.</li>
+<li>Unlike the tour editor, the state editor uses a &ldquo;record&rdquo; button to track the delta between when you start making changes and when you next press &ldquo;record&rdquo;. These state changes are also one-directional. They are only concerned with moving to the new state, not returning to the previous.
+While creating states, use the &lsquo;Reset&rsquo; or &lsquo;Default State&rsquo; buttons to return to your pre-change state.</li>
+<li>The state change details panel provides a list of all individual properties that changed during recording. This allows you to remove properties (like a camera movement) that may have been inadvertently tracked.</li>
+<li>The Action task panel has a new action type of &ldquo;StateChange&rdquo; which will enable a dropdown showing all of the currently saved states. This action type is compatible with any of the existing trigger types.</li>
+</ol>
 
-  
-  <h1 class="title">Explorer</h1>
-  <div class="content">
-    
-  </div>
-
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/overview/">Overview</a></h2>
-  <p>Voyager Explorer - 3D interactive web viewer</p>
 </div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/usage/">How To: Embed a model on your site</a></h2>
-  <p>Options for embedding 3D content with Voyager Explorer</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/scene-create/">How To: Create a scene file</a></h2>
-  <p>Creating a scene for use with Voyager Explorer</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/offline/">How To: Use the component offline</a></h2>
-  <p>Using the Voyager Explorer component offline</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/branding/">How To: Customize Voyager branding</a></h2>
-  <p>Options for customizing Voyager Explorer branding</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/kintsugi/">How To: Use Kintsugi 3D</a></h2>
-  <p>Introduction to Kintsugi 3D and usage steps.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/api/">API Overview</a></h2>
-  <p>A description of the attributes and methods that help you to externally configure and control Voyager Explorer.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/api-examples/">API Examples</a></h2>
-  <p>Some functional examples of the Voyager Explorer API in use.</p>
-</div>
-  
-
 
         </div>
       </div>
