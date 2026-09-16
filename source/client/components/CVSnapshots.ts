@@ -129,6 +129,11 @@ export default class CVSnapshots extends CTweenMachine
 
     activateStateChange(id: string)
     {
+        // don't process an active delta state change if one is already in progress
+        if(this.outs.tweening.value && this.deltaStates.some(state => state.id === id)) {
+            return;
+        }
+        
         const state = this.getState(id) as IDeltaState;
         const targetCache : ITargetEntry[] = [];
         this.targets.forEach(target => { targetCache.push(target);});

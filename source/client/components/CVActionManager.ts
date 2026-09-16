@@ -396,7 +396,24 @@ export default class CVActionManager extends Component
             this.setAnnotationVisibility(model, action);
         }
         else if(action.type == EActionType[EActionType.StateChange] as TActionType) {
-            this.setup.snapshots.activateStateChange(action.stateId);
+            const machine = this.setup.snapshots;
+            if(machine.outs.tweening.value) {
+                // If this state change is already in progress, don't retrigger
+                if(machine.ins.id.value === action.stateId) {
+                    return;
+                }
+                // If a different state change is in progress, push it to the end before triggering the new one
+                else if(machine.deltaStates.some(state => state.id === machine.ins.id.value)) {
+                    machine.endTween();
+                }
+            }
+
+            machine.activateStateChange(action.stateId);
+            machine.outs.end.once("value", () => {
+                const onEndTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionEnd] as TActionTrigger
+                    && element.action.triggerDetail === action.id);
+                onEndTriggers.forEach(trigger => this.playAction(trigger.model, trigger.action));
+            });
         }
         else if(action.type == EActionType[EActionType.EnableAction] as TActionType ||
             action.type == EActionType[EActionType.DisableAction] as TActionType) {

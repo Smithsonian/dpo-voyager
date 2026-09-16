@@ -20,7 +20,7 @@ import { getEasingFunction, EEasingCurve } from "@ff/core/easing";
 
 import Component, { types } from "../Component";
 import Property, { IPropertyDisposeEvent } from "../Property";
-import { IPulseContext } from "./CPulse";
+import CPulse, { IPulseContext } from "./CPulse";
 import uniqueId from "@ff/core/uniqueId";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,6 +150,14 @@ export default class CTweenMachine extends Component
             return true;
         }
 
+    }
+
+    endTween()
+    {
+        if(this.outs.tweening.value) {
+            this._startTime = 0;
+            this.tick(this.getMainComponent(CPulse).context);
+        }
     }
 
     update(context: IPulseContext)
