@@ -1044,7 +1044,7 @@ export default class CVModel2 extends CObject3D
     {
         const material = inMaterial as MeshStandardMaterial;
         Object.assign(material, material.userData.paramCopy);
-console.log(material.userData.paramCopy);
+
         material.defines["MODE_NORMALS"] = false;
         material.defines["MODE_XRAY"] = false;
         material.defines["OBJECTSPACE_NORMALMAP"] = !!(material.normalMap && material.normalMapType === ObjectSpaceNormalMap);

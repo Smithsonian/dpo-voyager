@@ -507,12 +507,14 @@ export default class CVActionManager extends Component
 
     protected setAnnotationVisibility(model: CVModel2, action: IAction)
     {
-        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
+        const view = model.getComponent(CVAnnotationView);
+        const annotation = view.getAnnotationById(action.actionAnnoId);
 
         if(annotation) {
             const isVisible = action.type == EActionType[EActionType.ToggleAnnotation] as TActionType ?
                 !annotation.data.visible : action.type == EActionType[EActionType.ShowAnnotation] as TActionType;
             annotation?.set("visible", isVisible);
+            view.updateAnnotation(annotation, true);
         }
     }
 
