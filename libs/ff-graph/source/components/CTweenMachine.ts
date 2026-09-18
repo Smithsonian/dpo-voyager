@@ -20,7 +20,7 @@ import { getEasingFunction, EEasingCurve } from "@ff/core/easing";
 
 import Component, { types } from "../Component";
 import Property, { IPropertyDisposeEvent } from "../Property";
-import { IPulseContext } from "./CPulse";
+import CPulse, { IPulseContext } from "./CPulse";
 import uniqueId from "@ff/core/uniqueId";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +40,12 @@ export interface ITweenState
     curve: EEasingCurve;
     duration: number;
     threshold: number;
+}
+
+export interface IDeltaState extends ITweenState
+{
+    title: string;
+    paths: string[]
 }
 
 export interface ITweenTarget
@@ -75,6 +81,7 @@ export default class CTweenMachine extends Component
 
     protected static readonly outs = {
         count: types.Integer("Snapshots.Count"),
+        update: types.Event("Snapshot.Update"),
         tweening: types.Boolean("Tween.IsTweening"),
         time: types.Number("Tween.Time"),
         completed: types.Percent("Tween.Completed"),
@@ -145,6 +152,14 @@ export default class CTweenMachine extends Component
 
     }
 
+    endTween()
+    {
+        if(this.outs.tweening.value) {
+            this._startTime = 0;
+            this.tick(this.getMainComponent(CPulse).context);
+        }
+    }
+
     update(context: IPulseContext)
     {
         const ins = this.ins;
@@ -173,6 +188,7 @@ export default class CTweenMachine extends Component
                 state.curve = ins.curve.value;
                 state.duration = ins.duration.value;
                 state.threshold = ins.threshold.value;
+                this.outs.update.set();
             }
             if (ins.store.changed) {
                 state.values = this.getCurrentValues();

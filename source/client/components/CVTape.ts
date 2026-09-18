@@ -200,6 +200,7 @@ export default class CVTape extends CObject3D
         }
 
         if(ins.visible.changed) {
+            ins.enabled.setValue(ins.visible.value, true);
             if(ins.visible.value) {
                 const startPos = ins.startPosition.value;
                 const endPos = ins.endPosition.value;

@@ -102,9 +102,7 @@ export default class CVActionManager extends Component
             }
 
             // fire onEnd triggers
-            const onEndTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionEnd] as TActionTrigger
-                && element.action.triggerDetail === finishedId);
-            onEndTriggers.forEach(trigger => this.playAction(trigger.model, trigger.action));
+            this.fireOnEndTriggers(finishedId);
         });
 
         this.graph.components.on(CVModel2, this.onModelComponent, this);
@@ -395,6 +393,22 @@ export default class CVActionManager extends Component
             action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
             this.setAnnotationVisibility(model, action);
         }
+        else if(action.type == EActionType[EActionType.StateChange] as TActionType) {
+            const machine = this.setup.snapshots;
+            if(machine.outs.tweening.value) {
+                // If this state change is already in progress, don't retrigger
+                if(machine.ins.id.value === action.stateId) {
+                    return;
+                }
+                // If a different state change is in progress, push it to the end before triggering the new one
+                else if(machine.deltaStates.some(state => state.id === machine.ins.id.value)) {
+                    machine.endTween();
+                }
+            }
+
+            machine.activateStateChange(action.stateId);
+            machine.outs.end.once("value", () => this.fireOnEndTriggers(action.id));
+        }
         else if(action.type == EActionType[EActionType.EnableAction] as TActionType ||
             action.type == EActionType[EActionType.DisableAction] as TActionType) {
             const targetAction = this._actions.find(element => element.action.id === action.actionTargetId)?.action;
@@ -493,13 +507,21 @@ export default class CVActionManager extends Component
 
     protected setAnnotationVisibility(model: CVModel2, action: IAction)
     {
-        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
+        const view = model.getComponent(CVAnnotationView);
+        const annotation = view.getAnnotationById(action.actionAnnoId);
 
         if(annotation) {
             const isVisible = action.type == EActionType[EActionType.ToggleAnnotation] as TActionType ?
                 !annotation.data.visible : action.type == EActionType[EActionType.ShowAnnotation] as TActionType;
             annotation?.set("visible", isVisible);
+            view.updateAnnotation(annotation, true);
         }
+    }
+
+    protected fireOnEndTriggers(actionID: string) {
+        const onEndTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionEnd] as TActionTrigger
+            && element.action.triggerDetail === actionID);
+        onEndTriggers.forEach(trigger => this.playAction(trigger.model, trigger.action));
     }
 
     // To save/load future configuration options

@@ -29,8 +29,6 @@ export default class PropertyTags extends PropertyBase
 {
     type = "string";
 
-    private _missingContent = false;
-
     @property({ attribute: false })
     protected inputValue = "";
 

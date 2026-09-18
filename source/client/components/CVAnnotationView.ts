@@ -653,10 +653,6 @@ export default class CVAnnotationView extends CObject3D
         const orbitIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Orbit");
         const viewState = this.snapshots.getState(viewId);
 
-        if(!viewState) {
-
-        }
-
         const currentOrbit = this.snapshots.getCurrentValues()[orbitIdx];
         let angleOffset = 0;
         currentOrbit.forEach((n, i) => {

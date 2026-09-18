@@ -35,20 +35,26 @@ export default class FileReader
     {
         this._loadingManager.itemStart(url);
 
-        return fetch(url, {
-            headers: {
-                "Accept": "application/json"
-            }
-        }).then(result => {
+        try {
+            const result = await fetch(url, {
+                headers: {
+                    "Accept": "application/json"
+                }
+            });
+
             if (!result.ok) {
-                this._loadingManager.itemError(url);
-                this._loadingManager.itemEnd(url);
                 throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
             }
 
+            return await result.json();
+        }
+        catch (error) {
+            this._loadingManager.itemError(url);
+            throw error;
+        }
+        finally {
             this._loadingManager.itemEnd(url);
-            return result.json();
-        });
+        }
     }
 
     /**

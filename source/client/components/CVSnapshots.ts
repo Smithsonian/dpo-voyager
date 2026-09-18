@@ -17,7 +17,7 @@
 
 import { Dictionary } from "@ff/core/types";
 import Component from "@ff/graph/Component";
-import CTweenMachine, { EEasingCurve } from "@ff/graph/components/CTweenMachine";
+import CTweenMachine, { EEasingCurve, IDeltaState, ITargetEntry, ITweenState } from "@ff/graph/components/CTweenMachine";
 import CLight from "@ff/scene/components/CLight";
 
 import { IObjectEvent } from "@ff/core/ObjectRegistry";
@@ -39,6 +39,7 @@ export default class CVSnapshots extends CTweenMachine
     static readonly typeName: string = "CVSnapshots";
 
     targetFeatures: Dictionary<boolean> = {};
+    deltaStates: IDeltaState[] = [];
 
     create()
     {
@@ -126,6 +127,32 @@ export default class CVSnapshots extends CTweenMachine
          */
     }
 
+    activateStateChange(id: string)
+    {
+        // don't process an active delta state change if one is already in progress
+        if(this.outs.tweening.value && this.deltaStates.some(state => state.id === id)) {
+            return;
+        }
+        
+        const state = this.getState(id) as IDeltaState;
+        const targetCache : ITargetEntry[] = [];
+        this.targets.forEach(target => { targetCache.push(target);});
+        this.targets.length = 0;
+        state.paths.forEach(path => {
+            const pathTokens = path.split('/');
+            const property = this.getProperty(pathTokens[0], pathTokens[1]);
+            
+            const isNumber = property.type === "number" && !property.schema.options;
+            const isArray = property.isArray();
+            this.targets.push({ property, isNumber, isArray });
+        });
+        
+        this.ins.id.setValue(id);
+        this.ins.tween.set();
+
+        this.outs.end.once("value", () => {this.targets.length = 0; this.targets.push(...targetCache);}, this);
+    }
+
     protected onLightComponentEvent = (event: IObjectEvent<CLight>) => {
         const light = event.object;
 
@@ -203,6 +230,21 @@ export default class CVSnapshots extends CTweenMachine
                     threshold: state.threshold !== undefined ? state.threshold : 0.5,
                     values: state.values.filter((value, index) => !missingTargets.has(index)),
                 });
+
+                if("paths" in state) {
+                    const delta = this.getState(state.id) as IDeltaState;
+                    delta.title = state.title;
+                    delta.paths = state.paths.map(path => {
+                        const idx = path.lastIndexOf("/");
+                        const parts = [path.slice(0, idx), path.slice(idx+1)];
+                        const component = pathMap.get(parts[0]);
+                        if(!component) {
+                            throw new Error(`registered state change component not found for path: '${parts[0]}'`);
+                        }
+                        return component.id + "/" + parts[1];
+                    });
+                    this.deltaStates.push(delta);
+                }
             }
         });
     }
@@ -235,6 +277,21 @@ export default class CVSnapshots extends CTweenMachine
                 }
                 if (state.threshold !== 0.5) {
                     data.threshold = state.threshold;
+                }
+                if ("paths" in state) {
+                    const delta = state as IDeltaState;
+                    if(delta.paths.length > 0) {
+                        data.paths = delta.paths.map(path => {
+                            const parts = path.split('/');
+                            const component = this.getComponentById(parts[0]);
+                            const compPath = pathMap.get(component);
+                            if (!compPath) {
+                                throw new Error(`snapshot path not registered for state change '${component.displayName}'`);
+                            }
+                            return compPath + "/" + parts[1];
+                        });
+                        data.title = delta.title;
+                    }
                 }
                 return data;
             }),
