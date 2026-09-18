@@ -308,7 +308,7 @@ export default class CVEnvironment extends Component
                     byteSize: size,
                     width: width,
                     height: height,
-                }, "HDR");
+                }, image_uri);
             });
 
             this._imageOptions.push(image_uri);
@@ -318,42 +318,42 @@ export default class CVEnvironment extends Component
         }
     }
     
-  async readHdrDimensions(image_url: string): Promise<{ width: number; height: number, size: number } | undefined> {
-    const HEADER_LENGTH = 8192;
-    const FALLBACK_DIMENSIONS = { width: 1024, height: 1024, size: 4096 };
+    async readHdrDimensions(image_url: string): Promise<{ width: number; height: number, size: number } | undefined> {
+        const HEADER_LENGTH = 8192;
+        const FALLBACK_DIMENSIONS = { width: 1024, height: 1024, size: 4096 };
     
-    let size = FALLBACK_DIMENSIONS.size;
-    try {
-      const headResponse = await fetch(image_url, { method: "HEAD" });
-      if (headResponse.ok) {
-        size = parseInt(headResponse.headers.get('Content-Length') || '0');
-      }
-    } catch(e) {
-      console.error('Failed to get file size via HEAD request for: ', image_url, e);
-    }
+        let size = FALLBACK_DIMENSIONS.size;
+        try {
+            const headResponse = await fetch(image_url, { method: "HEAD" });
+            if (headResponse.ok) {
+                size = parseInt(headResponse.headers.get('Content-Length') || '0');
+            }
+        } catch(e) {
+            console.error('Failed to get file size via HEAD request for: ', image_url, e);
+        }
 
-    const response = await fetch(image_url, {
-      headers: { Range: `bytes=0-${HEADER_LENGTH - 1}` },
-    });
+        const response = await fetch(image_url, {
+            headers: { Range: `bytes=0-${HEADER_LENGTH - 1}` },
+        });
   
-    if (response.ok) {    
-      const bytes = await response.arrayBuffer();
-      const text = new TextDecoder('latin1').decode(bytes);
-    
-      const match = text.match(/^([-+])([xyXY])\s+(\d+)\s+([-+])([xyXY])\s+(\d+)/m);
-      if (match) {
-        const first = parseInt(match[3], 10);
-        const second = parseInt(match[6], 10);
-        const dims = match[2].toLowerCase() === 'x'
-          ? { width: first, height: second }
-          : { width: second, height: first };
-      
-          return { ...dims, size };
-      }
+        if (response.ok) {    
+            const bytes = await response.arrayBuffer();
+            const text = new TextDecoder('latin1').decode(bytes);
+            
+            const match = text.match(/^([-+])([xyXY])\s+(\d+)\s+([-+])([xyXY])\s+(\d+)/m);
+            if (match) {
+                const first = parseInt(match[3], 10);
+                const second = parseInt(match[6], 10);
+                const dims = match[2].toLowerCase() === 'x'
+                ? { width: first, height: second }
+                : { width: second, height: first };
+            
+                return { ...dims, size };
+            }
+        }
+        console.warn('Failed to read image dimensions from header in: ', image_url)
+        return FALLBACK_DIMENSIONS;
     }
-    console.warn('Failed to read image dimensions from header in: ', image_url)
-    return FALLBACK_DIMENSIONS;
-  }
   
     deleteImage(image_uri: string)
     {
@@ -368,7 +368,7 @@ export default class CVEnvironment extends Component
             this._imageOptions.splice(index, 1);
             this._updateImageIndex();
           
-            this.meta?.images.remove("HDR");
+            this.meta?.images.remove(image_uri);
         }
     }
   
