@@ -147,7 +147,7 @@ export default class CVMediaManager extends CAssetManager
             
             if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt|hdr)$/)) {
 
-                if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
+                if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png|hdr)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
                     path = CVMediaManager.articleFolder + "/" + cleanfileName;
                 }
 
@@ -335,6 +335,8 @@ export default class CVMediaManager extends CAssetManager
         const standaloneManager = this.standaloneFileManager;
         if(standaloneManager) {
             selected.forEach(file => standaloneManager.deleteFile(file.info.url));
+            selected.filter(asset => asset.info.name.toLowerCase().endsWith(".hdr"))
+                .forEach(asset => this.environment.deleteImage(asset.info.path));
 
             return this.refresh();
         }
