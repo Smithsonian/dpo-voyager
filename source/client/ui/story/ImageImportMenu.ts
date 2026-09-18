@@ -117,6 +117,7 @@ export default class ImageImportMenu extends Popup
                         <div class="sv-entry" @click=${e => this.onType(e, "environment")} ?selected=${ this.type === "environment" }>Environment Map</div>
                         <div class="sv-entry" @click=${e => this.onType(e, "overlay")} ?selected=${ this.type === "overlay" }>Overlay Map</div>
                         <div class="sv-entry" @click=${e => this.onType(e, "plane")} ?selected=${ this.type === "plane" }>Image Plane</div>
+                        <div class="sv-entry" @click=${e => this.onType(e, "misc")} ?selected=${ this.type === "misc" }>Misc Asset</div>
                         ${modelSelect}
                     </div>
                 </div>
