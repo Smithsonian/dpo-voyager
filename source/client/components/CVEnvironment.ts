@@ -323,13 +323,16 @@ export default class CVEnvironment extends Component
         const FALLBACK_DIMENSIONS = { width: 1024, height: 1024, size: 4096 };
     
         let size = FALLBACK_DIMENSIONS.size;
-        try {
-            const headResponse = await fetch(image_url, { method: "HEAD" });
-            if (headResponse.ok) {
-                size = parseInt(headResponse.headers.get('Content-Length') || '0');
+
+        if(!image_url.startsWith("blob:")) {
+            try {
+                const headResponse = await fetch(image_url, { method: "HEAD" });
+                if (headResponse.ok) {
+                    size = parseInt(headResponse.headers.get('Content-Length') || '0');
+                }
+            } catch(e) {
+                console.error('Failed to get file size via HEAD request for: ', image_url, e);
             }
-        } catch(e) {
-            console.error('Failed to get file size via HEAD request for: ', image_url, e);
         }
 
         const response = await fetch(image_url, {
