@@ -32,7 +32,6 @@ import CVMeta from "./CVMeta";
 import Article from "client/models/Article";
 import CVEnvironment from "./CVEnvironment";
 import ImageImportMenu from "client/ui/story/ImageImportMenu";
-import { BufferAttribute, BufferGeometry, DoubleSide, Mesh, MeshStandardMaterial, Vector3 } from "three";
 import CVAssetReader from "./CVAssetReader";
 import NVNode from "client/nodes/NVNode";
 import CVImagePlane from "./CVImagePlane";
@@ -256,9 +255,9 @@ export default class CVMediaManager extends CAssetManager
         else {
           return super.uploadFiles(files, folder).then(() => {
             Array.from(files).forEach(file => {
-              if (file.name.toLowerCase().endsWith(".hdr")) {
+              if (file.name.toLowerCase().match(/\.(hdr|jpg|jpeg|png)$/)) {
                 const file_uri = folder.info.path + file.name;
-                this.environment.addImage(file_uri);
+                this.handleImageImport(file_uri);
               }
             });
           });

@@ -22,7 +22,6 @@ import { IDocument } from "./CVDocument";
 import { EUnitType, INode } from "client/schema/document";
 import * as helpers from "@ff/three/helpers";
 import { IModel } from "client/schema/model";
-import { addCustomMaterialDefines, extendShaders } from "client/shaders/ShaderExtension";
 
 //////////////////////////////////////////////////////////////////
 
@@ -118,10 +117,6 @@ export default class CVImagePlane extends CVModel2
 
         ins.visible.setValue(data.visible !== undefined ? data.visible : true);
         ins.tags.setValue(data.tags || "");
-        //ins.renderOrder.setValue(data.renderOrder !== undefined ? data.renderOrder : 0);
-
-        //const side = ESideType[data.shadowSide || "Back"];
-        //ins.shadowSide.setValue(isFinite(side) ? side : ESideType.Back);
 
         ins.position.reset();
         ins.rotation.reset();
@@ -137,6 +132,13 @@ export default class CVImagePlane extends CVModel2
             this._prevRotation.fromArray(ins.rotation.value);
             ins.rotation.set();
         }
+
+        //** Uncomment for full model support */
+
+        //ins.renderOrder.setValue(data.renderOrder !== undefined ? data.renderOrder : 0);
+
+        //const side = ESideType[data.shadowSide || "Back"];
+        //ins.shadowSide.setValue(isFinite(side) ? side : ESideType.Back);
 
         /*if (data.boundingBox) {
             const boundingBox = this._localBoundingBox;
@@ -184,9 +186,6 @@ export default class CVImagePlane extends CVModel2
 
         // emit tag update event
         this.emit<ITagUpdateEvent>({ type: "tag-update" });
-
-        // trigger automatic loading of derivatives if active
-        //this.ins.autoLoad.set();
 
         return node.model;
     }

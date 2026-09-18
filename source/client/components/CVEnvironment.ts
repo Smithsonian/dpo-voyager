@@ -143,8 +143,6 @@ export default class CVEnvironment extends Component
         {
             const rot = ins.rotation.value;
             _euler.set(rot[0]*DEG2RAD,rot[1]*DEG2RAD,rot[2]*DEG2RAD); 
-            //this.sceneNode.scene.environmentRotation = _euler;
-            //this.sceneNode.scene.backgroundRotation = _euler;
             this.renderer.forceRender();
         }
         if(ins.enabled.changed) {
@@ -156,13 +154,15 @@ export default class CVEnvironment extends Component
         }
         if(ins.visible.changed && this._loadingCount == 0)
         { 
-            if(ins.visible.value) 
+            if(ins.visible.value && this._target === null) 
             {
                 this.loadEnvironmentMap();
             }
-            this.sceneNode.scene.background = ins.visible.value ? this._target?.texture : null;
-            ins.visible.value && this.sceneNode.scene.background ? (this.sceneNode.scene.background as Texture).needsUpdate = true : null;
-            this.background.ins.visible.setValue(!ins.visible.value);
+            else {
+                this.sceneNode.scene.background = ins.visible.value ? this._target?.texture : null;
+                ins.visible.value && this.sceneNode.scene.background ? (this.sceneNode.scene.background as Texture).needsUpdate = true : null;
+                this.background.ins.visible.setValue(!ins.visible.value);
+            }
         }
 
         // Optimization to dispose when map is not being used at all
@@ -250,15 +250,14 @@ export default class CVEnvironment extends Component
             const previousTarget = this._target;
             this._target = this._pmremGenerator.fromEquirectangular(texture);
 
-            //this.sceneNode.scene.environment = null;
-            //this.sceneNode.scene.background = null;
             this.sceneNode.scene.environment = ins.enabled.value ? this._target.texture : null;
             this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
             if(this.sceneNode.scene.environment) {
                 (this.sceneNode.scene.environment as Texture).needsUpdate = true;
             }
-            if(this.sceneNode.scene.background) {
+            if(this.sceneNode.scene.background) {             
                 (this.sceneNode.scene.background as Texture).needsUpdate = true;
+                this.background.ins.visible.setValue(false);
             }
             this.sceneNode.scene.environmentRotation = _euler;
             this.sceneNode.scene.backgroundRotation = _euler;
@@ -267,8 +266,6 @@ export default class CVEnvironment extends Component
             if(previousTarget && previousTarget !== this._target) {
                 previousTarget.dispose();
             }
-
-            this._currentIdx = ins.imageIndex.value;
         }
 
         texture.dispose();
