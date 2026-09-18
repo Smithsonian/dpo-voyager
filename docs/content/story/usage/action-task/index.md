@@ -50,3 +50,6 @@ Test the action by performing the designated trigger in the Explorer preview pan
 **IMPORTANT NOTE** - Voyager is designed to operate under an assumption that one "model" equals one 3D object. It is still possible to import a 3D file with multiple objects in it,
 but all of those objects are treated as one unit to operations within Voyager. Because of this, best practice is to import any animated objects as their own separate models to
 avoid any potential issues.
+
+**MORE NOTES!** - Actions tied to the same trigger (e.g. multiple animations triggered by clicking the same geometry) will be executed in the order they appear in the action
+list. Keep this in mind when constructing complicated sequences as some actions like enable/disable could have unintended consequences within the same set of triggerd actions. 
