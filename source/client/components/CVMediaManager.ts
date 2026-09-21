@@ -365,7 +365,7 @@ export default class CVMediaManager extends CAssetManager
     move(asset: IAssetEntry, destinationFolder: IAssetEntry)
     {
         const standaloneManager = this.standaloneFileManager;
-        const destinationUrl = destinationFolder.info.path + asset.info.url.split('/').pop();console.log(destinationUrl);
+        const destinationUrl = destinationFolder.info.path + asset.info.url.split('/').pop();
         if(standaloneManager) {
             standaloneManager.moveFile(asset.info.url, destinationUrl);
             return this.refresh();
