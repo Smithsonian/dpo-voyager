@@ -232,8 +232,10 @@ export default class CVActionManager extends Component
 
         if (event.add) {
             component.outs.end.on("value", this.onTransitionEnd, this);
+            component.ins.recall.on("value", this.onTransitionEnd, this);
         }
         else if (event.remove) {
+            component.ins.recall.off("value", this.onTransitionEnd, this);
             component.outs.end.off("value", this.onTransitionEnd, this);
         }
     }
@@ -342,7 +344,7 @@ export default class CVActionManager extends Component
                     actions.forEach((action) => {
                         if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
                             const model = meta.node.getComponent(CVModel2);
-                            this._animQueue.push({model: model, action: action});
+                            this._animQueue.push({model: model, action: action}); // queue actions to play when tour transition ends
                         }
                         /*else if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
                             this.setup.audio.play(action.audioId, true);
