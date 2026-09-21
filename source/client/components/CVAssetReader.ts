@@ -121,8 +121,8 @@ export default class CVAssetReader extends Component
 
     async getTexture(assetPath: string): Promise<Texture>
     {
-        const url = this.assetManager.getAssetUrl(assetPath);
-        return this.textureLoader.get(url);
+        const url = this.assetManager.getAssetUrl(assetPath);console.log(assetPath, url);
+        return this.textureLoader.get(url, assetPath);
     }
 
     async getFont(assetPath: string): Promise<IBitmapFont>
@@ -140,7 +140,7 @@ export default class CVAssetReader extends Component
     async getSystemTexture(assetPath: string): Promise<Texture>
     {
         const url = this.getSystemAssetUrl(assetPath);
-        return this.textureLoader.get(url);
+        return this.textureLoader.get(url, assetPath);
     }
 
     async getSystemJSON(assetPath: string): Promise<any>

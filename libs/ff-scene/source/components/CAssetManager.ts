@@ -114,6 +114,11 @@ export default class CAssetManager extends Component
         return Promise.all(operations).then(() => this.refresh());
     }
 
+    move(asset: IAssetEntry, destinationFolder: IAssetEntry)
+    {
+        return this._provider.move(asset.info, destinationFolder.info.path + asset.info.name).then(() => this.refresh());
+    }
+
     moveSelected(destinationFolder: IAssetEntry)
     {
         const selected = Array.from(this._selection.values());

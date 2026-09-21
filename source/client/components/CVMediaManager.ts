@@ -26,10 +26,15 @@ import MainView from "client/ui/explorer/MainView";
 import CVDocumentProvider from "./CVDocumentProvider";
 import ImportMenu from "client/ui/story/ImportMenu";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
-import { EDerivativeUsage } from "client/schema/model";
+import { EAssetType, EDerivativeQuality, EDerivativeUsage, EMapType } from "client/schema/model";
 import CSelection from "@ff/graph/components/CSelection";
 import CVMeta from "./CVMeta";
 import Article from "client/models/Article";
+import CVEnvironment from "./CVEnvironment";
+import ImageImportMenu from "client/ui/story/ImageImportMenu";
+import CVAssetReader from "./CVAssetReader";
+import NVNode from "client/nodes/NVNode";
+import CVImagePlane from "./CVImagePlane";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,6 +57,12 @@ export default class CVMediaManager extends CAssetManager
     }
     protected get assetManager() {
         return this.system.getMainComponent(CVAssetManager);
+    }
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
+    }
+    protected get environment() {
+      return this.system.getComponent(CVEnvironment);
     }
     protected get metas() {
         return this.system.getComponents(CVMeta);
@@ -134,9 +145,9 @@ export default class CVMediaManager extends CAssetManager
             const cleanfileName = decodeURI(file.name);
             const filenameLower = cleanfileName.toLowerCase();
             
-            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt)$/)) {
+            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt|hdr)$/)) {
 
-                if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
+                if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png|hdr)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
                     path = CVMediaManager.articleFolder + "/" + cleanfileName;
                 }
 
@@ -156,6 +167,9 @@ export default class CVMediaManager extends CAssetManager
                 }
                 else if (!documentProvided && filenameLower.match(/\.(gltf|glb)$/)) {
                     this.uploadFile(normalizedPath, file, this.root).then(() => this.handleModelImport(normalizedPath));
+                }
+                else if (!documentProvided && filenameLower.match(/\.(hdr|jpg|jpeg|png)$/)) {
+                    this.uploadFile(normalizedPath, file, this.root).then(() => this.handleImageImport(normalizedPath));
                 }
                 else {
                     this.uploadFile(normalizedPath, file, this.root);
@@ -194,7 +208,55 @@ export default class CVMediaManager extends CAssetManager
                 model.once<IModelLoadEvent>("model-load", () => {selection.selectNode(model.node); 
                     this.assetManager.outs.initialLoad.setValue(false)}, this);
             }
-        }).catch(e => {});
+        }).catch(e => {
+            const asset = this.getAssetByPath(filepath);
+            this.delete(asset);
+        });
+    }
+
+    protected handleImageImport(filepath: string) {
+        const mainView : MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
+        const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
+        const filename = filepath.substr(filepath.lastIndexOf("/") + 1);
+        const asset = this.getAssetByPath(filepath);
+        const rootPath = filename;
+
+        ImageImportMenu.show(mainView, activeDoc.setup.language, filename).then((returnVals) => {
+            const type = returnVals[0];
+            switch(type) {
+                case "environment":
+                    this.environment.addImage(filepath);
+                    break;
+                case "overlay":
+                    // move overlay out of assets folder - lifecycle handled by parent object
+                    this.move(asset, this.root).then(() => {  
+                        const parentName = returnVals[1];
+                        const model = this.getSystemComponents(CVModel2).find(element => element.node.name === parentName);
+                        const newAsset = model.activeDerivative.createAsset(EAssetType.Image, rootPath);
+                        newAsset.data.mapType = EMapType.Zone;
+                        const overlay = model.getOverlay(rootPath);
+                        overlay.asset = newAsset;
+                        overlay.fromFile = true;
+                        model.ins.overlayMap.setValue(model.getOverlays().length);
+                    });        
+                    break;
+                case "plane":
+                    // move plane geometry out of assets folder - lifecycle handled by parent object
+                    this.move(asset, this.root).then(() => { 
+                        const nvNode = activeDoc.root.graph.createCustomNode(NVNode);
+                        const plane = nvNode.transform.createComponent(CVImagePlane);
+                        const derivative = plane.derivatives.getOrCreate(EDerivativeUsage.Image2D, EDerivativeQuality.High);
+                        derivative.createAsset(EAssetType.Image, rootPath);
+                        activeDoc.root.scene.transform.addChild(plane.transform);
+                        nvNode.name = "ImagePlane";
+                        plane.ins.name.setValue(nvNode.name);
+                        plane.setImage(rootPath);
+                    });
+                    break;
+            }
+        }).catch(e => {
+            this.delete(asset);
+        });
     }
 
     uploadFiles(files: FileList, folder: IAssetEntry): Promise<any>
@@ -204,7 +266,14 @@ export default class CVMediaManager extends CAssetManager
             ; // TODO - considering removing this support
         }
         else {
-            return super.uploadFiles(files, folder);
+          return super.uploadFiles(files, folder).then(() => {
+            Array.from(files).forEach(file => {
+              if (file.name.toLowerCase().match(/\.(hdr|jpg|jpeg|png)$/)) {
+                const file_uri = folder.info.path + file.name;
+                this.handleImageImport(file_uri);
+              }
+            });
+          });
         }
     }
 
@@ -275,15 +344,34 @@ export default class CVMediaManager extends CAssetManager
 
     deleteSelected()
     {
+        const selected = this.selectedAssets;
         const standaloneManager = this.standaloneFileManager;
         if(standaloneManager) {
-            const selected = this.selectedAssets;
             selected.forEach(file => standaloneManager.deleteFile(file.info.url));
+            selected.filter(asset => asset.info.name.toLowerCase().endsWith(".hdr"))
+                .forEach(asset => this.environment.deleteImage(asset.info.path));
 
             return this.refresh();
         }
         else {
-            return super.deleteSelected();
+            return super.deleteSelected().then(() => {
+              selected
+                .filter(asset => asset.info.name.toLowerCase().endsWith(".hdr"))
+                .forEach(asset => this.environment.deleteImage(asset.info.path));
+            });
+        }
+    }
+
+    move(asset: IAssetEntry, destinationFolder: IAssetEntry)
+    {
+        const standaloneManager = this.standaloneFileManager;
+        const destinationUrl = destinationFolder.info.path + asset.info.url.split('/').pop();
+        if(standaloneManager) {
+            standaloneManager.moveFile(asset.info.url, destinationUrl);
+            return this.refresh();
+        }
+        else {
+            return this.exists(destinationUrl).then((result) => {return result ? super.delete(asset) : super.move(asset, destinationFolder)});
         }
     }
 
