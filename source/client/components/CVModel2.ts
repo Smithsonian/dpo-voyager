@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Quaternion, Box3, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, Texture, Material, MeshStandardMaterial, NoBlending, AdditiveBlending, Color, MeshPhysicalMaterial, ObjectSpaceNormalMap } from "three";
+import { Vector3, Quaternion, Box3, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, Texture, Material, MeshStandardMaterial, NoBlending, AdditiveBlending, Color, MeshPhysicalMaterial, ObjectSpaceNormalMap, MathUtils } from "three";
 
 import Notification from "@ff/ui/Notification";
 
@@ -50,6 +50,7 @@ const _quat = new Quaternion();
 const _quat1 = new Quaternion();
 const _box = new Box3();
 const _mat4 = new Matrix4();
+const _mat4b = new Matrix4();
 
 export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
@@ -460,6 +461,31 @@ export default class CVModel2 extends CObject3D
 
         helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, ins.rotation.value);
         ins.rotation.set();
+    }
+
+    rotateAroundY(deltaDegrees: number)
+    {
+        const object3D = this.object3D;
+        if (!object3D) {
+            return;
+        }
+
+        this.updateMatrixFromProps();
+
+        object3D.updateMatrixWorld(true);
+
+        // world-space rotation around Y through the origin
+        _quat.setFromAxisAngle(_vec3b.set(0, 1, 0), MathUtils.DEG2RAD * deltaDegrees);
+        _mat4.makeRotationFromQuaternion(_quat);
+
+        _mat4b.copy(object3D.matrixWorld).premultiply(_mat4);
+
+        if (object3D.parent) {
+            _mat4.copy(object3D.parent.matrixWorld).invert();
+            _mat4b.premultiply(_mat4);
+        }
+
+        this.setFromMatrix(_mat4b);
     }
 
     fromDocument(document: IDocument, node: INode): number
