@@ -249,8 +249,9 @@ export default class CVModel2 extends CObject3D
         }
         else {
             const overlayProp = this.ins.overlayMap;
-            if(!overlayProp.schema.options.includes(key)) {
-                overlayProp.setOptions(overlayProp.schema.options.concat(key));
+            const filename = key.split('/').pop();
+            if(!overlayProp.schema.options.includes(filename)) {
+                overlayProp.setOptions(overlayProp.schema.options.concat(filename));
             }
 
             return this._overlays[key] = 

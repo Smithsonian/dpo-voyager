@@ -208,13 +208,18 @@ export default class CVMediaManager extends CAssetManager
                 model.once<IModelLoadEvent>("model-load", () => {selection.selectNode(model.node); 
                     this.assetManager.outs.initialLoad.setValue(false)}, this);
             }
-        }).catch(e => {});
+        }).catch(e => {
+            const asset = this.getAssetByPath(filepath);
+            this.delete(asset);
+        });
     }
 
     protected handleImageImport(filepath: string) {
         const mainView : MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
         const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
         const filename = filepath.substr(filepath.lastIndexOf("/") + 1);
+        const asset = this.getAssetByPath(filepath);
+        const rootPath = filename;
 
         ImageImportMenu.show(mainView, activeDoc.setup.language, filename).then((returnVals) => {
             const type = returnVals[0];
@@ -223,27 +228,35 @@ export default class CVMediaManager extends CAssetManager
                     this.environment.addImage(filepath);
                     break;
                 case "overlay":
-                    const parentName = returnVals[1];
-                    const model = this.getSystemComponents(CVModel2).find(element => element.node.name === parentName);
-                    const newAsset = model.activeDerivative.createAsset(EAssetType.Image, filepath);
-                    newAsset.data.mapType = EMapType.Zone;
-                    const overlay = model.getOverlay(filepath);
-                    overlay.asset = newAsset;
-                    overlay.fromFile = true;
-                    model.ins.overlayMap.setValue(model.getOverlays().length);
+                    // move overlay out of assets folder - lifecycle handled by parent object
+                    this.move(asset, this.root).then(() => {  
+                        const parentName = returnVals[1];
+                        const model = this.getSystemComponents(CVModel2).find(element => element.node.name === parentName);
+                        const newAsset = model.activeDerivative.createAsset(EAssetType.Image, rootPath);
+                        newAsset.data.mapType = EMapType.Zone;
+                        const overlay = model.getOverlay(rootPath);
+                        overlay.asset = newAsset;
+                        overlay.fromFile = true;
+                        model.ins.overlayMap.setValue(model.getOverlays().length);
+                    });        
                     break;
-                case "plane":   
-                    const nvNode = activeDoc.root.graph.createCustomNode(NVNode);
-                    const plane = nvNode.transform.createComponent(CVImagePlane);
-                    const derivative = plane.derivatives.getOrCreate(EDerivativeUsage.Image2D, EDerivativeQuality.High);
-                    derivative.createAsset(EAssetType.Image, filepath);
-                    activeDoc.root.scene.transform.addChild(plane.transform);
-                    nvNode.name = "ImagePlane";
-                    plane.ins.name.setValue(nvNode.name);
-                    plane.setImage(filepath);
+                case "plane":
+                    // move plane geometry out of assets folder - lifecycle handled by parent object
+                    this.move(asset, this.root).then(() => { 
+                        const nvNode = activeDoc.root.graph.createCustomNode(NVNode);
+                        const plane = nvNode.transform.createComponent(CVImagePlane);
+                        const derivative = plane.derivatives.getOrCreate(EDerivativeUsage.Image2D, EDerivativeQuality.High);
+                        derivative.createAsset(EAssetType.Image, rootPath);
+                        activeDoc.root.scene.transform.addChild(plane.transform);
+                        nvNode.name = "ImagePlane";
+                        plane.ins.name.setValue(nvNode.name);
+                        plane.setImage(rootPath);
+                    });
                     break;
             }
-        }).catch(e => {});
+        }).catch(e => {
+            this.delete(asset);
+        });
     }
 
     uploadFiles(files: FileList, folder: IAssetEntry): Promise<any>
@@ -346,6 +359,19 @@ export default class CVMediaManager extends CAssetManager
                 .filter(asset => asset.info.name.toLowerCase().endsWith(".hdr"))
                 .forEach(asset => this.environment.deleteImage(asset.info.path));
             });
+        }
+    }
+
+    move(asset: IAssetEntry, destinationFolder: IAssetEntry)
+    {
+        const standaloneManager = this.standaloneFileManager;
+        const destinationUrl = destinationFolder.info.path + asset.info.url.split('/').pop();console.log(destinationUrl);
+        if(standaloneManager) {
+            standaloneManager.moveFile(asset.info.url, destinationUrl);
+            return this.refresh();
+        }
+        else {
+            return this.exists(destinationUrl).then((result) => {return result ? super.delete(asset) : super.move(asset, destinationFolder)});
         }
     }
 
