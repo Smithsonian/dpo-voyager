@@ -32,8 +32,10 @@ const _mat4 = new Matrix4();
 const _box3 = new Box3();
 const _vec3a = new Vector3();
 const _vec3b = new Vector3();
+const _vec3c = new Vector3();
 const _quat = new Quaternion();
 const _euler = new Euler();
+const _axisZ = new Vector3(0, 0, 1);
 
 export enum EControllerMode { Orbit, Fly, Walk }
 enum EManipMode { Off, Pan, Orbit, Dolly, Zoom, PanDolly, Roll }
@@ -46,6 +48,7 @@ export default class CameraController implements IManip
 
     orbit = new Vector3(0, 0, 0);
     offset = new Vector3(0, 0, 50);
+    pivot = new Vector3(0, 0, 0);
 
     minOrbit = new Vector3(-90, -Infinity, -Infinity);
     maxOrbit = new Vector3(90, Infinity, Infinity);
@@ -159,6 +162,10 @@ export default class CameraController implements IManip
         this.viewportHeight = height;
     }
 
+    /**
+     * Copy the object's matrix into the controller's properties
+     * effectively the inverse operation of updateCamera
+     */
     updateController(object?: Object3D, adaptLimits?: boolean)
     {
         const camera = this.camera;
@@ -166,7 +173,12 @@ export default class CameraController implements IManip
 
         const orbit = this.orbit;
         const offset = this.offset;
-        threeMath.decomposeOrbitMatrix(object.matrix, orbit, offset);
+        // orbit matrix is relative to the pivot point
+        _mat4.copy(object.matrix);
+        _mat4.elements[12] -= this.pivot.x;
+        _mat4.elements[13] -= this.pivot.y;
+        _mat4.elements[14] -= this.pivot.z;
+        threeMath.decomposeOrbitMatrix(_mat4, orbit, offset);
         this.orbit.multiplyScalar(threeMath.RAD2DEG);
 
         if (adaptLimits) {
@@ -176,7 +188,77 @@ export default class CameraController implements IManip
     }
 
     /**
+     * Moves the pivot point to the given position, keeping the camera in place
+     * and turning it to face the new pivot. Roll is preserved.
+     * Resulting orbit and offset are clamped to the controller's limits.
+     * @param position New pivot position.
+     */
+    setPivot(position: Vector3)
+    {
+        const { orbit, offset, pivot } = this;
+
+        // current camera position
+        _vec3a.copy(orbit).multiplyScalar(math.DEG2RAD);
+        threeMath.composeOrbitMatrix(_vec3a, offset, _mat4);
+        _vec3b.setFromMatrixPosition(_mat4).add(pivot);
+
+        // camera's +Z axis must point from the new pivot to the camera
+        _vec3c.copy(_vec3b).sub(position);
+        const distance = _vec3c.length();
+        if (distance === 0) {
+            return;
+        }
+        _vec3c.divideScalar(distance);
+
+        // orbit rotation is Rz(roll) * Ry(head) * Rx(pitch): remove roll, then solve for pitch and head
+        _vec3c.applyAxisAngle(_axisZ, -_vec3a.z);
+        const pitch = Math.asin(math.limit(-_vec3c.y, -1, 1)) * math.RAD2DEG;
+        let head = Math.atan2(_vec3c.x, _vec3c.z) * math.RAD2DEG;
+        // stay on the same turn as the current heading to avoid spinning when tweening
+        head += 360 * Math.round((orbit.y - head) / 360);
+
+        orbit.x = math.limit(pitch, this.minOrbit.x, this.maxOrbit.x);
+        orbit.y = math.limit(head, this.minOrbit.y, this.maxOrbit.y);
+        offset.set(0, 0, math.limit(distance, this.minOffset.z, this.maxOffset.z));
+        pivot.copy(position);
+    }
+
+    /**
+     * Returns the distance of the given point along the camera's view axis.
+     * Negative if the point is behind the camera.
+     * @param point Position in world space.
+     */
+    getViewDepth(point: Vector3): number
+    {
+        // camera space position of the point, relative to the pivot
+        _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
+        threeMath.composeOrbitMatrix(_vec3a, this.offset, _mat4);
+        _mat4.invert();
+        _vec3b.copy(point).sub(this.pivot).applyMatrix4(_mat4);
+        return -_vec3b.z;
+    }
+
+    /**
+     * Moves the pivot point along the camera's view axis, keeping the camera in place.
+     * The resulting distance is clamped to the controller's offset limits.
+     * @param distance Distance of the new pivot point in front of the camera.
+     */
+    setPivotDistance(distance: number)
+    {
+        distance = math.limit(distance, this.minOffset.z, this.maxOffset.z);
+
+        _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
+        _vec3b.copy(this.offset);
+        _vec3b.z -= distance;
+        threeMath.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
+
+        this.pivot.add(_vec3c.setFromMatrixPosition(_mat4));
+        this.offset.set(0, 0, distance);
+    }
+
+    /**
      * Adjusts the camera such that the given bounding box is entirely visible.
+     * Moves the pivot point to the center of the box, keeping the current orbit.
      * This method can only be called if an internal camera has been assigned.
      * @param box Bounding box
      */
@@ -201,10 +283,11 @@ export default class CameraController implements IManip
 
         _box3.copy(box).applyMatrix4(_mat4.transpose());
         _box3.getSize(_vec3a);
-        _box3.getCenter(_vec3b);
 
-        offset.x = _vec3b.x;
-        offset.y = _vec3b.y;
+        // orbit around the center of the box
+        box.getCenter(this.pivot);
+        offset.x = 0;
+        offset.y = 0;
 
         const size = Math.max(_vec3a.x / camera.aspect, _vec3a.y);
 
@@ -213,7 +296,7 @@ export default class CameraController implements IManip
         }
         else {
             const fovFactor = 1 / (2 * Math.tan(camera.fov * math.DEG2RAD * 0.5));
-            offset.z = (_vec3b.z + size * fovFactor + _vec3a.z * 0.25 /* was 0.5 */);
+            offset.z = (size * fovFactor + _vec3a.z * 0.25 /* was 0.5 */);
         }
 
         if(offset.z > this.maxOffset.z) {
@@ -248,6 +331,11 @@ export default class CameraController implements IManip
         }
 
         threeMath.composeOrbitMatrix(_vec3a, _vec3b, object.matrix);
+        // orbit around the pivot point
+        const e = object.matrix.elements;
+        e[12] += this.pivot.x;
+        e[13] += this.pivot.y;
+        e[14] += this.pivot.z;
         object.matrixWorldNeedsUpdate = true;
 
         return true;
