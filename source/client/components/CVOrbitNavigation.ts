@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3 } from "three";
+import { Box3, Vector3 } from "three";
 
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
@@ -46,6 +46,8 @@ _orientationPresets[EViewPreset.Back] = [ 0, 180, 0 ];
 _orientationPresets[EViewPreset.Top] = [ -90, 0, 0 ];
 _orientationPresets[EViewPreset.Bottom] = [ 90, 0, 0 ];
 
+
+const _vec3 = new Vector3();
 
 const _replaceNull = function(vector: number[], replacement: number)
 {
@@ -81,6 +83,7 @@ export default class CVOrbitNavigation extends CObject3D
         autoZoom: types.Boolean("Settings.AutoZoom", true),
         orbit: types.Vector3("Current.Orbit", [ -25, -25, 0 ]),
         offset: types.Vector3("Current.Offset", [ 0, 0, 100 ]),
+        pivot: types.Vector3("Current.Pivot", [ 0, 0, 0 ]),
         minOrbit: types.Vector3("Limits.Min.Orbit", [ -90, -Infinity, -Infinity ]),
         minOffset: types.Vector3("Limits.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
         maxOrbit: types.Vector3("Limits.Max.Orbit", [ 90, Infinity, Infinity ]),
@@ -112,6 +115,7 @@ export default class CVOrbitNavigation extends CObject3D
             this.ins.mode,
             this.ins.orbit,
             this.ins.offset,
+            this.ins.pivot,
             this.ins.autoZoom,
             this.ins.autoRotation,
             this.ins.autoRotationSpeed,
@@ -127,6 +131,7 @@ export default class CVOrbitNavigation extends CObject3D
         return [
             this.ins.orbit,
             this.ins.offset,
+            this.ins.pivot,
         ];
     }
 
@@ -172,7 +177,7 @@ export default class CVOrbitNavigation extends CObject3D
         const cameraComponent = this._scene.activeCameraComponent;
         const camera = cameraComponent ? cameraComponent.camera : null;
 
-        const { projection, preset, orbit, offset } = ins;
+        const { projection, preset, orbit, offset, pivot } = ins;
 
         // camera projection
         if (cameraComponent && projection.changed) {
@@ -192,7 +197,12 @@ export default class CVOrbitNavigation extends CObject3D
         }
 
         // nav mode
+        let reanchorPivot = false;
         if (ins.mode.changed) {
+            // coming back from Fly or Walk: orbit around what's in front of the camera
+            reanchorPivot = controller.controllerMode !== EControllerMode.Orbit
+                && ins.mode.value === ENavigationType.Orbit;
+
             switch(ins.mode.value) {
                 case ENavigationType.Orbit:
                     controller.controllerMode = EControllerMode.Orbit;
@@ -225,9 +235,14 @@ export default class CVOrbitNavigation extends CObject3D
         const { minOrbit, minOffset, maxOrbit, maxOffset} = ins;
 
         // orbit, offset and limits
-        if (orbit.changed || offset.changed) {
+        if (orbit.changed || offset.changed || pivot.changed) {
             controller.orbit.fromArray(orbit.value);
             controller.offset.fromArray(offset.value);
+            controller.pivot.fromArray(pivot.value);
+        }
+
+        if (reanchorPivot) {
+            this.reanchorPivot();
         }
 
         if (minOrbit.changed || minOffset.changed || maxOrbit.changed || maxOffset.changed) {
@@ -333,6 +348,8 @@ export default class CVOrbitNavigation extends CObject3D
             ins.orbit.set(true);
             controller.offset.toArray(ins.offset.value);
             ins.offset.set(true);
+            controller.pivot.toArray(ins.pivot.value);
+            ins.pivot.set(true);
 
             // if camera has moved, set preset to "None"
             if (ins.preset.value !== EViewPreset.None && !ins.preset.changed) {
@@ -395,6 +412,7 @@ export default class CVOrbitNavigation extends CObject3D
             mode: ENavigationType[data.type] || ENavigationType.Orbit,
             orbit: orbit.orbit,
             offset: orbit.offset,
+            pivot: orbit.pivot || [ 0, 0, 0 ],
             minOrbit: _replaceNull(orbit.minOrbit, -Infinity),
             maxOrbit: _replaceNull(orbit.maxOrbit, Infinity),
             minOffset: _replaceNull(orbit.minOffset, -Infinity),
@@ -417,6 +435,7 @@ export default class CVOrbitNavigation extends CObject3D
         data.orbit = {
             orbit: ins.orbit.cloneValue(),
             offset: ins.offset.cloneValue(),
+            pivot: ins.pivot.cloneValue(),
             minOrbit: ins.minOrbit.cloneValue(),
             maxOrbit: ins.maxOrbit.cloneValue(),
             minOffset: ins.minOffset.cloneValue(),
@@ -451,6 +470,24 @@ export default class CVOrbitNavigation extends CObject3D
         }
 
         this._hasChanged = true;
+    }
+
+    /**
+     * Places the pivot on the camera's view axis, at the depth of the scene's center.
+     * Camera stays in place.
+     */
+    protected reanchorPivot()
+    {
+        const controller = this._controller;
+        const box = this.getGraphComponent(CVScene).outs.boundingBox.value;
+
+        let distance = box.isEmpty() ? 0 : controller.getViewDepth(box.getCenter(_vec3));
+        if (!(distance > 0)) {
+            // scene is behind the camera
+            distance = controller.boundsRadius || controller.offset.length();
+        }
+
+        controller.setPivotDistance(distance);
     }
 
     protected onTrigger(event: ITriggerEvent)
