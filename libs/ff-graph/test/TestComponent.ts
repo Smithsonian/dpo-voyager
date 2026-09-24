@@ -56,10 +56,6 @@ export default class TestComponent extends Component
     ins = this.addInputs(ins);
     outs = this.addOutputs(outs);
 
-    create()
-    {
-    }
-
     update(context: IUpdateContext)
     {
         return false;
