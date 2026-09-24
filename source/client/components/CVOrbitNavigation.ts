@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3 } from "three";
+import { Box3, Vector3 } from "three";
 
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
@@ -48,6 +48,8 @@ _orientationPresets[EViewPreset.Back] = [ 0, 180, 0 ];
 _orientationPresets[EViewPreset.Top] = [ -90, 0, 0 ];
 _orientationPresets[EViewPreset.Bottom] = [ 90, 0, 0 ];
 
+
+const _vec3 = new Vector3();
 
 const _replaceNull = function(vector: number[], replacement: number)
 {
@@ -198,7 +200,12 @@ export default class CVOrbitNavigation extends CObject3D
         }
 
         // nav mode
+        let reanchorPivot = false;
         if (ins.mode.changed) {
+            // coming back from Fly or Walk: orbit around what's in front of the camera
+            reanchorPivot = controller.controllerMode !== EControllerMode.Orbit
+                && ins.mode.value === ENavigationType.Orbit;
+
             switch(ins.mode.value) {
                 case ENavigationType.Orbit:
                     controller.controllerMode = EControllerMode.Orbit;
@@ -235,6 +242,10 @@ export default class CVOrbitNavigation extends CObject3D
             controller.orbit.fromArray(orbit.value);
             controller.offset.fromArray(offset.value);
             controller.pivot.fromArray(pivot.value);
+        }
+
+        if (reanchorPivot) {
+            this.reanchorPivot();
         }
 
         if (minOrbit.changed || minOffset.changed || maxOrbit.changed || maxOffset.changed) {
@@ -473,6 +484,24 @@ export default class CVOrbitNavigation extends CObject3D
 
         event.stopPropagation = true;
         this._hasChanged = true;
+    }
+
+    /**
+     * Places the pivot on the camera's view axis, at the depth of the scene's center.
+     * Camera stays in place.
+     */
+    protected reanchorPivot()
+    {
+        const controller = this._controller;
+        const box = this.getGraphComponent(CVScene).outs.boundingBox.value;
+
+        let distance = box.isEmpty() ? 0 : controller.getViewDepth(box.getCenter(_vec3));
+        if (!(distance > 0)) {
+            // scene is behind the camera
+            distance = controller.boundsRadius || controller.offset.length();
+        }
+
+        controller.setPivotDistance(distance);
     }
 
     protected onDoubleClick(event: IPointerEvent)

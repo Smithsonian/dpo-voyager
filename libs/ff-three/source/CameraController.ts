@@ -224,6 +224,39 @@ export default class CameraController implements IManip
     }
 
     /**
+     * Returns the distance of the given point along the camera's view axis.
+     * Negative if the point is behind the camera.
+     * @param point Position in world space.
+     */
+    getViewDepth(point: Vector3): number
+    {
+        // camera space position of the point, relative to the pivot
+        _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
+        threeMath.composeOrbitMatrix(_vec3a, this.offset, _mat4);
+        _mat4.invert();
+        _vec3b.copy(point).sub(this.pivot).applyMatrix4(_mat4);
+        return -_vec3b.z;
+    }
+
+    /**
+     * Moves the pivot point along the camera's view axis, keeping the camera in place.
+     * The resulting distance is clamped to the controller's offset limits.
+     * @param distance Distance of the new pivot point in front of the camera.
+     */
+    setPivotDistance(distance: number)
+    {
+        distance = math.limit(distance, this.minOffset.z, this.maxOffset.z);
+
+        _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
+        _vec3b.copy(this.offset);
+        _vec3b.z -= distance;
+        threeMath.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
+
+        this.pivot.add(_vec3c.setFromMatrixPosition(_mat4));
+        this.offset.set(0, 0, distance);
+    }
+
+    /**
      * Adjusts the camera such that the given bounding box is entirely visible.
      * Moves the pivot point to the center of the box, keeping the current orbit.
      * This method can only be called if an internal camera has been assigned.

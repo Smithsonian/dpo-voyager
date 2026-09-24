@@ -123,6 +123,54 @@ describe("CameraController", function(){
     });
   });
 
+  describe("getViewDepth()", function(){
+    it("returns the distance along the view axis", function(){
+      const { camera, controller } = createController([ -20, 30, 10 ], [ 4, -3, 50 ], [ 10, 5, -7 ]);
+      const inFront = new Vector3(0, 0, -12).applyMatrix4(camera.matrixWorld);
+      const behind = new Vector3(3, 1, 5).applyMatrix4(camera.matrixWorld);
+      expect(controller.getViewDepth(inFront)).to.be.closeTo(12, 1e-6);
+      expect(controller.getViewDepth(behind)).to.be.closeTo(-5, 1e-6);
+    });
+  });
+
+  describe("setPivotDistance()", function(){
+    it("moves the pivot on the view axis, keeping the camera in place", function(){
+      const { camera, controller } = createController([ -20, 30, 10 ], [ 4, -3, 50 ], [ 10, 5, -7 ]);
+      const matrix = camera.matrix.clone();
+      const target = new Vector3(0, 0, -12).applyMatrix4(camera.matrixWorld);
+
+      controller.setPivotDistance(12);
+      update(controller);
+
+      expectMatrixClose(camera.matrix, matrix);
+      expect(controller.offset.toArray()).to.deep.equal([ 0, 0, 12 ]);
+      expect(controller.pivot.distanceTo(target)).to.be.closeTo(0, 1e-6);
+    });
+
+    it("clamps the distance to the offset limits", function(){
+      const { controller } = createController([ 0, 0, 0 ], [ 0, 0, 50 ]);
+      controller.minOffset.z = 1;
+      controller.setPivotDistance(0.01);
+      expect(controller.offset.z).to.equal(1);
+    });
+
+    it("re-anchors after flying around", function(){
+      const { camera, controller } = createController([ -20, 30, 10 ], [ 0, 0, 50 ], [ 10, 5, -7 ]);
+      controller.controllerMode = EControllerMode.Fly;
+      controller.boundsRadius = 10;
+      controller["updatePose"](30, -20, 5, 15, 25, 0);
+      update(controller);
+      const matrix = camera.matrix.clone();
+
+      controller.controllerMode = EControllerMode.Orbit;
+      controller.setPivotDistance(20);
+      update(controller);
+
+      expectMatrixClose(camera.matrix, matrix);
+      expect(controller.offset.toArray()).to.deep.equal([ 0, 0, 20 ]);
+    });
+  });
+
   describe("zoomExtents()", function(){
     it("moves the pivot to the center of the box", function(){
       const { controller } = createController([ -20, 30, 0 ], [ 4, 2, 50 ], [ 10, 5, -7 ]);
