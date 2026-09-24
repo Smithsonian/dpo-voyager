@@ -35,7 +35,7 @@ const _vec3b = new Vector3();
 const _vec3c = new Vector3();
 const _quat = new Quaternion();
 const _euler = new Euler();
-const _eua = new Euler();
+const _axisZ = new Vector3(0, 0, 1);
 
 export enum EControllerMode { Orbit, Fly, Walk }
 enum EManipMode { Off, Pan, Orbit, Dolly, Zoom, PanDolly, Roll }
@@ -171,18 +171,56 @@ export default class CameraController implements IManip
         const camera = this.camera;
         object = object || camera;
 
+        const orbit = this.orbit;
         const offset = this.offset;
-        object.matrix.decompose(_vec3b, _quat, _vec3c);
-        //Rotation
-        _eua.setFromQuaternion(_quat, "YXZ");
-        _vec3a.setFromEuler(_eua).multiplyScalar(threeMath.RAD2DEG);
-        this.orbit.copy(_vec3a);
-        this.offset.copy(_vec3b.sub(this.pivot).applyQuaternion(_quat.invert()));
+        // orbit matrix is relative to the pivot point
+        _mat4.copy(object.matrix);
+        _mat4.elements[12] -= this.pivot.x;
+        _mat4.elements[13] -= this.pivot.y;
+        _mat4.elements[14] -= this.pivot.z;
+        threeMath.decomposeOrbitMatrix(_mat4, orbit, offset);
+        this.orbit.multiplyScalar(threeMath.RAD2DEG);
 
         if (adaptLimits) {
             this.minOffset.min(offset);
             this.maxOffset.max(offset);
         }
+    }
+
+    /**
+     * Moves the pivot point to the given position, keeping the camera in place
+     * and turning it to face the new pivot. Roll is preserved.
+     * Resulting orbit and offset are clamped to the controller's limits.
+     * @param position New pivot position.
+     */
+    setPivot(position: Vector3)
+    {
+        const { orbit, offset, pivot } = this;
+
+        // current camera position
+        _vec3a.copy(orbit).multiplyScalar(math.DEG2RAD);
+        threeMath.composeOrbitMatrix(_vec3a, offset, _mat4);
+        _vec3b.setFromMatrixPosition(_mat4).add(pivot);
+
+        // camera's +Z axis must point from the new pivot to the camera
+        _vec3c.copy(_vec3b).sub(position);
+        const distance = _vec3c.length();
+        if (distance === 0) {
+            return;
+        }
+        _vec3c.divideScalar(distance);
+
+        // orbit rotation is Rz(roll) * Ry(head) * Rx(pitch): remove roll, then solve for pitch and head
+        _vec3c.applyAxisAngle(_axisZ, -_vec3a.z);
+        const pitch = Math.asin(math.limit(-_vec3c.y, -1, 1)) * math.RAD2DEG;
+        let head = Math.atan2(_vec3c.x, _vec3c.z) * math.RAD2DEG;
+        // stay on the same turn as the current heading to avoid spinning when tweening
+        head += 360 * Math.round((orbit.y - head) / 360);
+
+        orbit.x = math.limit(pitch, this.minOrbit.x, this.maxOrbit.x);
+        orbit.y = math.limit(head, this.minOrbit.y, this.maxOrbit.y);
+        offset.set(0, 0, math.limit(distance, this.minOffset.z, this.maxOffset.z));
+        pivot.copy(position);
     }
 
     /**
@@ -204,29 +242,16 @@ export default class CameraController implements IManip
             return;
         }
 
-
-        // _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
-        // _eua.setFromVector3(_vec3a, "YXZ");
-        // _quat.setFromEuler(_eua);
-        // //Position, relative to pivot point
-        // _vec3b.copy(this.offset).applyEuler(_eua).add(this.pivot);
-        // //Keep scale
-        // _vec3c.setFromMatrixScale(object.matrix);
-        // //Compose everything
-        // object.matrix.compose(_vec3b, _quat,  _vec3c);
-
-
         // rotate box to camera space
         _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
-        _quat.setFromEuler(_eua.setFromVector3(_vec3a));
         _vec3b.setScalar(0);
-        _vec3c.setScalar(1);
-        //Ignore the pivot point for now. Rotate the box into camera space
-        _mat4.compose(_vec3b, _quat, _vec3c);
+        threeMath.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
+
         _box3.copy(box).applyMatrix4(_mat4.transpose());
         _box3.getSize(_vec3a);
         _box3.getCenter(_vec3b);
 
+        // offset is relative to the pivot point
         _vec3c.copy(this.pivot).applyMatrix4(_mat4);
         _vec3b.sub(_vec3c);
 
@@ -265,17 +290,7 @@ export default class CameraController implements IManip
         }
 
         _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
-        _eua.setFromVector3(_vec3a, "YXZ");
-        _quat.setFromEuler(_eua);
-        //Position, relative to pivot point
-        _vec3b.copy(this.offset).applyEuler(_eua).add(this.pivot);
-        //Keep scale
-        _vec3c.setFromMatrixScale(object.matrix);
-        //Compose everything
-        object.matrix.compose(_vec3b, _quat,  _vec3c);
-
-
-        object.matrixWorldNeedsUpdate = true;
+        _vec3b.copy(this.offset);
 
         if (camera.isOrthographicCamera) {
             _vec3b.z = this.maxOffset.z; // fixed distance = maxOffset.z
@@ -283,6 +298,14 @@ export default class CameraController implements IManip
             camera.far = 2 * this.maxOffset.z; // adjust far clipping
             camera.updateProjectionMatrix();
         }
+
+        threeMath.composeOrbitMatrix(_vec3a, _vec3b, object.matrix);
+        // orbit around the pivot point
+        const e = object.matrix.elements;
+        e[12] += this.pivot.x;
+        e[13] += this.pivot.y;
+        e[14] += this.pivot.z;
+        object.matrixWorldNeedsUpdate = true;
 
         return true;
     }

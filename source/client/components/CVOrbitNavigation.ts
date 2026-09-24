@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3, Euler, Matrix4, Quaternion, Vector3 } from "three";
+import { Box3 } from "three";
 
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
@@ -32,7 +32,6 @@ import CVAssetManager from "./CVAssetManager";
 import CVARManager from "./CVARManager";
 import CVModel2 from "./CVModel2";
 import { getMeshTransform } from "client/utils/Helpers";
-import { DEG2RAD, RAD2DEG } from "three/src/math/MathUtils";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -461,7 +460,7 @@ export default class CVOrbitNavigation extends CObject3D
             }
             const ts = event.originalEvent.timeStamp;
             if(ts < this._clickDebounce + 400){
-                this.onDoubleClick({...event, type: "double-click", wheel: 0});
+                this.onDoubleClick(event);
                 this._clickDebounce = 0;
             }else{
                 this._clickDebounce = ts;
@@ -474,51 +473,29 @@ export default class CVOrbitNavigation extends CObject3D
         this._hasChanged = true;
     }
 
-    protected onDoubleClick(event: ITriggerEvent){
-        if(event.component?.typeName != "CVModel2") return;
-        const model = event.component as CVModel2;
+    protected onDoubleClick(event: IPointerEvent)
+    {
+        if (!(event.component instanceof CVModel2)) {
+            return;
+        }
+
+        const model = event.component;
         const meshTransform = getMeshTransform(model.object3D, event.object3D);
-        let pos = new Vector3(), rot = new Quaternion(), scale = new Vector3();
-        model.transform.object3D.matrix.decompose(pos, rot, scale)
-
-        //Add CVNode's transform
-        const invMeshTransform = meshTransform.clone().invert();
         const bounds = model.localBoundingBox.clone().applyMatrix4(meshTransform);
-        // add mesh's "pose".
-        let localPosition = event.view.pickPosition(event as any, bounds)
-            .applyMatrix4(invMeshTransform)      //Add internal transform
-            .applyMatrix4(model.object3D.matrix) //Add mesh "pose"
-            .applyMatrix4(model.transform.object3D.matrixWorld) //Add mesh's "transform" (attached CTransform)
 
-        const orbit = new Vector3().fromArray(this.ins.orbit.value).multiplyScalar(DEG2RAD);
-        const pivot = new Vector3().fromArray(this.ins.pivot.value);
+        // picked position is in mesh space, bring it back to world space
+        const position = event.view.pickPosition(event, bounds)
+            .applyMatrix4(meshTransform.invert())
+            .applyMatrix4(model.object3D.matrix)
+            .applyMatrix4(model.transform.object3D.matrixWorld);
 
-        //we compute the new orbit and offset.z values to keep the camera in place
-        let orbitRad = new Euler().setFromVector3(orbit, "YXZ");
-        let orbitQuat = new Quaternion().setFromEuler(orbitRad);
-        //Offset from pivot with applied rotation
-        const offset = new Vector3().fromArray(this.ins.offset.value).applyQuaternion(orbitQuat);
-        //Current camera absolute position
-        const camPos = pivot.clone().add(offset);
-        //We want the camera position to stay the same with the new parameters
-        //First we need to get the path from the camera to the new pivot
-        const clickToCam = camPos.clone().sub(localPosition);
-        //We then use it to "look at" the new pivot
-        orbitQuat.setFromUnitVectors(
-            new Vector3(0, 0, 1),
-            clickToCam.clone().normalize(),
-        );
+        const controller = this._controller;
+        controller.setPivot(position);
 
-        //Rotation
-        orbitRad.setFromQuaternion(orbitQuat, "YXZ");
-        const orbitAngles = new Vector3().setFromEuler(orbitRad).multiplyScalar(RAD2DEG);
-        
-
-        //New pivot is straight-up where the user clicked
-        this.ins.pivot.setValue(localPosition.toArray());
-        //We always keep roll as-it-was because it tends to add up in disorienting ways
-        this.ins.orbit.setValue([orbitAngles.x, orbitAngles.y, this.ins.orbit.value[2]]);
-        this.ins.offset.setValue([0, 0, clickToCam.length()]);
+        const ins = this.ins;
+        ins.pivot.setValue(controller.pivot.toArray());
+        ins.orbit.setValue(controller.orbit.toArray());
+        ins.offset.setValue(controller.offset.toArray());
     }
 
     protected onTrigger(event: ITriggerEvent)
