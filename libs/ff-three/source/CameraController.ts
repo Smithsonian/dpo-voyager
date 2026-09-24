@@ -225,6 +225,7 @@ export default class CameraController implements IManip
 
     /**
      * Adjusts the camera such that the given bounding box is entirely visible.
+     * Moves the pivot point to the center of the box, keeping the current orbit.
      * This method can only be called if an internal camera has been assigned.
      * @param box Bounding box
      */
@@ -249,14 +250,11 @@ export default class CameraController implements IManip
 
         _box3.copy(box).applyMatrix4(_mat4.transpose());
         _box3.getSize(_vec3a);
-        _box3.getCenter(_vec3b);
 
-        // offset is relative to the pivot point
-        _vec3c.copy(this.pivot).applyMatrix4(_mat4);
-        _vec3b.sub(_vec3c);
-
-        offset.x = _vec3b.x;
-        offset.y = _vec3b.y;
+        // orbit around the center of the box
+        box.getCenter(this.pivot);
+        offset.x = 0;
+        offset.y = 0;
 
         const size = Math.max(_vec3a.x / camera.aspect, _vec3a.y);
 
@@ -265,7 +263,7 @@ export default class CameraController implements IManip
         }
         else {
             const fovFactor = 1 / (2 * Math.tan(camera.fov * math.DEG2RAD * 0.5));
-            offset.z = (_vec3b.z + size * fovFactor + _vec3a.z * 0.25 /* was 0.5 */);
+            offset.z = (size * fovFactor + _vec3a.z * 0.25 /* was 0.5 */);
         }
 
         if(offset.z > this.maxOffset.z) {

@@ -340,6 +340,8 @@ export default class CVOrbitNavigation extends CObject3D
             ins.orbit.set(true);
             controller.offset.toArray(ins.offset.value);
             ins.offset.set(true);
+            controller.pivot.toArray(ins.pivot.value);
+            ins.pivot.set(true);
 
             // if camera has moved, set preset to "None"
             if (ins.preset.value !== EViewPreset.None && !ins.preset.changed) {

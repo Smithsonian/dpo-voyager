@@ -124,6 +124,16 @@ describe("CameraController", function(){
   });
 
   describe("zoomExtents()", function(){
+    it("moves the pivot to the center of the box", function(){
+      const { controller } = createController([ -20, 30, 0 ], [ 4, 2, 50 ], [ 10, 5, -7 ]);
+      const box = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1)).translate(new Vector3(2, 3, 4));
+      controller.zoomExtents(box);
+      expect(controller.pivot.toArray()).to.deep.equal([ 2, 3, 4 ]);
+      expect(controller.offset.x).to.equal(0);
+      expect(controller.offset.y).to.equal(0);
+      expect(controller.orbit.toArray()).to.deep.equal([ -20, 30, 0 ]);
+    });
+
     it("centers the box on screen", function(){
       const { camera, controller } = createController([ -20, 30, 0 ], [ 0, 0, 50 ], [ 10, 5, -7 ]);
       const center = new Vector3(2, 3, 4);
