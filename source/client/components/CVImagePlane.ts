@@ -15,13 +15,15 @@
  * limitations under the License.
  */
 
-import { PlaneGeometry, MeshBasicMaterial, DoubleSide, Mesh, Quaternion, MeshStandardMaterial } from "three";
+import { PlaneGeometry, MeshBasicMaterial, DoubleSide, Mesh, Quaternion, MeshStandardMaterial, SRGBColorSpace } from "three";
 import CVModel2 from "./CVModel2";
 import CVAnnotationView, { ITagUpdateEvent } from "./CVAnnotationView";
 import { IDocument } from "./CVDocument";
 import { EUnitType, INode } from "client/schema/document";
 import * as helpers from "@ff/three/helpers";
 import { IModel } from "client/schema/model";
+import { addCustomMaterialDefines, extendShaders } from "client/shaders/ShaderExtension";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 //////////////////////////////////////////////////////////////////
 
@@ -33,7 +35,7 @@ export default class CVImagePlane extends CVModel2
 
     static readonly text: string = "ImagePlane";
 
-    private _material: MeshBasicMaterial = null;
+    private _material: MeshStandardMaterial = null;
     private _geometry: PlaneGeometry = null;
 
     get settingProperties() {
@@ -58,10 +60,13 @@ export default class CVImagePlane extends CVModel2
         super.create();
         
         this._geometry = new PlaneGeometry( 100, 100 );
-        this._material = new MeshBasicMaterial( {color: 0xffff00, side: DoubleSide} );
+        this._material = new MeshStandardMaterial( {color: 0xffff00, side: DoubleSide} );
+        addCustomMaterialDefines(this._material);
+        extendShaders(this._material);
         const plane = new Mesh( this._geometry, this._material );
         plane.matrixAutoUpdate = false;
         this.addObject3D(plane);
+        this.getMainComponent(CRenderer).views.forEach(view => view.render()); // trigger shader compile 
     }
 
     dispose()
@@ -76,8 +81,10 @@ export default class CVImagePlane extends CVModel2
     {
         // load image
         this.assetReader.getTexture(uri).then(map => {
+            map.colorSpace = SRGBColorSpace;
             this._material.map = map;
             this._material.needsUpdate = true;
+            this._geometry.scale(map.width/map.height, 1, 1);
         });
     }
 

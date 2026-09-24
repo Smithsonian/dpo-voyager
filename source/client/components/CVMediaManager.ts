@@ -245,12 +245,12 @@ export default class CVMediaManager extends CAssetManager
                     this.move(asset, this.root).then(() => { 
                         const nvNode = activeDoc.root.graph.createCustomNode(NVNode);
                         const plane = nvNode.transform.createComponent(CVImagePlane);
+                        plane.setImage(rootPath);
                         const derivative = plane.derivatives.getOrCreate(EDerivativeUsage.Image2D, EDerivativeQuality.High);
                         derivative.createAsset(EAssetType.Image, rootPath);
                         activeDoc.root.scene.transform.addChild(plane.transform);
                         nvNode.name = "ImagePlane";
                         plane.ins.name.setValue(nvNode.name);
-                        plane.setImage(rootPath);
                     });
                     break;
             }
