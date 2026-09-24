@@ -159,22 +159,9 @@ export default class CVAnnotationsTask extends CVTask
     saveAnnotationView()
     {
         const machine = this._machine;
-        const props = machine.getTargetProperties();
-        const retainIdx = [];
-        for(let i = 0; i < props.length; i++) {
-            if(["Pivot", "Orbit", "Offset"].includes(props[i].name)) retainIdx.push(i);
-        }
-
-        // set non camera properties to null to skip them
-        const values = machine.getCurrentValues();
-        values.forEach((v, idx) => {
-            if(!retainIdx.includes(idx)) {
-                values[idx] = null;
-            }
-        });
 
         const id = machine.setState({
-            values: values,
+            values: machine.keepCameraValues(machine.getCurrentValues()),
             curve: EEasingCurve.EaseOutQuad,
             duration: 1.0,
             threshold: 0.5,
