@@ -104,7 +104,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _isAutoZooming = false;
     private _autoRotationStartTime = null;
     private _initYOrbit = null;
-    private _clickDebounce :number = null
+    private _lastClick: { time: number, x: number, y: number } = null;
 
     constructor(node: Node, id: string)
     {
@@ -463,27 +463,48 @@ export default class CVOrbitNavigation extends CObject3D
             return;
         }
 
-        if (!this.ins.enabled.value || !this._scene.activeCameraComponent) {
-            return;
-        }
-
-        if (event.type === "pointer-down" ) {
-            if(window.getSelection().type !== "None"){
+        if (this.ins.enabled.value && this._scene.activeCameraComponent) {
+            if (event.type === "pointer-down" && window.getSelection().type !== "None") {
                 window.getSelection().removeAllRanges();
             }
-            const ts = event.originalEvent.timeStamp;
-            if(ts < this._clickDebounce + 400){
+            if (this.isDoubleClick(event)) {
                 this.onDoubleClick(event);
-                this._clickDebounce = 0;
-            }else{
-                this._clickDebounce = ts;
             }
+            this._controller.setViewportSize(viewport.width, viewport.height);
+            this._controller.onPointer(event);
+            event.stopPropagation = true;
         }
-        this._controller.setViewportSize(viewport.width, viewport.height);
-        this._controller.onPointer(event);
 
-        event.stopPropagation = true;
         this._hasChanged = true;
+    }
+
+    /**
+     * Detects double clicks and double taps from pointer events.
+     * Native dblclick events are not emitted for touch input.
+     */
+    protected isDoubleClick(event: IPointerEvent): boolean
+    {
+        if (event.type === "pointer-up" && event.isDragging) {
+            this._lastClick = null;
+        }
+        if (event.type !== "pointer-down") {
+            return false;
+        }
+
+        // single pointer only (not a pinch), left button for mice
+        if (!event.isPrimary || event.pointerCount !== 1
+                || (event.source === "mouse" && event.originalEvent.button !== 0)) {
+            this._lastClick = null;
+            return false;
+        }
+
+        const last = this._lastClick;
+        const time = event.originalEvent.timeStamp;
+        const isDouble = !!last && time - last.time < 400
+            && Math.abs(event.localX - last.x) + Math.abs(event.localY - last.y) < 10;
+
+        this._lastClick = isDouble ? null : { time, x: event.localX, y: event.localY };
+        return isDouble;
     }
 
     /**
