@@ -30,6 +30,8 @@ import { ENavigationType, TNavigationType, INavigation } from "client/schema/set
 import CVScene from "./CVScene";
 import CVAssetManager from "./CVAssetManager";
 import CVARManager from "./CVARManager";
+import CVModel2 from "./CVModel2";
+import { getMeshTransform } from "client/utils/Helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -102,6 +104,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _isAutoZooming = false;
     private _autoRotationStartTime = null;
     private _initYOrbit = null;
+    private _lastClick: { time: number, x: number, y: number } = null;
 
     constructor(node: Node, id: string)
     {
@@ -464,12 +467,44 @@ export default class CVOrbitNavigation extends CObject3D
             if (event.type === "pointer-down" && window.getSelection().type !== "None") {
                 window.getSelection().removeAllRanges();
             }
+            if (this.isDoubleClick(event)) {
+                this.onDoubleClick(event);
+            }
             this._controller.setViewportSize(viewport.width, viewport.height);
             this._controller.onPointer(event);
             event.stopPropagation = true;
         }
 
         this._hasChanged = true;
+    }
+
+    /**
+     * Detects double clicks and double taps from pointer events.
+     * Native dblclick events are not emitted for touch input.
+     */
+    protected isDoubleClick(event: IPointerEvent): boolean
+    {
+        if (event.type === "pointer-up" && event.isDragging) {
+            this._lastClick = null;
+        }
+        if (event.type !== "pointer-down") {
+            return false;
+        }
+
+        // single pointer only (not a pinch), left button for mice
+        if (!event.isPrimary || event.pointerCount !== 1
+                || (event.source === "mouse" && event.originalEvent.button !== 0)) {
+            this._lastClick = null;
+            return false;
+        }
+
+        const last = this._lastClick;
+        const time = event.originalEvent.timeStamp;
+        const isDouble = !!last && time - last.time < 400
+            && Math.abs(event.localX - last.x) + Math.abs(event.localY - last.y) < 10;
+
+        this._lastClick = isDouble ? null : { time, x: event.localX, y: event.localY };
+        return isDouble;
     }
 
     /**
@@ -488,6 +523,31 @@ export default class CVOrbitNavigation extends CObject3D
         }
 
         controller.setPivotDistance(distance);
+    }
+
+    protected onDoubleClick(event: IPointerEvent)
+    {
+        if (!(event.component instanceof CVModel2)) {
+            return;
+        }
+
+        const model = event.component;
+        const meshTransform = getMeshTransform(model.object3D, event.object3D);
+        const bounds = model.localBoundingBox.clone().applyMatrix4(meshTransform);
+
+        // picked position is in mesh space, bring it back to world space
+        const position = event.view.pickPosition(event, bounds)
+            .applyMatrix4(meshTransform.invert())
+            .applyMatrix4(model.object3D.matrix)
+            .applyMatrix4(model.transform.object3D.matrixWorld);
+
+        const controller = this._controller;
+        controller.setPivot(position);
+
+        const ins = this.ins;
+        ins.pivot.setValue(controller.pivot.toArray());
+        ins.orbit.setValue(controller.orbit.toArray());
+        ins.offset.setValue(controller.offset.toArray());
     }
 
     protected onTrigger(event: ITriggerEvent)
