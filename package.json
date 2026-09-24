@@ -14,7 +14,7 @@
         "build-libs": "tsc -b libs",
         "docs": "cd docs && jekyll build",
         "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/ source/",
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "mocha \"libs/*/test/test.ts\" \"source/test/**/*.test.ts\"",
         "up": "docker compose up -d && docker compose logs -f",
         "down": "docker compose stop && docker compose rm -f -v",
         "restart": "docker compose stop && docker compose rm -f -v; docker compose up -d; docker compose logs -f",
@@ -86,6 +86,7 @@
         "xml-js": "^1.6.11"
     },
     "devDependencies": {
+        "@happy-dom/global-registrator": "^20.14.5",
         "@types/chai": "^4.2.21",
         "@types/mocha": "^10.0.10",
         "@types/node": "^16.18.108",
@@ -107,6 +108,7 @@
         "source-map-loader": "^3.0.2",
         "terser-webpack-plugin": "^5.3.17",
         "ts-loader": "^9.6.2",
+        "tsx": "^4.23.15",
         "typedoc": "^0.28.19",
         "typescript": "^5.9.3",
         "webpack": "^5.108.4",

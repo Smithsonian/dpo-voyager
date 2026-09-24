@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
       "target": "ES2017",
-      "module": "CommonJS",
+      "module": "es2020",
       "sourceMap": true,
       //"strict": true,
       "esModuleInterop": true,
@@ -10,9 +10,8 @@
       //"noUnusedLocals": true,
       "experimentalDecorators": true,
       "skipLibCheck": true,
-      "noEmitOnError": false,
       "baseUrl": ".",
-      "outDir": "build",
+      "noEmit": true,
       "paths": {
           "client/*": [ "../client/*" ],
           "@ff/core/*": [ "../../libs/ff-core/source/*" ],
@@ -23,5 +22,5 @@
           "@ff/scene/*": [ "../../libs/ff-scene/source/*" ]
       }
   },
-  "include": ["./**/*.test.ts", "../client/global.d.ts"]
+  "include": ["./**/*.ts", "../client/**/*.ts", "../../libs/*/source/**/*.ts"]
 }
