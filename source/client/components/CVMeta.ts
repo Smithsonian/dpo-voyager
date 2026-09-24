@@ -50,6 +50,12 @@ export default class CVMeta extends Component
         return this.getGraphComponent(CVLanguageManager, true);
     }
 
+    hasContent(): boolean
+    {
+        return this.collection.length > 0 || this.process.length > 0 || this.images.length > 0 || 
+            this.articles.length > 0 || this.audio.length > 0 || this.actions.length > 0 || this.notes.length > 0;
+    }
+
     fromDocument(document: IDocument, node: INode | IScene): number
     {
         if (!isFinite(node.meta)) {

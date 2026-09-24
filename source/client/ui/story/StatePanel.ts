@@ -268,6 +268,7 @@ export default class StatePanel extends DocumentView
     {
         const text = event.detail.text;
         this.activeState.title = text;
+        this.snapshots.ins.curve.set(); // trigger snapshot update event to propagate new title
 
         this.requestUpdate();
     }

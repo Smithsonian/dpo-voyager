@@ -90,12 +90,10 @@ export default class CVActionsTask extends CVTask
     create()
     {
         super.create();
-        this.startObserving();
     }
 
     dispose()
-    {
-        this.stopObserving();
+    {      
         super.dispose();
     }
 
@@ -107,14 +105,12 @@ export default class CVActionsTask extends CVTask
     activateTask()
     {   
         super.activateTask();
-        this.meta ? this.synchAnnotationOptions(this.meta.getComponent(CVModel2)) : null;
-        this.synchTourOptions();
-        this.synchActionOptions();
-        this.synchStateOptions();
+        this.startObserving();
     }
 
     deactivateTask()
     {
+        this.stopObserving();
         super.deactivateTask();
     }
 
@@ -315,6 +311,10 @@ export default class CVActionsTask extends CVTask
             next.setup.snapshots.outs.update.on("value", this.synchStateOptions, this);
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
             next.setup.actions.outs.fired.on("value", this.updateUI, this);
+
+            this.synchTourOptions();
+            this.synchActionOptions();
+            this.synchStateOptions();
         }
     }
 
