@@ -200,6 +200,7 @@ export default class StatePanel extends DocumentView
                 paths: deltaPaths
             };
 
+            this.snapshots.addDeltaPivot(newState);
             this.snapshots.setState(newState);
             this.snapshots.deltaStates.push(newState);
             
