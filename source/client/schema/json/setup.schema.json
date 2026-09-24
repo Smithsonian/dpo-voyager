@@ -8,7 +8,7 @@
     "definitions": {
         "vector3nullable": {
             "description": "3-component vector where each member can be null",
-            "$id": "#vector3",
+            "$id": "#vector3nullable",
             "type": "array",
             "items": {
                 "oneOf":[
