@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { PlaneGeometry, MeshBasicMaterial, DoubleSide, Mesh, Quaternion, MeshStandardMaterial, SRGBColorSpace } from "three";
+import { PlaneGeometry, Mesh, Quaternion, MeshStandardMaterial, SRGBColorSpace, FrontSide, Vector3 } from "three";
 import CVModel2 from "./CVModel2";
 import CVAnnotationView, { ITagUpdateEvent } from "./CVAnnotationView";
 import { IDocument } from "./CVDocument";
@@ -28,6 +28,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 //////////////////////////////////////////////////////////////////
 
 const _quat = new Quaternion();
+const _vec3 = new Vector3();
 
 export default class CVImagePlane extends CVModel2
 {
@@ -37,6 +38,7 @@ export default class CVImagePlane extends CVModel2
 
     private _material: MeshStandardMaterial = null;
     private _geometry: PlaneGeometry = null;
+    private _backside: Mesh = null;
 
     get settingProperties() {
         return [
@@ -45,6 +47,7 @@ export default class CVImagePlane extends CVModel2
             this.ins.visible,
             this.ins.color,
             this.ins.opacity,
+            this.ins.doubleSided
         ];
     }
 
@@ -60,13 +63,12 @@ export default class CVImagePlane extends CVModel2
         super.create();
         
         this._geometry = new PlaneGeometry( 100, 100 );
-        this._material = new MeshStandardMaterial( {color: 0xffff00, side: DoubleSide} );
+        this._material = new MeshStandardMaterial( {color: 0xffff00, side: FrontSide} );
         addCustomMaterialDefines(this._material);
         extendShaders(this._material);
         const plane = new Mesh( this._geometry, this._material );
         plane.matrixAutoUpdate = false;
         this.addObject3D(plane);
-        this.getMainComponent(CRenderer).views.forEach(view => view.render()); // trigger shader compile 
     }
 
     dispose()
@@ -92,6 +94,10 @@ export default class CVImagePlane extends CVModel2
     {
         const ins = this.ins;
 
+        if(!this._material.userData?.shader) {
+            this.getMainComponent(CRenderer).views.forEach(view => view.render()); // trigger shader compile
+        }
+
         if (ins.color.changed) {
             this._material.color.fromArray(ins.color.value);
         }
@@ -100,6 +106,25 @@ export default class CVImagePlane extends CVModel2
             this._material.opacity = ins.opacity.value;
             this._material.transparent = this._material.opacity < 1;
             this._material.needsUpdate = true;
+        }
+
+        if (ins.doubleSided.changed) {
+            if(ins.doubleSided.value) {
+                const backside = this._backside = this.object3D.children[0].clone() as Mesh;
+                this.addObject3D(backside);
+                backside.scale.z = -1;
+                backside.updateMatrix();
+            }
+            else {
+                if(this._backside) {
+                    this.removeObject3D(this._backside);
+                    this._backside.geometry.dispose();
+                    const material = this._backside.material as MeshStandardMaterial;
+                    material.map.dispose();
+                    material.dispose();
+                    this._backside = null;
+                }
+            }
         }
 
         super.update();
@@ -179,7 +204,7 @@ export default class CVImagePlane extends CVModel2
                 //roughness: material.roughness !== undefined ? material.roughness : ins.roughness.schema.preset,
                 //metalness: material.metalness !== undefined ? material.metalness : ins.metalness.schema.preset,
                 //occlusion: material.occlusion !== undefined ? material.occlusion : ins.occlusion.schema.preset,
-                //doubleSided: material.doubleSided !== undefined ? material.doubleSided : ins.doubleSided.schema.preset
+                doubleSided: material.doubleSided !== undefined ? material.doubleSided : ins.doubleSided.schema.preset
             });
         }
 
@@ -218,7 +243,7 @@ export default class CVImagePlane extends CVModel2
         //    data.shadowSide = ESideType[this.ins.shadowSide.getValidatedValue()] as TSideType;
         //}
 
-        if (!ins.color.value.every(n => n === 1) || ins.opacity.value < 1) {
+        if (!ins.color.value.every(n => n === 1) || ins.opacity.value < 1 || ins.doubleSided.value) {
             data.material = {
                 color: ins.color.value,
                 opacity: ins.opacity.value,
@@ -226,7 +251,7 @@ export default class CVImagePlane extends CVModel2
                 //roughness: ins.roughness.value,
                 //metalness: ins.metalness.value,
                 //occlusion: ins.occlusion.value,
-                //doubleSided: ins.doubleSided.value
+                doubleSided: ins.doubleSided.value
             };
         }
 
