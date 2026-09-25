@@ -26,7 +26,7 @@ import { ISnapshots } from "client/schema/setup";
 
 import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";
-import Property from "@ff/graph/Property";
+import Property, { types } from "@ff/graph/Property";
 import CVTours from "./CVTours";
 import CVAnnotationView from "./CVAnnotationView";
 
@@ -40,6 +40,13 @@ export default class CVSnapshots extends CTweenMachine
 
     targetFeatures: Dictionary<boolean> = {};
     deltaStates: IDeltaState[] = [];
+
+    protected static readonly snapshotAddIns = {
+        deltaID: types.String("Snapshot.deltaID"),
+        activateDelta: types.Event("Snapshot.activateDelta"),
+    };
+
+    addIns = this.addInputs(CVSnapshots.snapshotAddIns);
 
     create()
     {
@@ -57,6 +64,18 @@ export default class CVSnapshots extends CTweenMachine
         this.initializeTargetFeatures();
 
         this.graph.components.on(CLight, this.onLightComponentEvent, this);
+    }
+
+    update(context): boolean
+    {
+        const addIns = this.addIns;
+
+        if (addIns.activateDelta.changed) {
+            this.activateStateChange();
+        }
+
+        super.update(context);
+        return true;
     }
 
     initializeTargetFeatures()
@@ -127,13 +146,14 @@ export default class CVSnapshots extends CTweenMachine
          */
     }
 
-    activateStateChange(id: string)
+    protected activateStateChange()
     {
         // don't process an active delta state change if one is already in progress
         if(this.outs.tweening.value && this.deltaStates.some(state => state.id === id)) {
             return;
         }
         
+        const id = this.addIns.deltaID.value;
         const state = this.getState(id) as IDeltaState;
         const targetCache : ITargetEntry[] = [];
         this.targets.forEach(target => { targetCache.push(target);});

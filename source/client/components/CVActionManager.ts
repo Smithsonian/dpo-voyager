@@ -408,7 +408,8 @@ export default class CVActionManager extends Component
                 }
             }
 
-            machine.activateStateChange(action.stateId);
+            machine.addIns.deltaID.setValue(action.stateId);
+            machine.addIns.activateDelta.set();
             machine.outs.end.once("value", () => this.fireOnEndTriggers(action.id));
         }
         else if(action.type == EActionType[EActionType.EnableAction] as TActionType ||

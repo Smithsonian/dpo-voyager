@@ -225,7 +225,11 @@ export default class StatePanel extends DocumentView
 
     protected onClickView()
     {
-        this.activeState ? this.activeDocument.setup.snapshots.activateStateChange(this.activeState.id) : null;
+        if(this.activeState) {
+            const machine = this.activeDocument.setup.snapshots;
+            machine.addIns.deltaID.setValue(this.activeState.id);
+            machine.addIns.activateDelta.set();
+        }
     }
 
     protected onClickReset()
