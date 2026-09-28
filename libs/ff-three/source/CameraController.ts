@@ -60,14 +60,27 @@ export default class CameraController implements IManip
 
     controllerMode: EControllerMode = EControllerMode.Orbit
 
+    /** Time constant of the camera's glide after releasing the pointer, in seconds. 0 disables inertia. */
+    inertia = 0.15;
+    /** Time constant of the wheel zoom and keyboard smoothing, in seconds. 0 disables smoothing. */
+    smoothing = 0.08;
+
     protected mode = EManipMode.Off;
     protected phase = EManipPhase.Off;
     protected prevPinchDist = 0;
 
+    /** Pointer movement since the last update, in pixels */
     protected deltaX = 0;
     protected deltaY = 0;
     protected deltaPinch = 0;
+    /** Wheel steps not applied yet */
     protected deltaWheel = 0;
+
+    /** Pointer velocity while dragging, then gliding velocity, in pixels per second */
+    protected velocity = { x: 0, y: 0 };
+    /** Time constant of the current glide, in seconds */
+    protected glideTime = 0;
+    protected lastUpdateTime = -1;
 
     protected viewportWidth = 100;
     protected viewportHeight = 100;
@@ -82,10 +95,17 @@ export default class CameraController implements IManip
     {
         if (event.isPrimary) {
             if (event.type === "pointer-down") {
+                // grabbing stops the camera
                 this.phase = EManipPhase.Active;
+                this.velocity.x = this.velocity.y = 0;
             }
             else if (event.type === "pointer-up") {
                 this.phase = EManipPhase.Release;
+                this.glideTime = this.inertia;
+                // releasing a slow or stopped pointer doesn't throw the camera
+                if (Math.abs(this.velocity.x) + Math.abs(this.velocity.y) < 50) {
+                    this.velocity.x = this.velocity.y = 0;
+                }
                 return true;
             }
         }
@@ -129,25 +149,64 @@ export default class CameraController implements IManip
     onKeypress(event: IKeyboardEvent)
     {
         const isOrbit = this.controllerMode == EControllerMode.Orbit;
-        if(event.key === "ArrowUp" || event.key === "ArrowDown") {
-            const dir = event.key === "ArrowUp" ? -1 : 1;
-            this.deltaY = dir * (isOrbit ? 20 : 6);
+        const step = isOrbit ? 20 : 6;
 
-            this.mode = event.shiftKey ? EManipMode.Pan : isOrbit ? (event.ctrlKey ? EManipMode.Dolly : EManipMode.Orbit)
+        if(event.key === "ArrowUp" || event.key === "ArrowDown") {
+            const mode = event.shiftKey ? EManipMode.Pan : isOrbit ? (event.ctrlKey ? EManipMode.Dolly : EManipMode.Orbit)
                 : (event.ctrlKey ? EManipMode.Orbit : EManipMode.Dolly);
-            
+            this.push(mode, 0, event.key === "ArrowUp" ? -step : step);
             return true;
         }
         else if(event.key === "ArrowLeft" || event.key === "ArrowRight") {
-            const dir = event.key === "ArrowLeft" ? -1 : 1;
-            this.deltaX = dir * (isOrbit ? 20 : 6);
-
-            this.mode = event.shiftKey ? EManipMode.Pan : EManipMode.Orbit;
-
+            const mode = event.shiftKey ? EManipMode.Pan : EManipMode.Orbit;
+            this.push(mode, event.key === "ArrowLeft" ? -step : step, 0);
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Stops any ongoing camera motion: inertia, pending wheel zoom and keyboard moves.
+     */
+    stop()
+    {
+        if (this.phase !== EManipPhase.Active) {
+            this.mode = EManipMode.Off;
+            this.phase = EManipPhase.Off;
+        }
+        this.velocity.x = this.velocity.y = 0;
+        this.deltaX = this.deltaY = 0;
+        this.deltaWheel = 0;
+    }
+
+    /**
+     * Moves the camera by the given amount (in pixels) in the given mode,
+     * gliding over time if inertia is enabled.
+     */
+    protected push(mode: EManipMode, dX: number, dY: number)
+    {
+        if (this.phase === EManipPhase.Active) {
+            return;
+        }
+
+        if (mode !== this.mode) {
+            this.velocity.x = this.velocity.y = 0;
+        }
+        this.mode = mode;
+
+        const tau = this.smoothing;
+        if (tau > 0) {
+            // velocity that glides over the given distance
+            this.velocity.x += dX / tau;
+            this.velocity.y += dY / tau;
+            this.glideTime = tau;
+            this.phase = EManipPhase.Release;
+        }
+        else {
+            this.deltaX = dX;
+            this.deltaY = dY;
+        }
     }
 
     setViewportSize(width: number, height: number)
@@ -367,44 +426,106 @@ export default class CameraController implements IManip
      */
     update(): boolean
     {
-        if (this.phase === EManipPhase.Off && this.deltaWheel === 0
-            && this.deltaX === 0 && this.deltaY === 0) {
+        const now = this.getTime();
+        const dt = this.lastUpdateTime < 0 ? 1 / 60 : math.limit((now - this.lastUpdateTime) * 0.001, 0, 0.1);
+        this.lastUpdateTime = now;
+
+        const zoomed = this.updateWheel(dt);
+        const moved = this.updatePointer(dt);
+        return zoomed || moved;
+    }
+
+    /**
+     * Current time in milliseconds.
+     */
+    protected getTime()
+    {
+        return performance.now();
+    }
+
+    /**
+     * Applies pending wheel steps, smoothed over time.
+     * @param dt Time since the last update, in seconds.
+     */
+    protected updateWheel(dt: number): boolean
+    {
+        if (this.deltaWheel === 0) {
             return false;
         }
 
-        if (this.deltaWheel !== 0) {
-            const isOrbit = this.controllerMode === EControllerMode.Orbit;
-            this.dolly(isOrbit ? this.deltaWheel * 0.07 + 1 : this.deltaWheel);
-            this.deltaWheel = 0;
-            return true;
+        const tau = this.smoothing;
+        let steps = tau > 0 ? this.deltaWheel * (1 - Math.exp(-dt / tau)) : this.deltaWheel;
+        if (Math.abs(this.deltaWheel - steps) < 0.005) {
+            steps = this.deltaWheel;
         }
+        this.deltaWheel -= steps;
+
+        // Orbit: each step scales the distance by 7%, symmetrically in and out
+        const isOrbit = this.controllerMode === EControllerMode.Orbit;
+        this.dolly(isOrbit ? Math.pow(1.07, steps) : steps);
+        return true;
+    }
+
+    /**
+     * Applies pointer movement while dragging, then inertia after release.
+     * @param dt Time since the last update, in seconds.
+     */
+    protected updatePointer(dt: number): boolean
+    {
+        const velocity = this.velocity;
 
         if (this.phase === EManipPhase.Active) {
+            // track pointer velocity (smoothed over ~50ms) for inertia after release
+            if (dt > 0) {
+                const blend = 1 - Math.exp(-dt / 0.05);
+                velocity.x += (this.deltaX / dt - velocity.x) * blend;
+                velocity.y += (this.deltaY / dt - velocity.y) * blend;
+            }
+
             if (this.deltaX === 0 && this.deltaY === 0 && this.deltaPinch === 1) {
                 return false;
             }
 
-            this.updateByMode();
+            this.updateByMode(this.deltaX, this.deltaY, this.deltaPinch);
             this.deltaX = 0;
             this.deltaY = 0;
             this.deltaPinch = 1;
             return true;
         }
-        else if (this.phase === EManipPhase.Release) {
-            this.deltaX *= 0.85;
-            this.deltaY *= 0.85;
-            this.deltaPinch = 1;
-            this.updateByMode();
 
-            const delta = Math.abs(this.deltaX) + Math.abs(this.deltaY);
-            if (delta < 0.1) {
-                this.mode = EManipMode.Off;
+        if (this.phase === EManipPhase.Release) {
+            // movement since the last update, then exponential glide: the total distance is
+            // velocity * tau whatever the frame rate
+            let dX = this.deltaX, dY = this.deltaY;
+            this.deltaX = this.deltaY = 0;
+            this.deltaPinch = 1;
+
+            const tau = this.mode === EManipMode.Off ? 0 : this.glideTime;
+            const decay = tau > 0 ? Math.exp(-dt / tau) : 0;
+            dX += velocity.x * tau * (1 - decay);
+            dY += velocity.y * tau * (1 - decay);
+            velocity.x *= decay;
+            velocity.y *= decay;
+
+            // stop when the remaining glide is less than half a pixel
+            if ((Math.abs(velocity.x) + Math.abs(velocity.y)) * tau < 0.5) {
+                dX += velocity.x * tau;
+                dY += velocity.y * tau;
+                velocity.x = velocity.y = 0;
                 this.phase = EManipPhase.Off;
+            }
+
+            if (dX !== 0 || dY !== 0) {
+                this.updateByMode(dX, dY, 1);
+            }
+            if (this.phase === EManipPhase.Off) {
+                this.mode = EManipMode.Off;
             }
             return true;
         }
-        else if(this.deltaX !== 0 || this.deltaY !== 0) {
-            this.updateByMode();
+
+        if (this.deltaX !== 0 || this.deltaY !== 0) {
+            this.updateByMode(this.deltaX, this.deltaY, 1);
             this.deltaX = 0;
             this.deltaY = 0;
             this.mode = EManipMode.Off;
@@ -415,12 +536,11 @@ export default class CameraController implements IManip
     }
 
     /**
-     * Applies the accumulated pointer deltas according to the current manipulation mode.
+     * Applies pointer deltas according to the current manipulation mode.
      */
-    protected updateByMode()
+    protected updateByMode(deltaX: number, deltaY: number, deltaPinch: number)
     {
         const isOrbit = this.controllerMode === EControllerMode.Orbit;
-        const { deltaX, deltaY } = this;
 
         switch(this.mode) {
             case EManipMode.Orbit:
@@ -440,7 +560,7 @@ export default class CameraController implements IManip
                 break;
 
             case EManipMode.PanDolly:
-                const pinch = this.deltaPinch - 1;
+                const pinch = deltaPinch - 1;
                 this.dolly(isOrbit ? 1 / (pinch * 0.42 + 1) : pinch * -10);
                 this.pan(deltaX * 0.75, deltaY * 0.75);
                 break;

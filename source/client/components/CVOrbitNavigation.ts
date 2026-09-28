@@ -260,8 +260,9 @@ export default class CVOrbitNavigation extends CObject3D
 
         // orbit, offset and limits
         if (orbit.changed || offset.changed || pivot.changed) {
-            // camera set from outside (tour, annotation view, UI): stop turning towards the pivot
+            // camera set from outside (tour, annotation view, UI): stop ongoing motion
             this._pivotAnimation = null;
+            controller.stop();
             controller.orbit.fromArray(orbit.value);
             controller.offset.fromArray(offset.value);
             controller.pivot.fromArray(pivot.value);
@@ -269,6 +270,7 @@ export default class CVOrbitNavigation extends CObject3D
 
         if (reanchorPivot) {
             this._pivotAnimation = null;
+            controller.stop();
             this.reanchorPivot();
         }
 
@@ -298,6 +300,7 @@ export default class CVOrbitNavigation extends CObject3D
                 controller.camera = cameraComponent.camera;
             
                 this._pivotAnimation = null;
+                controller.stop();
                 controller.zoomExtents(this._modelBoundingBox);
                 //cameraComponent.ins.zoom.set();
                 this._hasZoomed = true;
