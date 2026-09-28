@@ -24,8 +24,8 @@ describe("maxCenterWeight", function(){
     let b = new Box3(new Vector3(-1,-1,-1), new Vector3(1, 1, 1));
     expect(maxCenterWeight(b)).to.equal(1);
   });
-  it("returns 1/2 for just-out-of-screen objects", function(){
+  it("returns 1/16 for just-out-of-screen objects", function(){
     let b = new Box3(new Vector3(1,0,0), new Vector3(2, 1, 0));
-    expect(maxCenterWeight(b)).to.equal(0.5);
+    expect(maxCenterWeight(b)).to.equal(1/16);
   });
 })

@@ -175,10 +175,9 @@ export default function() {
             assert.strictEqual(c.toString(), str);
         });
 
-        test("toString - returns an rgba color string if alpha < 1", function() {
-            const str = "rgba(143, 12, 117, 0.2)";
-            const c = Color.fromString(str);
-            assert.strictEqual(c.toString(), str);
+        test("toString - returns an 8-digit hex color if alpha < 1", function() {
+            const c = Color.fromString("rgba(143, 12, 117, 0.2)");
+            assert.strictEqual(c.toString(), "#8f0c7533");
         });
 
         test("setHSL - hsl to rgb conversion, without alpha", function() {
