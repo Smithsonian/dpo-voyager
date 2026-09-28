@@ -11,7 +11,6 @@ import {
     Matrix4,
     Box3,
     Euler,
-    Quaternion
 } from "three";
 
 import math from "@ff/core/math";
@@ -33,7 +32,6 @@ const _box3 = new Box3();
 const _vec3a = new Vector3();
 const _vec3b = new Vector3();
 const _vec3c = new Vector3();
-const _quat = new Quaternion();
 const _euler = new Euler();
 const _axisZ = new Vector3(0, 0, 1);
 
@@ -325,7 +323,9 @@ export default class CameraController implements IManip
 
         if (camera.isOrthographicCamera) {
             _vec3b.z = this.maxOffset.z; // fixed distance = maxOffset.z
-            camera.size = this.offset.z; // use size to visualize distance
+            if (this.controllerMode === EControllerMode.Orbit) {
+                camera.size = this.offset.z; // use size to visualize distance
+            }
             camera.far = 2 * this.maxOffset.z; // adjust far clipping
             camera.updateProjectionMatrix();
         }
@@ -445,6 +445,15 @@ export default class CameraController implements IManip
             orbit.z = math.limit(orbit.z, minOrbit.z, maxOrbit.z);
         }
 
+        if (this.controllerMode !== EControllerMode.Orbit) {
+            // Fly and Walk: the camera turns around itself. Move the pivot to the camera's
+            // position (using the orientation from before this update), with a zero offset.
+            _vec3b.copy(offset);
+            threeMath.composeOrbitMatrix(this.prevOrbit, _vec3b, _mat4);
+            this.pivot.add(_vec3c.setFromMatrixPosition(_mat4));
+            offset.setScalar(0);
+        }
+
         if (this.offsetEnabled) {
             if(this.controllerMode == EControllerMode.Orbit) {
                 offset.z = dScale * offset.z;
@@ -475,15 +484,11 @@ export default class CameraController implements IManip
                     _euler.set(this.prevOrbit.x, 0, this.prevOrbit.z);
                     _vec3b.applyEuler(_euler);
                 }
+                _vec3b.y = -_vec3b.y;
 
-                offset.x += _vec3b.x;
-                offset.y -= _vec3b.y;
-                offset.z += _vec3b.z;
-
-                _vec3a.copy(orbit).multiplyScalar(math.DEG2RAD);
-                camera.getWorldQuaternion(_quat);
-                this.offset.applyQuaternion(_quat);
-                this.offset.applyEuler(_euler.set(-_vec3a.x,-_vec3a.y,-_vec3a.z));
+                // move the pivot (the camera) along the camera's axes, before this update's rotation
+                threeMath.composeOrbitMatrix(this.prevOrbit, _vec3b, _mat4);
+                this.pivot.add(_vec3c.setFromMatrixPosition(_mat4));
             }
         }
     }

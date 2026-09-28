@@ -198,6 +198,48 @@ describe("CameraController", function(){
   });
 
   describe("Fly and Walk modes", function(){
+    function flyController(mode: EControllerMode, projection = EProjection.Perspective)
+    {
+      const created = createController([ -20, 30, 10 ], [ 4, -3, 50 ], [ 10, 5, -7 ], projection);
+      created.controller.controllerMode = mode;
+      created.controller.boundsRadius = 25;
+      created.controller.setViewportSize(100, 100);
+      return created;
+    }
+
+    it("puts the pivot on the camera", function(){
+      const { camera, controller } = flyController(EControllerMode.Fly);
+      const before = cameraPosition(camera);
+      controller["updatePose"](0, 0, 0, 0, 0, 0);
+      expect(controller.offset.toArray()).to.deep.equal([ 0, 0, 0 ]);
+      expect(controller.pivot.distanceTo(before)).to.be.closeTo(0, 1e-6);
+    });
+
+    it("Fly moves along the camera's axes", function(){
+      const { camera, controller } = flyController(EControllerMode.Fly);
+      const expected = new Vector3(-0.2, 0.3, 2).applyMatrix4(camera.matrixWorld);
+      // dX, dY in pixels: 20 * (boundsRadius / 25) / viewportHeight world units per pixel
+      controller["updatePose"](1, 1.5, 2, 0, 0, 0);
+      update(controller);
+      expect(cameraPosition(camera).distanceTo(expected)).to.be.closeTo(0, 1e-6);
+    });
+
+    it("Walk doesn't move vertically on screen", function(){
+      const { camera, controller } = flyController(EControllerMode.Walk);
+      const before = cameraPosition(camera);
+      controller["updatePose"](0, 10, 0, 0, 0, 0);
+      update(controller);
+      expect(cameraPosition(camera).distanceTo(before)).to.be.closeTo(0, 1e-6);
+    });
+
+    it("keeps the orthographic size", function(){
+      const { camera, controller } = flyController(EControllerMode.Fly, EProjection.Orthographic);
+      controller["updatePose"](0, 0, 1, 0, 0, 0);
+      update(controller);
+      expect(camera.size).to.equal(50);
+    });
+
+
     [ EControllerMode.Fly, EControllerMode.Walk ].forEach(mode => {
       [ 0, 30 ].forEach(roll => {
         it(`${EControllerMode[mode]} rotation keeps the camera in place with a pivot (roll = ${roll})`, function(){
