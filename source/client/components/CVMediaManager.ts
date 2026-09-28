@@ -149,6 +149,7 @@ export default class CVMediaManager extends CAssetManager
 
                 if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png|hdr)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
                     path = CVMediaManager.articleFolder + "/" + cleanfileName;
+                    path = CVMediaManager.articleFolder + "/" + this.getUniqueName(path);
                 }
 
                 // normalize path relative to document root
@@ -168,7 +169,7 @@ export default class CVMediaManager extends CAssetManager
                 else if (!documentProvided && filenameLower.match(/\.(gltf|glb)$/)) {
                     this.uploadFile(normalizedPath, file, this.root).then(() => this.handleModelImport(normalizedPath));
                 }
-                else if (!documentProvided && filenameLower.match(/\.(hdr|jpg|jpeg|png)$/)) {
+                else if (!documentProvided && !fileArray.some(entry => entry[0].endsWith("gltf")) && filenameLower.match(/\.(hdr|jpg|jpeg|png)$/)) {
                     this.uploadFile(normalizedPath, file, this.root).then(() => this.handleImageImport(normalizedPath));
                 }
                 else {
@@ -266,14 +267,16 @@ export default class CVMediaManager extends CAssetManager
             ; // TODO - considering removing this support
         }
         else {
-          return super.uploadFiles(files, folder).then(() => {
             Array.from(files).forEach(file => {
-              if (file.name.toLowerCase().match(/\.(hdr|jpg|jpeg|png)$/)) {
-                const file_uri = folder.info.path + file.name;
-                this.handleImageImport(file_uri);
-              }
+                const uniqName = this.getUniqueName(folder.info.path + file.name);
+                const file_uri = folder.info.path + uniqName;
+                this.uploadFile(uniqName, file, folder).then(() => {
+                    if (file.name.toLowerCase().match(/\.(hdr|jpg|jpeg|png)$/)) {     
+                        this.handleImageImport(file_uri);
+                    }
+                });
             });
-          });
+            return Promise.resolve(); // TODO - improve error handling
         }
     }
 

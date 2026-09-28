@@ -121,7 +121,7 @@ export default class CVAssetReader extends Component
 
     async getTexture(assetPath: string): Promise<Texture>
     {
-        const url = this.assetManager.getAssetUrl(assetPath);console.log(assetPath, url);
+        const url = this.assetManager.getAssetUrl(assetPath);
         return this.textureLoader.get(url, assetPath);
     }
 
