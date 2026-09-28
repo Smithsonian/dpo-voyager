@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Box3, Matrix4, Vector3 } from "three";
+import { Box3, Matrix4, Quaternion, Vector3 } from "three";
 
 import CameraController, { EControllerMode } from "@ff/three/CameraController";
 import UniversalCamera, { EProjection } from "@ff/three/UniversalCamera";
@@ -120,6 +120,50 @@ describe("CameraController", function(){
       controller.setPivot(new Vector3(0, -100, 0));
       expect(controller.orbit.x).to.equal(-10);
       expect(controller.offset.z).to.equal(20);
+    });
+  });
+
+  describe("getCameraPosition() and getViewDirection()", function(){
+    it("match the camera matrix", function(){
+      const { camera, controller } = createController([ -20, 30, 10 ], [ 4, -3, 50 ], [ 10, 5, -7 ]);
+      const position = controller.getCameraPosition(new Vector3());
+      const direction = controller.getViewDirection(new Vector3());
+      expect(position.distanceTo(cameraPosition(camera))).to.be.closeTo(0, 1e-6);
+      const expected = new Vector3(0, 0, -1).transformDirection(camera.matrixWorld);
+      expect(direction.distanceTo(expected)).to.be.closeTo(0, 1e-6);
+    });
+  });
+
+  describe("turning towards a new pivot", function(){
+    // same steps as CVOrbitNavigation's pivot animation
+    it("keeps the camera in place and ends facing the pivot", function(){
+      const { camera, controller } = createController([ -20, 30, 10 ], [ 4, -3, 50 ], [ 10, 5, -7 ]);
+      const pivot = new Vector3(-3, 8, 2);
+      const position = controller.getCameraPosition(new Vector3());
+      const from = controller.getViewDirection(new Vector3());
+      const to = pivot.clone().sub(position);
+      const distance = to.length();
+      to.normalize();
+      const rotation = new Quaternion().setFromUnitVectors(from, to);
+
+      let previousAngle = from.angleTo(to);
+      for (const t of [ 0.1, 0.25, 0.5, 0.75, 0.9 ]) {
+        const q = new Quaternion().slerpQuaternions(new Quaternion(), rotation, t);
+        controller.setPivot(from.clone().applyQuaternion(q).multiplyScalar(distance).add(position));
+        update(controller);
+
+        expect(cameraPosition(camera).distanceTo(position)).to.be.closeTo(0, 1e-6);
+        const angle = controller.getViewDirection(new Vector3()).angleTo(to);
+        expect(angle).to.be.below(previousAngle);
+        previousAngle = angle;
+      }
+
+      controller.setPivot(pivot);
+      update(controller);
+      const local = inCameraSpace(camera, pivot);
+      expect(local.x).to.be.closeTo(0, 1e-6);
+      expect(local.y).to.be.closeTo(0, 1e-6);
+      expect(controller.pivot.toArray()).to.deep.equal(pivot.toArray());
     });
   });
 
