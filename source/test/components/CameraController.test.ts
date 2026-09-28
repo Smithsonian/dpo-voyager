@@ -304,3 +304,146 @@ describe("CameraController", function(){
     });
   });
 });
+
+
+describe("CameraController inertia and smoothing", function(){
+  /** Controller driven by a fake clock */
+  function createTimed()
+  {
+    const created = createController([ 0, 0, 0 ], [ 0, 0, 50 ]);
+    const clock = { time: 0 };
+    created.controller["getTime"] = () => clock.time;
+    created.controller.setViewportSize(1000, 1000);
+    created.controller.updateCamera(null, false); // initialize the clock
+    return { ...created, clock };
+  }
+
+  function pointer(type: string, movementX = 0, movementY = 0)
+  {
+    return {
+      type, movementX, movementY, isPrimary: true, source: "mouse", pointerCount: 1,
+      activePositions: [], originalEvent: { button: 0 }, ctrlKey: false, shiftKey: false, altKey: false, metaKey: false,
+    } as any;
+  }
+
+  /** Runs frames at the given rate until the camera stops (or maxTime), returns the time taken */
+  function settle(controller: CameraController, clock: { time: number }, fps: number, maxTime = 5)
+  {
+    const start = clock.time;
+    while (clock.time - start < maxTime * 1000) {
+      clock.time += 1000 / fps;
+      if (!controller.updateCamera(null, false)) {
+        break;
+      }
+    }
+    return (clock.time - start) / 1000;
+  }
+
+  /** Drags horizontally at the given speed (px/s) for the given duration, at the given frame rate */
+  function drag(controller: CameraController, clock: { time: number }, fps: number, speed: number, duration: number, release = true)
+  {
+    controller.onPointer(pointer("pointer-down"));
+    const frames = Math.round(duration * fps);
+    for (let i = 0; i < frames; i++) {
+      clock.time += 1000 / fps;
+      controller.onPointer(pointer("pointer-move", speed / fps, 0));
+      controller.updateCamera(null, false);
+    }
+    if (release) {
+      controller.onPointer(pointer("pointer-up"));
+    }
+  }
+
+  it("glides after release, the same distance at any frame rate", function(){
+    const headings = [ 30, 60, 144 ].map(fps => {
+      const { controller, clock } = createTimed();
+      drag(controller, clock, fps, 600, 0.5);
+      const released = controller.orbit.y;
+      settle(controller, clock, fps);
+      return { released, final: controller.orbit.y };
+    });
+
+    headings.forEach(({ released, final }) => {
+      // glide = velocity * inertia = 600 px/s * 0.15 s = 90 px = 90 * 220 / 1000 degrees
+      expect(Math.abs(final - released)).to.be.closeTo(90 * 0.22, 1);
+    });
+    expect(headings[0].final).to.be.closeTo(headings[2].final, 0.5);
+  });
+
+  it("doesn't glide when the pointer stopped before release", function(){
+    const { controller, clock } = createTimed();
+    drag(controller, clock, 60, 600, 0.5, false);
+    // hold still for 200ms
+    for (let i = 0; i < 12; i++) {
+      clock.time += 1000 / 60;
+      controller.updateCamera(null, false);
+    }
+    const heading = controller.orbit.y;
+    controller.onPointer(pointer("pointer-up"));
+    settle(controller, clock, 60);
+    expect(controller.orbit.y).to.be.closeTo(heading, 0.1);
+  });
+
+  it("stops gliding when grabbed", function(){
+    const { controller, clock } = createTimed();
+    drag(controller, clock, 60, 600, 0.5);
+    clock.time += 1000 / 60;
+    controller.updateCamera(null, false);
+    controller.onPointer(pointer("pointer-down"));
+    const heading = controller.orbit.y;
+    settle(controller, clock, 60, 1);
+    expect(controller.orbit.y).to.equal(heading);
+  });
+
+  it("has no inertia when disabled", function(){
+    const { controller, clock } = createTimed();
+    controller.inertia = 0;
+    drag(controller, clock, 60, 600, 0.5);
+    const heading = controller.orbit.y;
+    clock.time += 1000 / 60;
+    controller.updateCamera(null, false);
+    expect(controller.orbit.y).to.equal(heading);
+    expect(settle(controller, clock, 60)).to.be.below(0.05);
+  });
+
+  it("smooths wheel zoom, with the same result as instant zoom", function(){
+    const { controller, clock } = createTimed();
+    controller.onTrigger({ type: "wheel", wheel: 1 } as any);
+    controller.onTrigger({ type: "wheel", wheel: 1 } as any);
+    clock.time += 1000 / 60;
+    controller.updateCamera(null, false);
+    // first frame only applies part of the zoom
+    expect(controller.offset.z).to.be.above(50).and.below(50 * 1.07 * 1.07);
+    settle(controller, clock, 60);
+    expect(controller.offset.z).to.be.closeTo(50 * 1.07 * 1.07, 1e-6);
+
+    // zooming back returns to the same distance
+    controller.onTrigger({ type: "wheel", wheel: -1 } as any);
+    controller.onTrigger({ type: "wheel", wheel: -1 } as any);
+    settle(controller, clock, 60);
+    expect(controller.offset.z).to.be.closeTo(50, 1e-6);
+  });
+
+  it("smooths arrow keys, moving the same total distance", function(){
+    const { controller, clock } = createTimed();
+    controller.onKeypress({ key: "ArrowRight", shiftKey: false, ctrlKey: false } as any);
+    clock.time += 1000 / 60;
+    controller.updateCamera(null, false);
+    // one key press rotates by 20px
+    const total = 20 * 0.22;
+    expect(controller.orbit.y).to.be.below(0).and.above(-total);
+    settle(controller, clock, 60);
+    expect(controller.orbit.y).to.be.closeTo(-total, 1e-6);
+  });
+
+  it("stop() cancels ongoing motion", function(){
+    const { controller, clock } = createTimed();
+    drag(controller, clock, 60, 600, 0.5);
+    controller.onTrigger({ type: "wheel", wheel: 1 } as any);
+    const { y } = controller.orbit, { z } = controller.offset;
+    controller.stop();
+    settle(controller, clock, 60);
+    expect(controller.orbit.y).to.equal(y);
+    expect(controller.offset.z).to.equal(z);
+  });
+});
