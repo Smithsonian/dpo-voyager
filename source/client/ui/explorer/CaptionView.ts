@@ -38,9 +38,10 @@ export default class CaptionView extends DocumentView
     protected render()
     {
         const audio = this.audioManager;
+        if (audio === null) return null;
+
         const text = audio.ins.activeCaption.value;
         const isShowing = audio.ins.captionsEnabled.value;
-
         return (text.length > 0) && isShowing ? html`<div class="sv-caption-box" >${text}</div>` : null;
     }
 

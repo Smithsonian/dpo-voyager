@@ -165,5 +165,15 @@
   "Welcome to Voyager" : "Bienvenue dans Voyager",
   "Wireframe": "Fil de fer",
   "XRay": "Rayons X",
-  "Zoom Extents": "Recadrer"
+  "Zoom Extents": "Recadrer",
+
+  "panel.header.navigator": "Navigateur",
+  "panel.header.assets": "Médias",
+  "panel.header.collection": "Collection",
+  "panel.header.task": "Tâche",
+  "panel.header.explorer": "Explorer",
+  "panel.header.article-editor": "Éditeur d'articles",
+  "panel.header.tour-editor": "Éditeur de visites",
+  "panel.header.state-editor": "Éditeur d'états",
+  "panel.header.notes": "Éditeur de notes"
 }

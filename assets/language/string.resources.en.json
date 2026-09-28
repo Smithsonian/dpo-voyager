@@ -70,5 +70,15 @@
 	"Remove tag" : "Remove tag",
 	"Select..." : "Select...",
 	"Add a tag..." : "Add a tag...",
-	"Title" : "Title"
+	"Title" : "Title",
+
+    "panel.header.navigator": "Navigator",
+    "panel.header.assets": "Media",
+    "panel.header.collection": "Collection",
+    "panel.header.task": "Task",
+    "panel.header.explorer": "Explorer",
+    "panel.header.article-editor": "Article Editor",
+    "panel.header.tour-editor": "Tour Editor",
+    "panel.header.state-editor": "State Editor",
+    "panel.header.notes": "Note Editor"
 }

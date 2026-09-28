@@ -43,6 +43,8 @@ import CollectionPanel from "./CollectionPanel";
 
 import "./styles.scss";
 import StatePanel from "./StatePanel";
+import CVLanguageManager from "client/components/CVLanguageManager";
+import { IDockPanelLayout } from "@ff/ui/DockPanel";
 
 ////////////////////////////////////////////////////////////////////////////////
 // STORY ICONS
@@ -96,6 +98,10 @@ export default class MainView extends CustomElement
 
     protected get taskProvider() {
         return this.application.system.getMainComponent(CVTaskProvider);
+    }
+
+    protected get language() {
+        return this.application.system.getComponent(CVLanguageManager);
     }
 
     get app() {
@@ -177,12 +183,14 @@ export default class MainView extends CustomElement
 
         this.dockView = this.appendElement(DockView);
         this.restoreLayout();
+        this.language.outs.uiLanguage.on("value", this.onUILanguageChange, this);
 
         window.addEventListener("beforeunload", this.onUnload);
     }
 
     protected disconnected()
     {
+        this.language.outs.uiLanguage.off("value", this.onUILanguageChange, this);
         this.storeLayout();
         localStorage.set("voyager-story", MainView.stateKey, this.state);
     }
@@ -219,6 +227,26 @@ export default class MainView extends CustomElement
 
         this.dockView.setLayout(expertMode ? state.expertLayout : state.regularLayout, this.registry);
         this.dockView.setPanelsMovable(true)
+    }
+
+    protected onUILanguageChange() {
+        const layout = this.dockView.getLayout();;
+        if (!layout) return;
+
+        const layoutElementsToTranslate = MainView.findAllLayoutElementsToTranslate(layout);
+        for (let layoutElt of layoutElementsToTranslate) {
+            layoutElt.text = this.language.getUILocalizedString({ key: layoutElt.contentId ? "panel.header." + layoutElt.contentId : undefined, text: layoutElt.text});
+        }
+        this.dockView.setLayout(layout, this.registry);
+    }
+
+    protected static findAllLayoutElementsToTranslate(layout: IDockElementLayout): Array<IDockPanelLayout> {
+        return Object.values(layout).reduce((acc, layoutDockElt) =>
+                layoutDockElt.type == "stack"
+                ? acc.concat(layoutDockElt.panels)
+                : (typeof layoutDockElt === 'object') ? acc.concat(MainView.findAllLayoutElementsToTranslate(layoutDockElt))
+                    : acc
+            , [])
     }
 
     protected static readonly regularLayout: IDockElementLayout = {
