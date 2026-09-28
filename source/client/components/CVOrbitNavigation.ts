@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-import { Box3, Vector3 } from "three";
+import { Box3, Quaternion, Vector3 } from "three";
 
+import math from "@ff/core/math";
+import { easingFunctions } from "@ff/core/easing";
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
 import CameraController, { EControllerMode } from "@ff/three/CameraController";
@@ -50,6 +52,24 @@ _orientationPresets[EViewPreset.Bottom] = [ 90, 0, 0 ];
 
 
 const _vec3 = new Vector3();
+const _quatIdentity = new Quaternion();
+const _quat = new Quaternion();
+
+/** Camera turning from its current view direction to face a new pivot point */
+interface IPivotAnimation
+{
+    start: number;
+    duration: number;
+    /** camera position */
+    position: Vector3;
+    /** view direction at start */
+    from: Vector3;
+    /** rotation from the start direction to the direction of the pivot */
+    rotation: Quaternion;
+    /** distance from camera to pivot */
+    distance: number;
+    pivot: Vector3;
+}
 
 const _replaceNull = function(vector: number[], replacement: number)
 {
@@ -105,6 +125,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _autoRotationStartTime = null;
     private _initYOrbit = null;
     private _lastClick: { time: number, x: number, y: number } = null;
+    private _pivotAnimation: IPivotAnimation = null;
 
     constructor(node: Node, id: string)
     {
@@ -239,12 +260,15 @@ export default class CVOrbitNavigation extends CObject3D
 
         // orbit, offset and limits
         if (orbit.changed || offset.changed || pivot.changed) {
+            // camera set from outside (tour, annotation view, UI): stop turning towards the pivot
+            this._pivotAnimation = null;
             controller.orbit.fromArray(orbit.value);
             controller.offset.fromArray(offset.value);
             controller.pivot.fromArray(pivot.value);
         }
 
         if (reanchorPivot) {
+            this._pivotAnimation = null;
             this.reanchorPivot();
         }
 
@@ -273,6 +297,7 @@ export default class CVOrbitNavigation extends CObject3D
 
                 controller.camera = cameraComponent.camera;
             
+                this._pivotAnimation = null;
                 controller.zoomExtents(this._modelBoundingBox);
                 //cameraComponent.ins.zoom.set();
                 this._hasZoomed = true;
@@ -310,7 +335,8 @@ export default class CVOrbitNavigation extends CObject3D
         controller.camera = cameraComponent.camera;
 
         const transform = cameraComponent.transform;
-        const forceUpdate = this.changed || ins.autoRotation.value || ins.promptActive.value;
+        const isAnimating = this.updatePivotAnimation();
+        const forceUpdate = this.changed || isAnimating || ins.autoRotation.value || ins.promptActive.value;
 
         if ((ins.autoRotation.value || ins.promptActive.value) && this._autoRotationStartTime) {
             const now = performance.now();
@@ -470,6 +496,9 @@ export default class CVOrbitNavigation extends CObject3D
             if (this.isDoubleClick(event)) {
                 this.onDoubleClick(event);
             }
+            else if (event.type === "pointer-move" && event.isDragging) {
+                this.finishPivotAnimation();
+            }
             this._controller.setViewportSize(viewport.width, viewport.height);
             this._controller.onPointer(event);
             event.stopPropagation = true;
@@ -541,13 +570,73 @@ export default class CVOrbitNavigation extends CObject3D
             .applyMatrix4(model.object3D.matrix)
             .applyMatrix4(model.transform.object3D.matrixWorld);
 
-        const controller = this._controller;
-        controller.setPivot(position);
+        this.animatePivot(position);
+    }
 
-        const ins = this.ins;
-        ins.pivot.setValue(controller.pivot.toArray());
-        ins.orbit.setValue(controller.orbit.toArray());
-        ins.offset.setValue(controller.offset.toArray());
+    /**
+     * Moves the pivot to the given position and smoothly turns the camera, in place, to face it.
+     */
+    protected animatePivot(pivot: Vector3)
+    {
+        const controller = this._controller;
+        const position = controller.getCameraPosition(new Vector3());
+        const to = pivot.clone().sub(position);
+        const distance = to.length();
+        if (distance === 0) {
+            return;
+        }
+        to.divideScalar(distance);
+
+        const from = controller.getViewDirection(new Vector3());
+        const angle = from.angleTo(to) * math.RAD2DEG;
+
+        this._pivotAnimation = {
+            start: performance.now(),
+            duration: math.limit(angle / 90, 0.2, 0.6) * 1000,
+            position,
+            from,
+            rotation: new Quaternion().setFromUnitVectors(from, to),
+            distance,
+            pivot: pivot.clone(),
+        };
+    }
+
+    /**
+     * Advances the pivot animation, if any.
+     * @returns true if the controller has been updated.
+     */
+    protected updatePivotAnimation(): boolean
+    {
+        const animation = this._pivotAnimation;
+        if (!animation) {
+            return false;
+        }
+
+        const t = (performance.now() - animation.start) / animation.duration;
+        if (t >= 1) {
+            this.finishPivotAnimation();
+            return true;
+        }
+
+        // look at a point turning from the current view direction to the pivot
+        _quat.slerpQuaternions(_quatIdentity, animation.rotation, easingFunctions.EaseOutQuad(t));
+        _vec3.copy(animation.from).applyQuaternion(_quat)
+            .multiplyScalar(animation.distance)
+            .add(animation.position);
+        this._controller.setPivot(_vec3);
+        return true;
+    }
+
+    /**
+     * Jumps to the end of the pivot animation, if any.
+     */
+    protected finishPivotAnimation()
+    {
+        const animation = this._pivotAnimation;
+        if (animation) {
+            this._pivotAnimation = null;
+            this._controller.setPivot(animation.pivot);
+        }
     }
 
     protected onTrigger(event: ITriggerEvent)
@@ -560,6 +649,7 @@ export default class CVOrbitNavigation extends CObject3D
         }
 
         if (this.ins.enabled.value && this._scene.activeCameraComponent) {
+            this.finishPivotAnimation();
             this._controller.setViewportSize(viewport.width, viewport.height);
             this._controller.onTrigger(event);
             event.stopPropagation = true;
@@ -588,6 +678,9 @@ export default class CVOrbitNavigation extends CObject3D
                 else {
                     this.ins.keyNavActive.setValue(EKeyNavMode.Orbit);
                 }
+            }
+            if(event.key.includes("Arrow")) {
+                this.finishPivotAnimation();
             }
             this._controller.setViewportSize(viewport.width, viewport.height);
             if(this._controller.onKeypress(event)) {

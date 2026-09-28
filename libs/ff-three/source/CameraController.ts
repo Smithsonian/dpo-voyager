@@ -222,6 +222,30 @@ export default class CameraController implements IManip
     }
 
     /**
+     * Computes the camera's position from the controller's state.
+     * @param result Vector receiving the position, in the camera's parent space.
+     */
+    getCameraPosition(result: Vector3): Vector3
+    {
+        _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
+        threeMath.composeOrbitMatrix(_vec3a, this.offset, _mat4);
+        return result.setFromMatrixPosition(_mat4).add(this.pivot);
+    }
+
+    /**
+     * Computes the camera's view direction (its -Z axis) from the controller's state.
+     * @param result Vector receiving the normalized direction.
+     */
+    getViewDirection(result: Vector3): Vector3
+    {
+        _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
+        _vec3b.setScalar(0);
+        threeMath.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
+        const e = _mat4.elements;
+        return result.set(-e[8], -e[9], -e[10]);
+    }
+
+    /**
      * Returns the distance of the given point along the camera's view axis.
      * Negative if the point is behind the camera.
      * @param point Position in world space.
