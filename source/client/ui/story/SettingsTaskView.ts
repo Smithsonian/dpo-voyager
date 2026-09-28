@@ -26,6 +26,7 @@ import Tree from "@ff/ui/Tree";
 import CVSettingsTask from "../../components/CVSettingsTask";
 import { TaskView } from "../../components/CVTask";
 import NVNode from "../../nodes/NVNode";
+import CVLanguageManager from "client/components/CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +45,7 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
         }
 
         return html`<div class="ff-flex-item-stretch ff-scroll-y">
-            <sv-settings-tree .node=${node}></sv-settings-tree>
+            <sv-settings-tree .node=${node} .language=${languageManager}></sv-settings-tree>
         </div>`;
     }
 
@@ -70,6 +71,9 @@ export class SettingsTree extends Tree<ITreeNode>
 {
     @property({ attribute: false })
     node: NVNode = null;
+
+    @property({ attribute: false })
+    language: CVLanguageManager = null;
 
     protected firstConnected()
     {
@@ -101,7 +105,7 @@ export class SettingsTree extends Tree<ITreeNode>
         const nonEditableProperties: string[] = component["nonEditableProperties"] || [];
         const disabled = nonEditableProperties.includes(node.property.path);
 
-        return html`<sv-property-view .property=${node.property} ?disabled=${disabled}></sv-property-view>`;
+        return html`<sv-property-view .property=${node.property} .language=${this.language} ?disabled=${disabled}></sv-property-view>`;
     }
 
     protected createNodeTreeNode(node: Node): ITreeNode

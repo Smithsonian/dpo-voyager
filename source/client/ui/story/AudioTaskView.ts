@@ -71,13 +71,13 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
         const narrationEnabled = !ins.isNarration.value && audioList.some(clip => clip.id === this.task.audioManager.narrationId);
 
         const detailView = audioElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <sv-property-view .property=${ins.title}></sv-property-view>
-            <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
+            <sv-property-view .property=${ins.title} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.activeLanguage} .language=${languageManager}></sv-property-view>
             <div class="sv-indent">
-                <sv-property-view id="filename" .property=${ins.filepath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
-                <sv-property-view id="captionfile" .property=${ins.captionPath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
+                <sv-property-view id="filename" .language=${languageManager} .property=${ins.filepath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
+                <sv-property-view id="captionfile" .language=${languageManager} .property=${ins.captionPath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
                 <div class="sv-commands">
-                    <sv-property-boolean .property=${ins.isNarration} .text=${this.optionText} .customLabelStyle=${narrationFlagClass} ?disabled=${narrationEnabled}></sv-property-boolean>
+                    <sv-property-boolean .property=${ins.isNarration} .text=${this.optionText} .customLabelStyle=${narrationFlagClass} ?disabled=${narrationEnabled} .language=${languageManager}></sv-property-boolean>
                 </div>
                 <div class="sv-commands">
                     <ff-button text="Play" @click=${this.onClickPlay}></ff-button>

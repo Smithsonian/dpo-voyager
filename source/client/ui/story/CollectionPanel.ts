@@ -56,7 +56,7 @@ export default class CollectionPanel extends DocumentView
                 <ff-icon name="document"></ff-icon>
                 <div class="ff-text">Collection</div>
             </div>
-            <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.activeLanguage} .language=${languageManager}></sv-property-view>
             <div class="sv-indent">
                 <div class="sv-label">Title</div>
                 <ff-line-edit name="title" text=${this.activeDocument.ins.title.value || "Missing Title"} @change=${this.onTextEdit}></ff-line-edit>

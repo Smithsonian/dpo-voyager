@@ -85,10 +85,10 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
             </div>
             <div class="ff-flex-item-stretch"><div class="ff-scroll-y ff-flex-column sv-detail-view">
                 <div class="sv-label-right">${dimensions}</div>
-                <sv-property-view .property=${globalUnits} label="Global Units"></sv-property-view>    
-                <sv-property-view .property=${itemUnits} label="Item Units"></sv-property-view>
-                <sv-property-view .property=${position}></sv-property-view>
-                <sv-property-view .property=${rotation}></sv-property-view>
+                <sv-property-view .property=${globalUnits} .language=${languageManager} label="${languageManager.getUILocalizedString("Global Units")}></sv-property-view>    
+                <sv-property-view .property=${itemUnits} .language=${languageManager} label="${languageManager.getUILocalizedString("Item Units")}></sv-property-view>
+                <sv-property-view .property=${position} .language=${languageManager}></sv-property-view>
+                <sv-property-view .property=${rotation} .language=${languageManager}></sv-property-view>
             </div></div>`;
     }
 

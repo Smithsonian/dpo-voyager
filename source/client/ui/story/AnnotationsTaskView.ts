@@ -109,8 +109,8 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
 
         const imagePropView = inProps.image.value.length > 0 ? html`
             <div class="sv-indent">
-                <sv-property-view .property=${inProps.imageCredit}></sv-property-view>
-                <sv-property-view .property=${inProps.imageAltText}></sv-property-view>
+                <sv-property-view .property=${inProps.imageCredit} .language=${languageManager}></sv-property-view>
+                <sv-property-view .property=${inProps.imageAltText} .language=${languageManager}></sv-property-view>
             </div>` : null;
 
         // <div class="sv-label">Title</div>
@@ -119,19 +119,19 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         // <ff-line-edit name="tags" text=${inProps.tags.value} @change=${this.onTextEdit}></ff-line-edit>
 
         const detailView = annotation ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <sv-property-view .property=${inProps.style}></sv-property-view>
-            <sv-property-view .property=${inProps.scale}></sv-property-view>
-            <sv-property-view .property=${inProps.offset}></sv-property-view>
-            <sv-property-view .property=${inProps.color}></sv-property-view>
-            <sv-property-view id="image" .property=${inProps.image} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
+            <sv-property-view .property=${inProps.style} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${inProps.scale} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${inProps.offset} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${inProps.color} .language=${languageManager}></sv-property-view>
+            <sv-property-view id="image" .property=${inProps.image} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave} .language=${languageManager}></sv-property-view>
             ${imagePropView}
-            <sv-property-view .property=${audioProp}></sv-property-view>
-            <sv-property-view .property=${inProps.marker}></sv-property-view>
-            <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
+            <sv-property-view .property=${audioProp} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${inProps.marker} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.activeLanguage} .language=${languageManager}></sv-property-view>
             <div class="sv-indent">
-                <sv-property-view .property=${inProps.article}></sv-property-view>
-                <sv-property-view .property=${inProps.tags}></sv-property-view>
-                <sv-property-view .property=${inProps.title}></sv-property-view>
+                <sv-property-view .property=${inProps.article} .language=${languageManager}></sv-property-view>
+                <sv-property-view .property=${inProps.tags} .language=${languageManager}></sv-property-view>
+                <sv-property-view .property=${inProps.title} .language=${languageManager}></sv-property-view>
                 <div class="sv-label" style="${overLimit ? "color: red" : ""}" @click=${(e)=>this.onClickLimit(e)}>Lead&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
                 <ff-text-edit name="lead" text=${inProps.lead.value} rows=3 maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
             </div>

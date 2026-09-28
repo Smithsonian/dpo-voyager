@@ -71,20 +71,21 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
         const props = task.ins;
         const activeOverlay = overlays[props.activeIndex.value];
         const activeQuality = this.activeModel.activeDerivative.data.quality;
+        const languageManager = this.activeDocument.setup.language;
 
         this.sceneview.style.cursor = props.paintMode.value === EPaintMode.Interact ? "grab" : "default";
 
         const overlayConfig = activeOverlay ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <div class="sv-label"><b>Overlay Editing [${EDerivativeQuality[activeQuality]} Derivative]</b></div>
-            <sv-property-view .property=${props.overlayColor}></sv-property-view>
-            <sv-property-view .property=${props.overlayOpacity}></sv-property-view>
+            <sv-property-view .property=${props.overlayColor} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${props.overlayOpacity} .language=${languageManager}></sv-property-view>
             <div class="sv-label"><b>Painting Tools</b></div>
             <ff-button-group class="sv-commands">
                 <ff-button text="Interact" icon="pointer" class="ff-control" @click=${this.onClickInteract}></ff-button>
                 <ff-button text="Paint" icon="brush" class="ff-control" @click=${this.onClickPaint}></ff-button>
                 <ff-button text="Erase" icon="eraser" class="ff-control" @click=${this.onClickErase}></ff-button>
             </ff-button-group>
-            <sv-property-view .property=${props.overlayBrushSize}></sv-property-view>
+            <sv-property-view .property=${props.overlayBrushSize} .language=${languageManager}></sv-property-view>
             <div class="sv-commands">
                 <ff-button text="Fill All" class="ff-control" @click=${this.onClickFillAll}></ff-button>
                 <ff-button text="Clear All" class="ff-control" @click=${this.onClickClearAll}></ff-button>

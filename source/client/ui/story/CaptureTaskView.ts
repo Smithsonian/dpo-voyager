@@ -72,8 +72,8 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
                 <ff-button text="${languageManager.getUILocalizedString("Download")}" icon="download" ?disabled=${!ready} @click=${this.onClickDownload}></ff-button>
             </div>
             <div class="ff-flex-item-stretch"><div class="ff-scroll-y ff-flex-column sv-detail-view">
-                <sv-property-view .property=${ins.type}></sv-property-view>
-                <sv-property-view .property=${ins.quality}></sv-property-view>
+                <sv-property-view .property=${ins.type} .language=${languageManager}></sv-property-view>
+                <sv-property-view .property=${ins.quality} .language=${languageManager}></sv-property-view>
                 ${image}
             </div></div>`;
     }
