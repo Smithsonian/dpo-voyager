@@ -63,8 +63,6 @@ export default class CameraController implements IManip
     protected mode = EManipMode.Off;
     protected phase = EManipPhase.Off;
     protected prevPinchDist = 0;
-    protected prevOffset = new Vector3(0, 0, 0);
-    protected prevOrbit = new Vector3(0, 0, 0);
 
     protected deltaX = 0;
     protected deltaY = 0;
@@ -96,10 +94,8 @@ export default class CameraController implements IManip
             this.mode = this.getModeFromEvent(event);
         }
 
-        const keyMultiplier = 1;
-
-        this.deltaX += event.movementX * keyMultiplier;
-        this.deltaY += event.movementY * keyMultiplier;
+        this.deltaX += event.movementX;
+        this.deltaY += event.movementY;
 
         // calculate pinch
         if (event.pointerCount === 2) {
@@ -371,14 +367,14 @@ export default class CameraController implements IManip
      */
     update(): boolean
     {
-        const isOrbit = this.controllerMode == EControllerMode.Orbit;
         if (this.phase === EManipPhase.Off && this.deltaWheel === 0
             && this.deltaX === 0 && this.deltaY === 0) {
             return false;
         }
 
         if (this.deltaWheel !== 0) {
-            this.updatePose(0, 0, isOrbit ? this.deltaWheel * 0.07 + 1 : this.deltaWheel, 0, 0, 0);
+            const isOrbit = this.controllerMode === EControllerMode.Orbit;
+            this.dolly(isOrbit ? this.deltaWheel * 0.07 + 1 : this.deltaWheel);
             this.deltaWheel = 0;
             return true;
         }
@@ -418,102 +414,165 @@ export default class CameraController implements IManip
         return false;
     }
 
+    /**
+     * Applies the accumulated pointer deltas according to the current manipulation mode.
+     */
     protected updateByMode()
     {
-        const isOrbit = this.controllerMode == EControllerMode.Orbit;
-        const noZFactor = isOrbit ? 1 : 0;
+        const isOrbit = this.controllerMode === EControllerMode.Orbit;
+        const { deltaX, deltaY } = this;
+
         switch(this.mode) {
             case EManipMode.Orbit:
-                this.updatePose(0, 0, noZFactor, this.deltaY, this.deltaX, 0);
-                break;
-
-            case EManipMode.Pan:
-                this.updatePose(this.deltaX, this.deltaY, noZFactor, 0, 0, 0);
+                this.rotate(deltaY, deltaX, 0);
                 break;
 
             case EManipMode.Roll:
-                this.updatePose(0, 0, noZFactor, 0, 0, this.deltaX);
+                this.rotate(0, 0, deltaX);
+                break;
+
+            case EManipMode.Pan:
+                this.pan(deltaX, deltaY);
                 break;
 
             case EManipMode.Dolly:
-                this.updatePose(0, 0, isOrbit ? this.deltaY * 0.0075 + 1 : this.deltaY * 0.175, 0, 0, 0);
+                this.dolly(isOrbit ? deltaY * 0.0075 + 1 : deltaY * 0.175);
                 break;
 
             case EManipMode.PanDolly:
-                const pinchScale = (this.deltaPinch - 1) * 0.42 + 1;
-                this.updatePose(this.deltaX * 0.75, this.deltaY * 0.75, isOrbit ? 1 / pinchScale : (this.deltaPinch - 1) * -10, 0, 0, 0);
+                const pinch = this.deltaPinch - 1;
+                this.dolly(isOrbit ? 1 / (pinch * 0.42 + 1) : pinch * -10);
+                this.pan(deltaX * 0.75, deltaY * 0.75);
                 break;
         }
     }
 
-    protected updatePose(dX, dY, dScale, dPitch, dHead, dRoll)
+    /**
+     * Rotates the camera around the pivot (Orbit mode) or around itself (Fly and Walk modes).
+     * @param dPitch Pitch delta, in pixels.
+     * @param dHead Heading delta, in pixels.
+     * @param dRoll Roll delta, in pixels.
+     */
+    protected rotate(dPitch: number, dHead: number, dRoll: number)
     {
-        const {
-            orbit, minOrbit, maxOrbit,
-            offset, minOffset, maxOffset, camera
-        } = this;
-
-        this.prevOffset.copy(offset);
-        this.prevOrbit.copy(orbit).multiplyScalar(math.DEG2RAD);
-
-        let inverse = -1;
+        this.movePivotToCamera();
 
         if (this.orientationEnabled) {
-            orbit.x += inverse * dPitch * this.orbitFactor / this.viewportHeight;
-            orbit.y += inverse * dHead * this.orbitFactor / this.viewportHeight;
-            orbit.z += inverse * dRoll * this.orbitFactor / this.viewportHeight;
+            const factor = -this.orbitFactor / this.viewportHeight;
+            this.orbit.x += dPitch * factor;
+            this.orbit.y += dHead * factor;
+            this.orbit.z += dRoll * factor;
+        }
 
-            // check limits
+        this.applyLimits();
+    }
+
+    /**
+     * Moves the camera parallel to the view plane, following the pointer.
+     * @param dX Horizontal delta, in pixels.
+     * @param dY Vertical delta, in pixels.
+     */
+    protected pan(dX: number, dY: number)
+    {
+        this.movePivotToCamera();
+
+        if (this.offsetEnabled) {
+            if (this.controllerMode === EControllerMode.Orbit) {
+                // Convert pixel deltas to world units at the pivot's distance.
+                // ortho: offset.z is the camera's vertical size, so the ratio is already world/pixel.
+                const { offset, camera } = this;
+                const factor = (camera.isOrthographicCamera
+                    ? offset.z
+                    : offset.z * 2 * Math.tan(camera.fov * math.DEG2RAD * 0.5)) / this.viewportHeight;
+
+                offset.x -= dX * factor;
+                offset.y += dY * factor;
+            }
+            else {
+                const factor = 20 * this.getMoveFactor() / this.viewportHeight;
+                const isWalk = this.controllerMode === EControllerMode.Walk;
+                this.moveCamera(-dX * factor, isWalk ? 0 : dY * factor, 0);
+            }
+        }
+
+        this.applyLimits();
+    }
+
+    /**
+     * Moves the camera along its view axis.
+     * @param amount Orbit mode: factor applied to the distance to the pivot.
+     * Fly and Walk modes: backwards distance, in units of getMoveFactor().
+     */
+    protected dolly(amount: number)
+    {
+        this.movePivotToCamera();
+
+        if (this.offsetEnabled) {
+            if (this.controllerMode === EControllerMode.Orbit) {
+                this.offset.z *= amount;
+            }
+            else {
+                this.moveCamera(0, 0, amount * this.getMoveFactor());
+            }
+        }
+
+        this.applyLimits();
+    }
+
+    /**
+     * Fly and Walk modes: moves the camera (and the pivot at its position) along the camera's axes.
+     * Walk mode cancels pitch and roll so that the camera moves horizontally.
+     */
+    protected moveCamera(x: number, y: number, z: number)
+    {
+        _vec3b.set(x, y, z);
+
+        _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
+        if (this.controllerMode === EControllerMode.Walk) {
+            _vec3b.applyEuler(_euler.set(-_vec3a.x, 0, -_vec3a.z, "XYZ"));
+        }
+
+        threeMath.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
+        this.pivot.add(_vec3c.setFromMatrixPosition(_mat4));
+    }
+
+    /**
+     * Fly and Walk modes: the camera turns around itself. Moves the pivot to the camera's
+     * position, with a zero offset. Does nothing in Orbit mode.
+     */
+    protected movePivotToCamera()
+    {
+        if (this.controllerMode !== EControllerMode.Orbit) {
+            this.pivot.copy(this.getCameraPosition(_vec3c));
+            this.offset.setScalar(0);
+        }
+    }
+
+    /**
+     * Scene size dependent speed for Fly and Walk modes.
+     */
+    protected getMoveFactor()
+    {
+        return this.boundsRadius / 25;
+    }
+
+    /**
+     * Clamps orbit and offset to their limits. Offset limits only apply to Orbit mode.
+     */
+    protected applyLimits()
+    {
+        const { orbit, minOrbit, maxOrbit, offset, minOffset, maxOffset } = this;
+
+        if (this.orientationEnabled) {
             orbit.x = math.limit(orbit.x, minOrbit.x, maxOrbit.x);
             orbit.y = math.limit(orbit.y, minOrbit.y, maxOrbit.y);
             orbit.z = math.limit(orbit.z, minOrbit.z, maxOrbit.z);
         }
 
-        if (this.controllerMode !== EControllerMode.Orbit) {
-            // Fly and Walk: the camera turns around itself. Move the pivot to the camera's
-            // position (using the orientation from before this update), with a zero offset.
-            _vec3b.copy(offset);
-            threeMath.composeOrbitMatrix(this.prevOrbit, _vec3b, _mat4);
-            this.pivot.add(_vec3c.setFromMatrixPosition(_mat4));
-            offset.setScalar(0);
-        }
-
-        if (this.offsetEnabled) {
-            if(this.controllerMode == EControllerMode.Orbit) {
-                offset.z = dScale * offset.z;
-
-                // Convert pixel deltas to world units at the target plane.
-                // ortho: offset.z is the camera's vertical size, so the ratio is already world/pixel.
-                const factor = camera.isOrthographicCamera
-                    ? offset.z
-                    : offset.z * 2 * Math.tan(camera.fov * math.DEG2RAD * 0.5);
-
-                offset.x += dX * factor * inverse / this.viewportHeight;
-                offset.y -= dY * factor * inverse / this.viewportHeight;
-
-                // check limits
-                offset.x = math.limit(offset.x, minOffset.x, maxOffset.x);
-                offset.y = math.limit(offset.y, minOffset.y, maxOffset.y);
-                offset.z = math.limit(offset.z, minOffset.z, maxOffset.z);
-            }
-            else {
-                const isWalk = this.controllerMode === EControllerMode.Walk
-
-                const factor = this.boundsRadius/25;
-
-                _vec3b.set(dX * 20 * factor * inverse / this.viewportHeight, isWalk ? 0 : dY * 20 * factor * inverse / this.viewportHeight,
-                     dScale * factor);
-
-                if(isWalk) {
-                    _euler.set(this.prevOrbit.x, 0, this.prevOrbit.z);
-                    _vec3b.applyEuler(_euler);
-                }
-                _vec3b.y = -_vec3b.y;
-
-                // move the pivot (the camera) along the camera's axes, before this update's rotation
-                threeMath.composeOrbitMatrix(this.prevOrbit, _vec3b, _mat4);
-                this.pivot.add(_vec3c.setFromMatrixPosition(_mat4));
-            }
+        if (this.offsetEnabled && this.controllerMode === EControllerMode.Orbit) {
+            offset.x = math.limit(offset.x, minOffset.x, maxOffset.x);
+            offset.y = math.limit(offset.y, minOffset.y, maxOffset.y);
+            offset.z = math.limit(offset.z, minOffset.z, maxOffset.z);
         }
     }
 

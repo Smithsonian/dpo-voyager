@@ -202,7 +202,9 @@ describe("CameraController", function(){
       const { camera, controller } = createController([ -20, 30, 10 ], [ 0, 0, 50 ], [ 10, 5, -7 ]);
       controller.controllerMode = EControllerMode.Fly;
       controller.boundsRadius = 10;
-      controller["updatePose"](30, -20, 5, 15, 25, 0);
+      controller["pan"](30, -20);
+      controller["dolly"](5);
+      controller["rotate"](15, 25, 0);
       update(controller);
       const matrix = camera.matrix.clone();
 
@@ -254,7 +256,7 @@ describe("CameraController", function(){
     it("puts the pivot on the camera", function(){
       const { camera, controller } = flyController(EControllerMode.Fly);
       const before = cameraPosition(camera);
-      controller["updatePose"](0, 0, 0, 0, 0, 0);
+      controller["rotate"](0, 0, 0);
       expect(controller.offset.toArray()).to.deep.equal([ 0, 0, 0 ]);
       expect(controller.pivot.distanceTo(before)).to.be.closeTo(0, 1e-6);
     });
@@ -263,7 +265,8 @@ describe("CameraController", function(){
       const { camera, controller } = flyController(EControllerMode.Fly);
       const expected = new Vector3(-0.2, 0.3, 2).applyMatrix4(camera.matrixWorld);
       // dX, dY in pixels: 20 * (boundsRadius / 25) / viewportHeight world units per pixel
-      controller["updatePose"](1, 1.5, 2, 0, 0, 0);
+      controller["pan"](1, 1.5);
+      controller["dolly"](2);
       update(controller);
       expect(cameraPosition(camera).distanceTo(expected)).to.be.closeTo(0, 1e-6);
     });
@@ -271,14 +274,14 @@ describe("CameraController", function(){
     it("Walk doesn't move vertically on screen", function(){
       const { camera, controller } = flyController(EControllerMode.Walk);
       const before = cameraPosition(camera);
-      controller["updatePose"](0, 10, 0, 0, 0, 0);
+      controller["pan"](0, 10);
       update(controller);
       expect(cameraPosition(camera).distanceTo(before)).to.be.closeTo(0, 1e-6);
     });
 
     it("keeps the orthographic size", function(){
       const { camera, controller } = flyController(EControllerMode.Fly, EProjection.Orthographic);
-      controller["updatePose"](0, 0, 1, 0, 0, 0);
+      controller["dolly"](1);
       update(controller);
       expect(camera.size).to.equal(50);
     });
@@ -292,7 +295,7 @@ describe("CameraController", function(){
           controller.boundsRadius = 10;
           const before = cameraPosition(camera);
 
-          controller["updatePose"](0, 0, 0, 15, 25, 0);
+          controller["rotate"](15, 25, 0);
           update(controller);
 
           expect(cameraPosition(camera).distanceTo(before)).to.be.closeTo(0, 1e-6);
