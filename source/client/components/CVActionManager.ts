@@ -329,6 +329,10 @@ export default class CVActionManager extends Component
             this._activeClips.forEach(item => {
                 item.clip.time = item.clip.timeScale > 0 ? item.clip.getClip().duration : 0;
             });
+            const machine = this.setup.snapshots;
+            if(machine.deltaStates.some(state => state.id === machine.ins.id.value)) {
+                machine.endTween();
+            }
 
             const tour = this.tours.title;                  // DEPRECATED SUPPORT - REMOVE IN v0.64
             const step = this.tours.outs.stepIndex.value;   // DEPRECATED SUPPORT - REMOVE IN v0.64
@@ -402,8 +406,8 @@ export default class CVActionManager extends Component
                 if(machine.ins.id.value === action.stateId) {
                     return;
                 }
-                // If a different state change is in progress, push it to the end before triggering the new one
-                else if(machine.deltaStates.some(state => state.id === machine.ins.id.value)) {
+                // Push active tween to finish
+                else {
                     machine.endTween();
                 }
             }
