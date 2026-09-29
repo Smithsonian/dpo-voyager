@@ -42,10 +42,10 @@ interface IStepEntry
 export default class StatePanel extends DocumentView
 {
     protected static tableColumns: ITableColumn<IStepEntry>[] = [
-        { header: "#", width: 0.05, cell: (row, index) => (index + 1).toString() },
-        { header: "Title", width: 0.4, cell: "title" },
-        { header: "Duration", width: 0.15, cell: "duration" },
-        { header: "Changes", width: 0.4, cell: "changes" },
+        { header: "#", contentId: "Numbering", width: "min-content", cell: (row, index) => (index + 1).toString() },
+        { contentId: "Title", width: 0.4, cell: "title" },
+        { contentId: "Duration", width: 0.15, cell: "duration" },
+        { contentId: "Changes", width: 0.4, cell: "changes" },
     ];
 
     protected stateTable: Table<IStepEntry> = null;
@@ -111,30 +111,35 @@ export default class StatePanel extends DocumentView
                             if(component.is(CVModel2) || component.is(CLight)) {
                                 componentName = component.node.name.toLowerCase() + " ";
                             }
+                            let propertyName = languageManager.getUILocalizedString({key: "property.label." + path.split("/").pop(), text: path.split("/").pop()});
 
                             return html`<div class="sv-tag-chip">
-                            <span class="sv-tag-chip-label"><b>${componentName}${path.split('/').pop()}</b><i>${value}</i></span>
+                            <span class="sv-tag-chip-label"><b>${componentName}${propertyName}</b><i>${value}</i></span>
                             <ff-button class="sv-tag-chip-remove" icon="close" title=${languageManager ? languageManager.getLocalizedString("Remove tag") : "Remove tag"} @click=${() => this.onRemoveTag(index)}></ff-button>
                         </div>`
                     })}
                 </div></div>` : null;
         
         const stepDetailView = activeState ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <div class="sv-label">Title</div>
-            <ff-line-edit name="Title" text=${activeState.title} @change=${this.onTitleEdit}></ff-line-edit>
-            <sv-property-view .property=${machine.ins.curve}></sv-property-view>
-            <sv-property-view .property=${machine.ins.duration} commitonly></sv-property-view>
-            <sv-property-view .property=${machine.ins.threshold} commitonly></sv-property-view>
-            <div class="sv-label">Changes</div>
+            <div class="sv-label">${languageManager.getUILocalizedString("Title")}</div>
+            <ff-line-edit name="Title" text=${activeState.title} .language=${languageManager} @change=${this.onTitleEdit}></ff-line-edit>
+            <sv-property-view .property=${machine.ins.curve} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${machine.ins.duration} .language=${languageManager} commitonly></sv-property-view>
+            <sv-property-view .property=${machine.ins.threshold} .language=${languageManager} commitonly></sv-property-view>
+            <div class="sv-label">${languageManager.getUILocalizedString("Changes")}</div>
             ${tagDisplay}
-        </div>` : html`<div class="ff-placeholder"><div>${languageManager.getUILocalizedString("Create or select a state change to edit.")}</div></div>`;
+        </div>` : html`<div class="ff-placeholder"><div>${languageManager.getUILocalizedString({ key: "statePanel.selectStatePrompt", text :"Create or select a state change to edit."})}</div></div>`;
+
+        for (let column of this.stateTable.columns){
+            column.header = languageManager.getUILocalizedString({key: "column.header." + column.contentId, text: column.contentId})
+        }
 
         this.stateTable.rows = machine.deltaStates.map(delta => {
             const state = this.snapshots.getState(delta.id) as IDeltaState;
             return {
                 title: state.title,
                 duration: state.duration.toFixed(1) + "s",
-                changes: state.paths.map(path => path.split('/').pop()).join(', '),
+                changes: state.paths.map(path => languageManager.getUILocalizedString({key: "property.label." + path.split("/").pop(), text: path.split("/").pop()})).join(', '),
             };
         });
 

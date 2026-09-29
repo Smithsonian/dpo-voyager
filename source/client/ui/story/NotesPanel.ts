@@ -43,12 +43,12 @@ import CVMeta from "../../components/CVMeta";
 export default class NotesPanel extends NodeView
 {
     protected static tableColumns: ITableColumn<INote>[] = [
-        { header: "Date", width: 0.3,
+        {contentId: "Date", width: 0.3,
             cell: row => moment(row.date).format("YYYY-MM-DD HH:mm:ss"),
             sortable: true
         },
-        { header: "User", width: 0.25, cell: "user", sortable: true },
-        { header: "Text", width: 0.45, cell: "text", sortable: true },
+        { contentId: "User", width: 0.25, cell: "user", sortable: true },
+        { contentId: "Text", width: 0.45, cell: "text", sortable: true },
     ];
 
     protected noteTable: Table<INote>;

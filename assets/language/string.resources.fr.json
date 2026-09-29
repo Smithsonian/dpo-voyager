@@ -12,6 +12,7 @@
   "Bottom": "Dessous",
   "Cancel": "Annuler",
   "Center": "Centrer",
+  "Changes": "Changements",
   "Circle": "Cercle",
   "Clay": "Argile",
   "Close": "Fermer",
@@ -27,8 +28,9 @@
   "Create or select a tour step to edit.": "Créer ou sélectionner une étape de visite pour l'éditer",
   "Created on": "Créée le ",
   "Date/Time" : "Jour/Heure",
-  "Default": "Defaut",
+  "Default": "Défaut",
   "Default:": "Défaut :",
+  "Default State": "État par défaut",
   "Delete": "Supprimer",
   "Delete Light": "Supprimer la lumière",
   "Delete Tour": "Supprimer la visite",
@@ -181,6 +183,11 @@
   "Arabic (العربية)": "Arabic (العربية)",
   "Tamil (தமிழ்)": "Tamoul (தமிழ்)",
 
+  "column.header.Numbering": "n°",
+  "column.header.Title": "Titre",
+  "column.header.Duration": "Durée",
+  "column.header.Changes": "Changements",
+
   "panel.header.navigator": "Navigateur",
   "panel.header.assets": "Médias",
   "panel.header.collection": "Collection",
@@ -192,9 +199,16 @@
   "panel.header.notes": "Éditeur de notes",
 
   "property.label.Color": "Couleur",
+  "property.label.Curve": "Interpolation",
+  "property.label.Duration": "Durée",
   "property.label.Language": "Langue",
   "property.label.Lead": "Amorce",
   "property.label.Marker": "Marqueur",
+  "property.label.opacity": "opacité",
+  "property.label.orbit": "orbite",
   "property.label.Scale": "Échelle",
-  "property.label.Title": "Titre"
+  "property.label.Threshold": "Seuil",
+  "property.label.Title": "Titre",
+
+  "statePanel.selectStatePrompt": "Créer ou sélectionner un changement d'état pour éditer."
 }

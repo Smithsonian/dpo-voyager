@@ -72,6 +72,8 @@
 	"Add a tag..." : "Add a tag...",
 	"Title" : "Title",
 
+    "column.header.Numbering": "#",
+
     "panel.header.navigator": "Navigator",
     "panel.header.assets": "Media",
     "panel.header.collection": "Collection",

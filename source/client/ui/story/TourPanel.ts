@@ -42,11 +42,11 @@ interface IStepEntry
 export default class TourPanel extends DocumentView
 {
     protected static tableColumns: ITableColumn<IStepEntry>[] = [
-        { header: "#", width: 0.05, cell: (row, index) => (index + 1).toString() },
-        { header: "Title", width: 0.4, cell: "title" },
-        { header: "Curve", width: 0.25, cell: "curve" },
-        { header: "Duration", width: 0.15, cell: "duration" },
-        { header: "Threshold", width: 0.15, cell: "threshold" },
+        { header: "#", contentId: "Numbering", width: 0.05, cell: (row, index) => (index + 1).toString() },
+        { contentId: "Title", width: 0.4, cell: "title" },
+        { contentId: "Curve", width: 0.25, cell: "curve" },
+        { contentId: "Duration", width: 0.15, cell: "duration" },
+        { contentId: "Threshold", width: 0.15, cell: "threshold" },
     ];
 
     protected stateTable: Table<IStepEntry> = null;
