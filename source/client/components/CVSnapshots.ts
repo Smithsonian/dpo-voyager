@@ -92,18 +92,9 @@ export default class CVSnapshots extends CTweenMachine
             // Handle properties getting added to annotation views after initial setup
             model.getComponent(CVAnnotationView).getAnnotations().forEach(anno => {
                 if(anno.data.viewId) {
-                    const props = this.getTargetProperties();
-                    const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
-                    const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
-
-                    // set non camera properties to null to skip them
                     const values = this.states[anno.data.viewId]?.values;
                     if(values) {
-                        values.forEach((v, idx) => {
-                            if(idx != orbitIdx && idx != offsetIdx) {
-                                values[idx] = null;
-                            }
-                        });
+                        this.keepCameraValues(values);
                     }
                     else {
                         console.warn("Unknown view state for anno: " + anno.title);
@@ -125,6 +116,42 @@ export default class CVSnapshots extends CTweenMachine
                 index, component.displayName, target.property.path);
         });
          */
+    }
+
+    /**
+     * Sets all non-camera values to null so they are skipped when tweening.
+     * Used for annotation views, which should only affect the camera.
+     * @param values Values for the current targets.
+     */
+    keepCameraValues(values: any[]): any[]
+    {
+        const cameraProperties = this.getGraphComponent(CVSetup).navigation.snapshotProperties;
+        this.targets.forEach((target, idx) => {
+            if (!cameraProperties.includes(target.property)) {
+                values[idx] = null;
+            }
+        });
+        return values;
+    }
+
+    /**
+     * Makes sure a state change that moves the camera also sets the pivot point,
+     * otherwise orbit and offset would be applied relative to the current pivot.
+     * @param delta State change to complete.
+     * @param pivot Pivot value to use if the state change doesn't have one. Defaults to the current pivot.
+     */
+    addDeltaPivot(delta: IDeltaState, pivot?: number[])
+    {
+        const { orbit, offset, pivot: pivotProperty } = this.getGraphComponent(CVSetup).navigation.ins;
+        const path = (property: Property) => property.group.linkable.id + "/" + property.key;
+
+        if (delta.paths.includes(path(pivotProperty))) {
+            return;
+        }
+        if (delta.paths.includes(path(orbit)) || delta.paths.includes(path(offset))) {
+            delta.paths.push(path(pivotProperty));
+            delta.values.push((pivot || pivotProperty.value).slice());
+        }
     }
 
     activateStateChange(id: string)
@@ -243,10 +270,29 @@ export default class CVSnapshots extends CTweenMachine
                         }
                         return component.id + "/" + parts[1];
                     });
+                    // state changes saved before the orbit pivot existed are relative to the origin
+                    this.addDeltaPivot(delta, [ 0, 0, 0 ]);
                     this.deltaStates.push(delta);
                 }
             }
         });
+
+        // Camera states saved before the orbit pivot existed are relative to the origin
+        const { orbit, pivot } = this.getGraphComponent(CVSetup).navigation.ins;
+        if (this.hasTargetProperty(orbit) && !this.hasTargetProperty(pivot)) {
+            this.addTargetProperty(pivot);
+            const pivotIdx = this.targets.length - 1;
+            Object.keys(this.states).forEach(key => {
+                const state = this.states[key];
+                if ("paths" in state) {
+                    // state change values follow their paths, not the targets
+                    state.values.pop();
+                }
+                else {
+                    state.values[pivotIdx] = [ 0, 0, 0 ];
+                }
+            });
+        }
     }
 
     toData(pathMap: Map<Component, string>): ISnapshots | null
