@@ -54,9 +54,10 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
 
         const node = this.activeNode;
         const actionList = node && node.hasComponent(CVAnnotationView) && this.task.actions;
+        const languageManager = this.activeDocument.setup.language;
 
         if (!actionList) {
-            return html`<div class="sv-placeholder">Please select a model node to edit its actions.</div>`;
+            return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a model node to edit its actions.")}</div>`;
         }
 
         const accessibilityNotice = ins.type.value === EActionType.PlayAudio && 
@@ -66,62 +67,62 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         const actionElement = actionList.find((action) => action.id === ins.activeId.value);
 
         const audioActionView = ins.type.value === EActionType.PlayAudio ? html`
-            <sv-property-view .property=${ins.audio}></sv-property-view>
-            <sv-property-view .property=${ins.syncWith}></sv-property-view>
+            <sv-property-view .property=${ins.audio} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${ins.syncWith} .language=${languageManager}></sv-property-view>
         ` : null;
         const animClamp = ins.style.value === EActionPlayStyle.Single ? html`
-            <sv-property-view .property=${ins.clamp}></sv-property-view>
+            <sv-property-view .property=${ins.clamp} .language=${languageManager}></sv-property-view>
         ` : null;
         const animActionView = ins.type.value === EActionType.PlayAnimation ? html`
-            <sv-property-view .property=${ins.style}></sv-property-view>
-            <sv-property-view .property=${ins.speed}></sv-property-view>
-            <sv-property-view .property=${ins.animation}></sv-property-view>
+            <sv-property-view .property=${ins.style} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${ins.speed} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${ins.animation} .language=${languageManager}></sv-property-view>
             ${animClamp}
         ` : null;
         const annoView = ins.trigger.value === EActionTrigger.OnAnnotation ? html`
-            <sv-property-view .property=${ins.annotation}></sv-property-view>
+            <sv-property-view .property=${ins.annotation} .language=${languageManager}></sv-property-view>
         ` : null;
         const stateView = ins.type.value === EActionType.StateChange ? html`
             <sv-property-view .property=${ins.state}></sv-property-view>
         ` : null;
         const annoActionView = ins.type.value === EActionType.ShowAnnotation || ins.type.value === EActionType.HideAnnotation 
             || ins.type.value === EActionType.ToggleAnnotation ? html`
-            <sv-property-view .property=${ins.actionAnnotation}></sv-property-view>
+            <sv-property-view .property=${ins.actionAnnotation} .language=${languageManager}></sv-property-view>
         ` : null;
         const tourView = ins.trigger.value === EActionTrigger.OnTourStep ? html`
-            <sv-property-view .property=${ins.tour}></sv-property-view>
-            <sv-property-view .property=${ins.tourStep}></sv-property-view>
+            <sv-property-view .property=${ins.tour} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${ins.tourStep} .language=${languageManager}></sv-property-view>
         ` : null;
         const actionEventView = ins.trigger.value === EActionTrigger.OnActionEnd || ins.trigger.value === EActionTrigger.OnActionBegin ? html`
-            <sv-property-view .property=${ins.action}></sv-property-view>
+            <sv-property-view .property=${ins.action} .language=${languageManager}></sv-property-view>
         ` : null;
         const actionTargetView = ins.type.value === EActionType.DisableAction || ins.type.value === EActionType.EnableAction ? html`
-            <sv-property-view .property=${ins.actionTarget}></sv-property-view>
+            <sv-property-view .property=${ins.actionTarget} .language=${languageManager}></sv-property-view>
         ` : null;
 
         const detailView = actionElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             ${accessibilityNotice}
-            <sv-property-view .property=${ins.name}></sv-property-view>
-            <sv-property-view .property=${ins.trigger}></sv-property-view>
+            <sv-property-view .property=${ins.name} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${ins.trigger} .language=${languageManager}></sv-property-view>
             ${annoView}
             ${tourView}
             ${actionEventView}
-            <sv-property-view .property=${ins.type}></sv-property-view>
+            <sv-property-view .property=${ins.type} .language=${languageManager}></sv-property-view>
             ${audioActionView}
             ${animActionView}
             ${annoActionView}
             ${stateView}
             ${actionTargetView}
-            <sv-property-view .property=${ins.enabled}></sv-property-view>
+            <sv-property-view .property=${ins.enabled} .language=${languageManager}></sv-property-view>
         </div>` : null;
 
         return html`<div class="sv-commands">
-            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>       
-            <ff-button text="Delete" icon="trash" ?disabled=${!actionElement} @click=${this.onClickDelete}></ff-button>  
+            <ff-button text="${languageManager.getUILocalizedString("Create")}" icon="create" @click=${this.onClickCreate}></ff-button>       
+            <ff-button text="${languageManager.getUILocalizedString("Delete")}" icon="trash" ?disabled=${!actionElement} @click=${this.onClickDelete}></ff-button>  
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">Name</div><div class="sv-panel-header sv-task-item sv-item-border-l">Type/Trigger</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${languageManager.getUILocalizedString("Name")}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.getUILocalizedString("Type")}/${languageManager.getUILocalizedString("Trigger")}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-action-list .data=${actionList} .selectedItem=${actionElement} @select=${this.onSelectAction}></sv-action-list>

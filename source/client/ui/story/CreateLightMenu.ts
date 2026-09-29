@@ -11,8 +11,6 @@ export default class CreateLightMenu extends Popup {
     protected lightType: ELightType = ELightType.directional;
     protected name: string = ELightType[this.lightType];
 
-    protected errorString: string = "";
-
     static show(parent: HTMLElement, language: CVLanguageManager): Promise<[ELightType, string]> {
 
         const menu = new CreateLightMenu(language);
@@ -40,7 +38,6 @@ export default class CreateLightMenu extends Popup {
 
     confirm() {
         if (this.lightType === null || this.name.trim() === "") {
-            this.errorString = this.language.getUILocalizedString("Please select a light type and enter a name.");
             this.requestUpdate();
         } else {
             this.dispatchEvent(new CustomEvent("confirm"));

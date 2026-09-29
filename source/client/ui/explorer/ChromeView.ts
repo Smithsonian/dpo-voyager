@@ -175,7 +175,7 @@ export default class ChromeView extends DocumentView
             </div>
             <div class="ff-flex-spacer"></div>
             ${toursEnabled && tourActive ? html`<sv-tour-navigator @close=${this.closeTours} .system=${this.system}></sv-tour-navigator>` : null}
-            ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} .activeLanguage=${activeLanguage} @close=${this.closeTours} @select=${this.onSelectTour}></sv-tour-menu>` : null}
+            ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} .language=${languageManager} @close=${this.closeTours} @select=${this.onSelectTour}></sv-tour-menu>` : null}
             ${tagCloudVisible && toolBarAllowed ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
             ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}
             <div class="sv-chrome-footer">

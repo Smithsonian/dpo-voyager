@@ -172,13 +172,13 @@ export default class CVAnnotationView extends CObject3D
             const articles = this.reader.articles;
             if (articles.length) {
                 const names = articles.map(entry => entry.article.title);
-                names.unshift("(none)");
+                names.unshift(this.language.getUILocalizedString("None"));
                 ins.article.setOptions(names);
                 const article = annotation ? articles.find((entry) => entry.article.id === annotation.data.articleId) : null;
                 ins.article.setValue(article ? articles.indexOf(article) + 1 : 0, true);
             }
             else {
-                ins.article.setOptions([ "(none)" ]);
+                ins.article.setOptions([ this.language.getUILocalizedString("None") ]);
                 ins.article.setValue(0);
             }
 
@@ -644,7 +644,7 @@ export default class CVAnnotationView extends CObject3D
 
         // update article list
         const names = this.reader.articles.map(entry => entry.article.title);
-        names.unshift("(none)");
+        names.unshift(this.language.getUILocalizedString("None"));
         ins.article.setOptions(names);
     }
 

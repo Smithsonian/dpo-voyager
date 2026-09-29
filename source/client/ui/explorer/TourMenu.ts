@@ -22,6 +22,7 @@ import { ITour } from "client/schema/setup";
 import { ELanguageType } from "client/schema/common";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers"
 import { unsafeHTML } from "lit-html/directives/unsafe-html";
+import CVLanguageManager from "client/components/CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,7 +40,7 @@ export default class TourMenu extends CustomElement
     tours: ITour[];
 
     @property({ attribute: false })
-    activeLanguage: ELanguageType;
+    language: CVLanguageManager = null;
 
     protected needsFocus: boolean = false;
     protected focusableElements: HTMLElement[] = [];
@@ -53,12 +54,13 @@ export default class TourMenu extends CustomElement
 
     protected renderEntry(tour: ITour, index: number)
     {
+        const activeLanguage = this.language.outs.activeLanguage.value;
         return html`<div role="option" title="tour entry" tabindex=${index === 0 ? "0" : "-1"} @keydown=${e =>this.onKeyDown(e, index)} class="sv-entry" @click=${e => this.onClickTour(e, index)}>
             <div class="sv-titlebar">              
-                <h1>${unsafeHTML( Object.keys(tour.titles).length > 0 ? tour.titles[ELanguageType[this.activeLanguage]] || "Missing content" : tour.title )}</h1>
+                <h1>${unsafeHTML( Object.keys(tour.titles).length > 0 ? tour.titles[ELanguageType[activeLanguage]] || "Missing content" : tour.title )}</h1>
                 <ff-icon class="ff-off" name="triangle-right">
             </div>
-            <p>${unsafeHTML( (Object.keys(tour.leads).length > 0 && (Object.values(tour.leads).find((lead)=> lead)))? (tour.leads[ELanguageType[this.activeLanguage]] || "Missing content"): tour.lead )}</p>
+            <p>${unsafeHTML( (Object.keys(tour.leads).length > 0 && (Object.values(tour.leads).find((lead)=> lead)))? (tour.leads[ELanguageType[activeLanguage]] || "Missing content"): tour.lead )}</p>
         </div>`;
     }
 
@@ -68,7 +70,7 @@ export default class TourMenu extends CustomElement
 
         if (tours.length === 0) {
             return html`<div class="sv-entry">
-                <h1>No tours available.</h1>
+                <h1>${this.language.getLocalizedString("No tours available.")}</h1>
             </div>`;
         }
 

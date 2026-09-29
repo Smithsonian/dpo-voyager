@@ -18,11 +18,12 @@ export type SortFunction<T> = (row0: T, row1: T) => number;
 
 export interface ITableColumn<T>
 {
-    header: string | RenderHeaderFunction<T>;
+    header?: string | RenderHeaderFunction<T>;
     cell?: keyof T | RenderCellFunction<T>;
     sortable?: boolean | SortFunction<T>;
     resizable?: boolean;
     width?: number | string;
+    contentId: string;
     className?: string;
 }
 
@@ -131,7 +132,7 @@ export default class Table<T> extends CustomElement
 
     protected renderHeader(column: ITableColumn<T>, index: number): TemplateResult
     {
-        const header = column.header;
+        const header = column.header || column.contentId;
         const defaultWidth = 1 / this.columns.length;
         const width = typeof column.width === "string" ? column.width : ((column.width || defaultWidth) * 100 + "%");
         let classes = column.className || "";

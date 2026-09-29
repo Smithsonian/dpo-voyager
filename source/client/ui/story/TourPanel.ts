@@ -42,11 +42,11 @@ interface IStepEntry
 export default class TourPanel extends DocumentView
 {
     protected static tableColumns: ITableColumn<IStepEntry>[] = [
-        { header: "#", width: 0.05, cell: (row, index) => (index + 1).toString() },
-        { header: "Title", width: 0.4, cell: "title" },
-        { header: "Curve", width: 0.25, cell: "curve" },
-        { header: "Duration", width: 0.15, cell: "duration" },
-        { header: "Threshold", width: 0.15, cell: "threshold" },
+        { header: "#", contentId: "Numbering", width: 0.05, cell: (row, index) => (index + 1).toString() },
+        { contentId: "Title", width: 0.4, cell: "title" },
+        { contentId: "Curve", width: 0.25, cell: "curve" },
+        { contentId: "Duration", width: 0.15, cell: "duration" },
+        { contentId: "Threshold", width: 0.15, cell: "threshold" },
     ];
 
     protected stateTable: Table<IStepEntry> = null;
@@ -121,10 +121,10 @@ export default class TourPanel extends DocumentView
         const missingTitle = html `<span class="sv-missing-translation">Missing content</span>`
      
         const stepDetailView = activeStep ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <sv-property-view .property=${task.ins.stepTitle}></sv-property-view>
-            <sv-property-view .property=${task.ins.stepCurve}></sv-property-view>
-            <sv-property-view .property=${task.ins.stepDuration} commitonly></sv-property-view>
-            <sv-property-view .property=${task.ins.stepThreshold} commitonly></sv-property-view>
+            <sv-property-view .property=${task.ins.stepTitle} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${task.ins.stepCurve} .language=${languageManager}></sv-property-view>
+            <sv-property-view .property=${task.ins.stepDuration} .language=${languageManager} commitonly></sv-property-view>
+            <sv-property-view .property=${task.ins.stepThreshold} .language=${languageManager} commitonly></sv-property-view>
             <div class="sv-label">Alt Text</div>
             <ff-text-edit name="altText" text=${task.ins.stepAltText.value} @change=${this.onTextEdit}></ff-text-edit>
         </div>` : html`<div class="ff-placeholder"><div>${languageManager.getUILocalizedString("Create or select a tour step to edit.")}</div></div>`;

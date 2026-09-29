@@ -30,6 +30,7 @@ import "../properties/PropertyNumber";
 import "../properties/PropertyOptions";
 import "../properties/PropertyEvent";
 import "../properties/PropertyTags";
+import CVLanguageManager from "client/components/CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,6 +52,12 @@ export default class PropertyView extends CustomElement
     @property({type: Boolean})
     disabled = false;
 
+    @property({ type: Boolean })
+    noValueTranslation: Boolean = false;
+
+    @property({ attribute: false })
+    language: CVLanguageManager = null;
+
     protected firstConnected()
     {
         if (!this.property) {
@@ -64,7 +71,7 @@ export default class PropertyView extends CustomElement
     {
         const property = this.property;
         const schema = property.schema;
-        const label = this.label !== undefined ? this.label : property.path.split(".").pop();
+        const label = this.label !== undefined ? this.label : this.language.getUILocalizedString({key: "property.label." + property.path.split(".").pop(), text: property.path.split(".").pop()});
         let linked = this.property.hasMainInLinks();
         let disabled = this.disabled || linked;
         if(property.isArray() && property.type !== "number"){
@@ -72,33 +79,33 @@ export default class PropertyView extends CustomElement
             return null;
         }
         if(property.type === "number" && property.schema.semantic === "color"){
-            return html`<sv-property-color aria-disabled=${disabled ? "true" : "false"} name=${label} .property=${property}></sv-property-color>`;
+            return html`<sv-property-color aria-disabled=${disabled ? "true" : "false"} name=${label} .property=${property} .language=${this.language}></sv-property-color>`;
         }else if (property.type === "number" && property.isArray()) {
             let fields = [];
             for (let i = 0; i < property.elementCount; ++i) {
                 
                 let index_disabled = disabled || this.property.hasInLinks(i);
                 const fieldLabel = property.schema.labels?.[i] ?? _defaultLabels[i];
-                fields.push(html`<sv-property-number aria-disabled=${index_disabled} name=${fieldLabel} .index=${i} .property=${property}></sv-property-number>`);
+                fields.push(html`<sv-property-number aria-disabled=${index_disabled} name=${fieldLabel} .index=${i} .property=${property} .language=${this.language}></sv-property-number>`);
             }
             const headerElement = label ? html`<div class="sv-property-name">${label}</div>` : null;
             return html`${headerElement}<div class="sv-property-group">${fields}</div>`;
         }else if (schema.event) {
-            return html`<sv-property-event aria-disabled=${disabled} name=${label} .property=${property}></sv-property-event>`;
+            return html`<sv-property-event aria-disabled=${disabled} name=${label} .property=${property} .language=${this.language}></sv-property-event>`;
         }else if(property.type === "string" && schema.semantic === "tags"){
-            return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property}></sv-property-tags>`
+            return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property} .language=${this.language}></sv-property-tags>`
         }else if (schema.options) {
-            return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property}></sv-property-options>`;
+            return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property} .language=${this.language} ?noValueTranslation=${this.noValueTranslation}></sv-property-options>`;
         }else if(property.type === "boolean"){
-            return html`<sv-property-boolean aria-disabled=${disabled} name=${label} .property=${property}></sv-property-boolean>`;
+            return html`<sv-property-boolean aria-disabled=${disabled} name=${label} .property=${property} .language=${this.language}></sv-property-boolean>`;
         }else if(property.type === "string"){
-            return html`<sv-property-string aria-disabled=${disabled} name=${label} .property=${property}></sv-property-string>`
+            return html`<sv-property-string aria-disabled=${disabled} name=${label} .property=${property} .language=${this.language}></sv-property-string>`
         }else if(property.type === "number"){
-            return html`<sv-property-number aria-disabled=${disabled} name=${label} .property=${property}></sv-property-number>`
+            return html`<sv-property-number aria-disabled=${disabled} name=${label} .property=${property} .language=${this.language}></sv-property-number>`
         }else if(property.type === "object" && schema.semantic === "datetime"){
             return html`
-                <sv-property-datetime aria-disabled=${disabled} name=${label} .property=${property}></sv-property-datetime>
-                <sv-property-timezone aria-disabled=${disabled} name="Time Zone" .property=${property}></sv-property-timezone>
+                <sv-property-datetime aria-disabled=${disabled} name=${label} .property=${property} .language=${this.language}></sv-property-datetime>
+                <sv-property-timezone aria-disabled=${disabled} name="Time Zone" .property=${property} .language=${this.language}></sv-property-timezone>
             `;
         }else{
             console.warn("Unhandled property :", property.name);

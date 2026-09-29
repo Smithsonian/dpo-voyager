@@ -1046,8 +1046,17 @@ $tour-entry-indent: 12px;
     max-height: 90%;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     margin-top: 20px;
     margin-bottom: 20px;
+    .sv-help-text {
+      text-wrap: balance;
+      max-width: 25ch;      
+    }
+  }
+
+  .sv-help-modifier-key{
+    min-width: max-content;
   }
 
   .sv-help-short {
@@ -1063,7 +1072,7 @@ $tour-entry-indent: 12px;
   }
 
   .sv-help-text {
-    padding: 5px 5px 0px 5px;
+    padding: 10px 5px 0px 5px;
     display: flex;
     align-items: center;
     justify-content: center;
