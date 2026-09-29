@@ -52,6 +52,9 @@ export default class PropertyView extends CustomElement
     @property({type: Boolean})
     disabled = false;
 
+    @property({ type: Boolean })
+    noValueTranslation: Boolean = false;
+
     @property({ attribute: false })
     language: CVLanguageManager = null;
 
@@ -68,7 +71,7 @@ export default class PropertyView extends CustomElement
     {
         const property = this.property;
         const schema = property.schema;
-        const label = this.label !== undefined ? this.label : property.path.split(".").pop();
+        const label = this.label !== undefined ? this.label : this.language.getUILocalizedString({key: "property.label." + property.path.split(".").pop(), text: property.path.split(".").pop()});
         let linked = this.property.hasMainInLinks();
         let disabled = this.disabled || linked;
         if(property.isArray() && property.type !== "number"){
@@ -92,7 +95,7 @@ export default class PropertyView extends CustomElement
         }else if(property.type === "string" && schema.semantic === "tags"){
             return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property} .language=${this.language}></sv-property-tags>`
         }else if (schema.options) {
-            return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property} .language=${this.language}></sv-property-options>`;
+            return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property} .language=${this.language} ?noValueTranslation=${this.noValueTranslation}></sv-property-options>`;
         }else if(property.type === "boolean"){
             return html`<sv-property-boolean aria-disabled=${disabled} name=${label} .property=${property} .language=${this.language}></sv-property-boolean>`;
         }else if(property.type === "string"){

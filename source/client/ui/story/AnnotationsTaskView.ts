@@ -129,10 +129,10 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             <sv-property-view .property=${inProps.marker} .language=${languageManager}></sv-property-view>
             <sv-property-view .property=${languageManager.ins.activeLanguage} .language=${languageManager}></sv-property-view>
             <div class="sv-indent">
-                <sv-property-view .property=${inProps.article} .language=${languageManager}></sv-property-view>
-                <sv-property-view .property=${inProps.tags} .language=${languageManager}></sv-property-view>
+                <sv-property-view .property=${inProps.article} .language=${languageManager} noValueTranslation></sv-property-view>
+                <sv-property-view .property=${inProps.tags} .language=${languageManager} noValueTranslation></sv-property-view>
                 <sv-property-view .property=${inProps.title} .language=${languageManager}></sv-property-view>
-                <div class="sv-label" style="${overLimit ? "color: red" : ""}" @click=${(e)=>this.onClickLimit(e)}>Lead&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
+                <div class="sv-label" style="${overLimit ? "color: red" : ""}" @click=${(e)=>this.onClickLimit(e)}>${languageManager.getUILocalizedString({key: "property.label.Lead" ,text:"Lead"})}&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
                 <ff-text-edit name="lead" text=${inProps.lead.value} rows=3 maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
             </div>
             <div class="sv-label">${languageManager.getUILocalizedString("View Point")}</div>

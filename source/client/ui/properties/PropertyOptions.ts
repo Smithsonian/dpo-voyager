@@ -37,6 +37,8 @@ export default class PropertyOptions extends PropertyBase
     @property({ attribute: false })
     indexMap: number[] = null;
 
+    @property({ type: Boolean })
+    noValueTranslation: boolean = false;
 
     @property({type: Boolean, reflect: true})
     dropdown :boolean = false;
@@ -90,11 +92,11 @@ export default class PropertyOptions extends PropertyBase
         let optionsList;
         if (indexMap) {
             optionsList = indexMap.map(index =>
-                html`<option value=${index} ?selected=${this.isSelected(index)}>${language ? language.getLocalizedString(options[index]) : options[index]}</option>`);
+                html`<option value=${index} ?selected=${this.isSelected(index)}>${!this.noValueTranslation && language ? language.getUILocalizedString(options[index]) : options[index]}</option>`);
         }
         else {
             optionsList = options.map((option, index) =>
-                option? html`<option value=${index} ?selected=${this.isSelected(index)}>${language ? language.getLocalizedString(option) : option}</option>`:null)
+                option? html`<option value=${index} ?selected=${this.isSelected(index)}>${!this.noValueTranslation && language ? language.getUILocalizedString(option) : option}</option>`:null)
         }
 
         return html`

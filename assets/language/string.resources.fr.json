@@ -12,6 +12,7 @@
   "Bottom": "Dessous",
   "Cancel": "Annuler",
   "Center": "Centrer",
+  "Circle": "Cercle",
   "Clay": "Argile",
   "Close": "Fermer",
   "Close Article Reader": "Fermer le lecteur",
@@ -39,6 +40,7 @@
   "Environment": "Environnement",
   "Exit": "Quitter",
   "Exit Tour": "Terminer la visite",
+  "Extended": "Étendu",
   "File:": "Fichier :",
   "Fill #1": "Remplissage #1",
   "Fill #2": "Remplissage #2",
@@ -79,6 +81,7 @@
   "Move Tour Down": "Déplacer la visite vers le bas",
   "Name": "Nom",
   "New step #":  "Nouvelle étape n.°",
+  "None": "Aucun",
   "No Models In Scene": "Pas de modèle dans la scène",
   "No tours available.": "Pas de visites disponible.",
   "No tour selected": "Pas de visite sélectionnée",
@@ -167,6 +170,17 @@
   "XRay": "Rayons X",
   "Zoom Extents": "Recadrer",
 
+  "English": "Anglais (English)",
+  "Spanish (Español)": "Espagnol (Español)",
+  "German (Deutsch)": "Allemand (Deutsch)",
+  "Dutch (Nederlands)": "Néerlandais (Nederlands)",
+  "Japanese (日本語)": "Japonais (日本語)",
+   "French (Français)": "Français",
+  "Italian (Italiano)": "Italien (Italiano)",
+  "Hawaiian (ʻŌlelo Hawaiʻi)": "Hawaïen (ʻŌlelo Hawaiʻi)",
+  "Arabic (العربية)": "Arabic (العربية)",
+  "Tamil (தமிழ்)": "Tamoul (தமிழ்)",
+
   "panel.header.navigator": "Navigateur",
   "panel.header.assets": "Médias",
   "panel.header.collection": "Collection",
@@ -175,5 +189,12 @@
   "panel.header.article-editor": "Éditeur d'articles",
   "panel.header.tour-editor": "Éditeur de visites",
   "panel.header.state-editor": "Éditeur d'états",
-  "panel.header.notes": "Éditeur de notes"
+  "panel.header.notes": "Éditeur de notes",
+
+  "property.label.Color": "Couleur",
+  "property.label.Language": "Langue",
+  "property.label.Lead": "Amorce",
+  "property.label.Marker": "Marqueur",
+  "property.label.Scale": "Échelle",
+  "property.label.Title": "Titre"
 }
