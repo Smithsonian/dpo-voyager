@@ -154,7 +154,7 @@ export default class CTweenMachine extends Component
 
     endTween()
     {
-        if(this.outs.tweening.value) {
+        if(this.outs.tweening.value && this._targetState.hasOwnProperty("paths")) {
             this._startTime = 0;
             this.tick(this.getMainComponent(CPulse).context);
         }

@@ -189,10 +189,10 @@ export default class CVTours extends Component
         const srElement = this.setup.viewer.rootElement.shadowRoot.querySelector("#sceneview-sr");
 
         if (ins.enabled.changed) {
-            this.setup.actions.ins.reset.set(); // reset animation when starting or finishing a tour
 
             if (ins.enabled.value) {
                 this.setup.navigation.ins.isInUse.setValue(true); // count tour as interaction
+                this.snapshots.endTween();
 
                 // store pre-tour scene state
                 const state: ITweenState = {
@@ -206,6 +206,7 @@ export default class CVTours extends Component
             }
             else {
                 outs.tourIndex.set();
+                this.snapshots.endTween();
 
                 this.normalizeViewOrbit(CVTours.sceneSnapshotId);
 
@@ -274,6 +275,7 @@ export default class CVTours extends Component
 
         // normalize orbit on tour start
         if(nextStepIndex === 0) {
+            this.snapshots.endTween();
             this.normalizeViewOrbit(tour.steps[0].id);
         }
 

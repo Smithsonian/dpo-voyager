@@ -147,6 +147,7 @@ export default class CVToursTask extends CVTask
                 }
 
                 if (ins.updateStep.changed) {
+                    machine.ins.id.setValue(step.id);
                     machine.ins.store.set();
                     return true;
                 }

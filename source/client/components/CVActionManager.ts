@@ -57,9 +57,10 @@ export default class CVActionManager extends Component
     private _animMap: Dictionary<Object3D> = {};
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
     private _actions: {model: CVModel2, action: IAction}[] = [];
-    private _visibilityCache: {annotation: Annotation, visibility: boolean}[] = [];
+    private _visibilityLoadCache: {annotation: Annotation, visibility: boolean}[] = [];
+    private _visibilityStateCache: {annotation: Annotation, visibility: boolean}[] = [];
 
-    private _animQueue = [];
+    private _actionQueue = [];
 
     protected static readonly ins = {
         reset: types.Event("Actions.Reset")
@@ -111,10 +112,12 @@ export default class CVActionManager extends Component
         this.viewer.ins.activeAnnotation.on("value", this.onAnnotationActivate, this);
         this.viewer.outs.sceneLoaded.on("value", this.onSceneLoad, this);
         this.tours.outs.stepIndex.on("value", this.onTourStep, this);
+        this.tours.ins.enabled.on("value", this.onTourEnabled, this);
     }
 
     dispose()
     {
+        this.tours.ins.enabled.on("value", this.onTourEnabled, this);
         this.tours.outs.stepIndex.off("value", this.onTourStep, this);
         this.viewer.outs.sceneLoaded.off("value", this.onSceneLoad, this);
         this.viewer.ins.activeAnnotation.off("value", this.onAnnotationActivate, this);
@@ -125,7 +128,8 @@ export default class CVActionManager extends Component
         this._clock = null;
         this._mixer = null;
         this._actions.length = 0;
-        this._visibilityCache.length = 0;
+        this._visibilityLoadCache.length = 0;
+        this._visibilityStateCache.length = 0;
         
         Object.keys(this._animMap).forEach(( key ) => this._animMap[key] = null);
         
@@ -142,7 +146,7 @@ export default class CVActionManager extends Component
             this._activeClips.length = 0;
 
             // reset visibilities
-            this._visibilityCache.forEach(anno => anno.annotation.set("visible", anno.visibility));
+            this._visibilityLoadCache.forEach(anno => anno.annotation.set("visible", anno.visibility));
 
             // retrigger scene load actions
             this.onSceneLoad();
@@ -255,7 +259,7 @@ export default class CVActionManager extends Component
 
     protected onSceneLoad() 
     {
-        this._visibilityCache.length = 0;
+        this._visibilityLoadCache.length = 0;
         this.getGraphComponents(CVModel2).forEach((model) => {
             
             const meta = model.node.getComponent(CVMeta, true);
@@ -277,7 +281,7 @@ export default class CVActionManager extends Component
                         || action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
                         const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
                         if(annotation) {
-                            this._visibilityCache.push({annotation: annotation, visibility: annotation.data.visible});
+                            this._visibilityLoadCache.push({annotation: annotation, visibility: annotation.data.visible});
                         }
                     }
                 });
@@ -307,7 +311,7 @@ export default class CVActionManager extends Component
                         const annotation = model.getComponent(CVAnnotationView).getAnnotationById(id);
                         if(annotation.data.viewId) {
                             // Queue up animations for annos that have views so we can chain the transitions
-                            this._animQueue.push({model: model, action: action});
+                            this._actionQueue.push({model: model, action: action});
                         }
                         else {
                             this.playAction(model, action);
@@ -322,8 +326,8 @@ export default class CVActionManager extends Component
     {
         if(this.tours.activeTour) {
             // Set any currently active or queued animations to their finish state
-            while(this._animQueue.length > 0) {
-                const action = this._animQueue.pop();
+            while(this._actionQueue.length > 0) {
+                const action = this._actionQueue.pop();
                 this.playAction(action.model, action.action);
             }
             this._activeClips.forEach(item => {
@@ -348,7 +352,7 @@ export default class CVActionManager extends Component
                     actions.forEach((action) => {
                         if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
                             const model = meta.node.getComponent(CVModel2);
-                            this._animQueue.push({model: model, action: action}); // queue actions to play when tour transition ends
+                            this._actionQueue.push({model: model, action: action}); // queue actions to play when tour transition ends
                         }
                         /*else if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
                             this.setup.audio.play(action.audioId, true);
@@ -359,11 +363,45 @@ export default class CVActionManager extends Component
         }
     }
 
+    protected onTourEnabled()
+    {
+        this._mixer.stopAllAction();
+        Object.keys(this._direction).forEach(key => delete this._direction[key]);
+        this._activeClips.length = 0;
+
+        this._actionQueue.length = 0;
+
+        const toursEnabled = this.tours.ins.enabled.value;
+        if(toursEnabled) {
+            this.getGraphComponents(CVModel2).forEach((model) => {
+            
+                const meta = model.node.getComponent(CVMeta, true);
+                if(meta) {
+                    meta.actions.items.forEach((action) => {
+                        if(action.type == EActionType[EActionType.ShowAnnotation] as TActionType
+                            || action.type == EActionType[EActionType.HideAnnotation] as TActionType
+                            || action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
+                            const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
+                            if(annotation) {
+                                this._visibilityLoadCache.push({annotation: annotation, visibility: annotation.data.visible});
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        else {
+            // reset visibilities
+            this._visibilityStateCache.forEach(anno => anno.annotation.set("visible", anno.visibility));
+            this._visibilityStateCache.length = 0;
+        }
+    }
+
     protected onTransitionEnd() 
     {
         // Handle playing animations queued up during snapshot tweens
-        while(this._animQueue.length > 0) {
-            const action = this._animQueue.pop();
+        while(this._actionQueue.length > 0) {
+            const action = this._actionQueue.pop();
             this.playAction(action.model, action.action);
         }
     }
@@ -406,9 +444,14 @@ export default class CVActionManager extends Component
                 if(machine.ins.id.value === action.stateId) {
                     return;
                 }
-                // Push active tween to finish
-                else {
+                // If a different state change is in progress, push it to the end before triggering the new one
+                else if(machine.deltaStates.some(state => state.id === machine.ins.id.value)) {
                     machine.endTween();
+                }
+                else {
+                    // Queue up action if tour state tweening
+                    this._actionQueue.push({model: model, action: action});
+                    return;
                 }
             }
 
