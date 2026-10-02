@@ -178,7 +178,7 @@ export default class CVActionsTask extends CVTask
                 action.annotationId = id;
             }
             if(ins.actionAnnotation.changed) {
-                action.actionAnnoId = ins.actionAnnotation.value.split(", ").map(title => (this.meta.getComponent(CVAnnotationView).getAnnotations().find(anno => anno.title === title) as Annotation).id).join(", ");
+                action.actionAnnoId = ins.actionAnnotation.value.split(", ").map(title => this.meta.getComponent(CVAnnotationView).getAnnotations().find(anno => anno.title === title)?.id).join(", ");
             }
             if(ins.state.changed) {
                 const id = ins.state.value > 0 ? this.activeDocument.setup.snapshots.deltaStates[ins.state.value - 1].id : undefined;
