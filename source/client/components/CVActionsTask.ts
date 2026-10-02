@@ -178,7 +178,7 @@ export default class CVActionsTask extends CVTask
                 action.annotationId = id;
             }
             if(ins.actionAnnotation.changed) {
-                action.actionAnnoId = ins.actionAnnotation.value.split(", ").map(title => this.meta.getComponent(CVAnnotationView).getAnnotations().find(anno => anno.title === title)?.id).join(", ");
+                action.actionAnnoId = ins.actionAnnotation.value.split("\x1F").map(title => this.meta.getComponent(CVAnnotationView).getAnnotations().find(anno => anno.title === title)?.id).join("\x1F");
             }
             if(ins.state.changed) {
                 const id = ins.state.value > 0 ? this.activeDocument.setup.snapshots.deltaStates[ins.state.value - 1].id : undefined;
@@ -234,7 +234,7 @@ export default class CVActionsTask extends CVTask
             ins.animation.setValue(action.animation ? ins.animation.schema.options.indexOf(action.animation) : 0);
             ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : 0);
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
-            ins.actionAnnotation.setValue(action.actionAnnoId ? action.actionAnnoId.split(", ").map(id => this.meta.getComponent(CVAnnotationView).getAnnotations().find(anno => anno.id == id).title).join(", ") : null);
+            ins.actionAnnotation.setValue(action.actionAnnoId ? action.actionAnnoId.split("\x1F").map(id => this.meta.getComponent(CVAnnotationView).getAnnotations().find(anno => anno.id == id).title).join("\x1F") : null);
             ins.state.setValue(action.stateId ? this.activeDocument.setup.snapshots.deltaStates.findIndex(state => state.id == action.stateId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
             ins.speed.setValue(action.speed);

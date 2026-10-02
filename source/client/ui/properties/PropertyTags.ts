@@ -35,6 +35,9 @@ export default class PropertyTags extends PropertyBase
     @property({type: Boolean})
     fixed :boolean = false;
 
+    @property({type: String})
+    delimiter :string = ",";
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -59,7 +62,7 @@ export default class PropertyTags extends PropertyBase
     }
 
     protected get selectedTags(): string[] {
-        return this.property?.value?.split(",")
+        return this.property?.value?.split(this.delimiter)
             .map((t: string) => t.trim()).filter(Boolean) || [];
     }
 
@@ -81,14 +84,14 @@ export default class PropertyTags extends PropertyBase
         }
         
         const newTags = [...this.selectedTags, trimmedTag];
-        this.property.setValue(newTags.join(", "));
+        this.property.setValue(newTags.join(this.delimiter));
         this.inputValue = "";
         this.requestUpdate();
     }
 
     protected onRemoveTag(tag: string) {
         const newTags = this.selectedTags.filter(t => t !== tag);
-        this.property.setValue(newTags.join(", "));
+        this.property.setValue(newTags.join(this.delimiter));
     }
 
     protected onInputKeyDown = (e: KeyboardEvent) => {
