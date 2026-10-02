@@ -149,7 +149,7 @@ export default class CVSnapshots extends CTweenMachine
     protected activateStateChange()
     {
         // don't process an active delta state change if one is already in progress
-        if(this.outs.tweening.value && this.deltaStates.some(state => state.id === id)) {
+        if(this.outs.tweening.value) {
             return;
         }
         

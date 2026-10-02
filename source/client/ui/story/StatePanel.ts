@@ -227,6 +227,7 @@ export default class StatePanel extends DocumentView
     {
         if(this.activeState) {
             const machine = this.activeDocument.setup.snapshots;
+            machine.endTween();
             machine.addIns.deltaID.setValue(this.activeState.id);
             machine.addIns.activateDelta.set();
         }

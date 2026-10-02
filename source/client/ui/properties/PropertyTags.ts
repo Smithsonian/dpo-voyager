@@ -57,6 +57,10 @@ export default class PropertyTags extends PropertyBase
                 this.property.on("change", this.onUpdate, this);
             }
         }
+        else if(changedProperties.size === 0) {
+            console.log(changedProperties);
+            this.inputValue = "";
+        }
 
         super.update(changedProperties);
     }
