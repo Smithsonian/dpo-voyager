@@ -177,13 +177,14 @@ export default class CVModel2 extends CObject3D
     private _visible: boolean = true;
     private _boxFrame: Box3Helper = null;
     private _localBoundingBox = new Box3();
-    private _prevPosition: Vector3 = new Vector3(0.0,0.0,0.0);
-    private _prevRotation: Vector3 = new Vector3(0.0,0.0,0.0);
     private _materialCache: Dictionary<IPBRMaterialSettings> = {};
     private _clayColor = new Color("#a67a6c").convertLinearToSRGB();
     private _wireColor = new Color("#004966").convertLinearToSRGB();
     private _wireEmissiveColor = new Color("#004966").convertLinearToSRGB();
     private _overlays: Dictionary<IOverlay> = {};
+
+    protected _prevPosition: Vector3 = new Vector3(0.0,0.0,0.0);
+    protected _prevRotation: Vector3 = new Vector3(0.0,0.0,0.0);
 
     constructor(node: Node, id: string)
     {
@@ -248,8 +249,9 @@ export default class CVModel2 extends CObject3D
         }
         else {
             const overlayProp = this.ins.overlayMap;
-            if(!overlayProp.schema.options.includes(key)) {
-                overlayProp.setOptions(overlayProp.schema.options.concat(key));
+            const filename = key.split('/').pop();
+            if(!overlayProp.schema.options.includes(filename)) {
+                overlayProp.setOptions(overlayProp.schema.options.concat(filename));
             }
 
             return this._overlays[key] = 

@@ -494,7 +494,7 @@ export default class CVViewer extends Component
 
         // update variant list
         const variantSet = new Set(this.ins.variant.schema.options);
-        const models = this.getGraphComponents(CVModel2);
+        const models = this.getGraphComponents(CVModel2).filter(component => component.typeName != "CVImagePlane");
         models.forEach(model => {
             model.ins.variant.schema.options.forEach(variantSet.add, variantSet);
         });

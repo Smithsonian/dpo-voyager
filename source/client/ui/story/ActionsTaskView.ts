@@ -63,6 +63,11 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
             (ins.trigger.value === EActionTrigger.OnTourStep || ins.trigger.value === EActionTrigger.OnLoad) ?
             html`<div class="sv-placeholder" style="color: red">Trigger/Action combination not supported for accessibility.</div>` : null;
 
+        const stateChangeWarning = ins.type.value === EActionType.StateChange && 
+            ins.trigger.value === EActionTrigger.OnTourStep ?
+            html`<div class="sv-placeholder" style="color: red">CAUTION: We recommend using traditional tour steps for tour-based state changes. 
+                State Editor based changes may have unintended consequences.</div>` : null;
+
         const actionElement = actionList.find((action) => action.id === ins.activeId.value);
 
         const audioActionView = ins.type.value === EActionType.PlayAudio ? html`
@@ -86,7 +91,7 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         ` : null;
         const annoActionView = ins.type.value === EActionType.ShowAnnotation || ins.type.value === EActionType.HideAnnotation 
             || ins.type.value === EActionType.ToggleAnnotation ? html`
-            <sv-property-view .property=${ins.actionAnnotation}></sv-property-view>
+            <sv-property-tags .fixed=${true} .delimiter=${"\x1F"} .property=${ins.actionAnnotation}></sv-property-tags>
         ` : null;
         const tourView = ins.trigger.value === EActionTrigger.OnTourStep ? html`
             <sv-property-view .property=${ins.tour}></sv-property-view>
@@ -100,6 +105,7 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         ` : null;
 
         const detailView = actionElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+            ${stateChangeWarning}
             ${accessibilityNotice}
             <sv-property-view .property=${ins.name}></sv-property-view>
             <sv-property-view .property=${ins.trigger}></sv-property-view>

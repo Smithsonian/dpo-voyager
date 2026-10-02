@@ -225,7 +225,12 @@ export default class StatePanel extends DocumentView
 
     protected onClickView()
     {
-        this.activeState ? this.activeDocument.setup.snapshots.activateStateChange(this.activeState.id) : null;
+        if(this.activeState) {
+            const machine = this.activeDocument.setup.snapshots;
+            machine.endTween();
+            machine.addIns.deltaID.setValue(this.activeState.id);
+            machine.addIns.activateDelta.set();
+        }
     }
 
     protected onClickReset()
@@ -268,6 +273,7 @@ export default class StatePanel extends DocumentView
     {
         const text = event.detail.text;
         this.activeState.title = text;
+        this.snapshots.ins.curve.set(); // trigger snapshot update event to propagate new title
 
         this.requestUpdate();
     }

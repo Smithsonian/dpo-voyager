@@ -29,6 +29,7 @@ import CVMeta from "../components/CVMeta";
 import CVModel2 from "../components/CVModel2";
 import CVScene from "../components/CVScene";
 import { lightTypes } from "client/applications/coreTypes";
+import CVImagePlane from "client/components/CVImagePlane";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,7 +94,10 @@ export default class NVNode extends Node
             name = "Meta";
         }
         if (isFinite(node.model)) {
-            this.createComponent(CVModel2).fromDocument(document, node);
+            const isPlane = !document.models[node.model].derivatives[0].assets.some(asset => asset.type !== "Image");
+            isPlane ? this.createComponent(CVImagePlane).fromDocument(document, node) 
+                : this.createComponent(CVModel2).fromDocument(document, node);
+
             pathMap.set(`model/${node.model}`, this.model);
             name = "Model";
         }
