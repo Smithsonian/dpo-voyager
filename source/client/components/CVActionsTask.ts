@@ -27,7 +27,7 @@ import { EActionTrigger, EActionType, EActionPlayStyle, TActionTrigger, TActionT
 import CVMeta from "./CVMeta";
 import NVNode from "client/nodes/NVNode";
 import CVModel2 from "./CVModel2";
-import CVAnnotationView from "./CVAnnotationView";
+import CVAnnotationView, { Annotation } from "./CVAnnotationView";
 import { ELanguageType } from "client/schema/common";
 import CVTours from "./CVTours";
 
@@ -55,7 +55,7 @@ export default class CVActionsTask extends CVTask
         audio: types.Option("Action.Audio", ["None"], 0),
         animation: types.Option("Action.Animation", ["None"], 0),
         annotation: types.Option("Action.AnnotationT", ["None"], 0),
-        actionAnnotation: types.Option("Action.Annotation", ["None"], 0),
+        actionAnnotation: types.Tags("Action.Annotation"),
         state: types.Option("Action.State", ["None"], 0),
         tour: types.Option("Action.Tour", ["None"], 0),
         tourStep: types.Option("Action.TourStep", ["None"], 0),
@@ -178,8 +178,7 @@ export default class CVActionsTask extends CVTask
                 action.annotationId = id;
             }
             if(ins.actionAnnotation.changed) {
-                const id = ins.actionAnnotation.value > 0 ? meta.getComponent(CVAnnotationView).getAnnotations()[ins.actionAnnotation.value - 1].id : undefined;
-                action.actionAnnoId = id;
+                action.actionAnnoId = ins.actionAnnotation.value.split(", ").map(title => (this.meta.getComponent(CVAnnotationView).getAnnotations().find(anno => anno.title === title) as Annotation).id).join(", ");
             }
             if(ins.state.changed) {
                 const id = ins.state.value > 0 ? this.activeDocument.setup.snapshots.deltaStates[ins.state.value - 1].id : undefined;
@@ -235,7 +234,7 @@ export default class CVActionsTask extends CVTask
             ins.animation.setValue(action.animation ? ins.animation.schema.options.indexOf(action.animation) : 0);
             ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : 0);
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
-            ins.actionAnnotation.setValue(action.actionAnnoId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.actionAnnoId) + 1 : null);
+            ins.actionAnnotation.setValue(action.actionAnnoId ? action.actionAnnoId.split(", ").map(id => this.meta.getComponent(CVAnnotationView).getAnnotations().find(anno => anno.id == id).title).join(", ") : null);
             ins.state.setValue(action.stateId ? this.activeDocument.setup.snapshots.deltaStates.findIndex(state => state.id == action.stateId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
             ins.speed.setValue(action.speed);
@@ -333,11 +332,13 @@ export default class CVActionsTask extends CVTask
     // Update annotation options
     protected synchAnnotationOptions(model: CVModel2) {
         const annoOptions = ["None"];
+        const actionAnnoOptions = [];
         model.getComponent(CVAnnotationView).getAnnotations().forEach((anno) => {
             annoOptions.push(anno.title);
+            actionAnnoOptions.push(anno.title);
         });
         this.ins.annotation.setOptions(annoOptions);
-        this.ins.actionAnnotation.setOptions(annoOptions);
+        this.ins.actionAnnotation.setOptions(actionAnnoOptions);
     }
 
     // Update tour options

@@ -373,22 +373,11 @@ export default class CVActionManager extends Component
 
         const toursEnabled = this.tours.ins.enabled.value;
         if(toursEnabled) {
-            this.getGraphComponents(CVModel2).forEach((model) => {
-            
-                const meta = model.node.getComponent(CVMeta, true);
-                if(meta) {
-                    meta.actions.items.forEach((action) => {
-                        if(action.type == EActionType[EActionType.ShowAnnotation] as TActionType
-                            || action.type == EActionType[EActionType.HideAnnotation] as TActionType
-                            || action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
-                            const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
-                            if(annotation) {
-                                this._visibilityLoadCache.push({annotation: annotation, visibility: annotation.data.visible});
-                            }
-                        }
-                    });
-                }
-            });
+            this.getGraphComponents(CVAnnotationView).forEach(view => {         
+                view.getAnnotations().forEach(annotation => {
+                    this._visibilityStateCache.push({annotation: annotation, visibility: annotation.data.visible});
+                });
+            });           
         }
         else {
             // reset visibilities
@@ -558,14 +547,14 @@ export default class CVActionManager extends Component
     protected setAnnotationVisibility(model: CVModel2, action: IAction)
     {
         const view = model.getComponent(CVAnnotationView);
-        const annotation = view.getAnnotationById(action.actionAnnoId);
+        const annotations = action.actionAnnoId.split(", ").map(id => view.getAnnotationById(id));
 
-        if(annotation) {
+        annotations.forEach(annotation => {
             const isVisible = action.type == EActionType[EActionType.ToggleAnnotation] as TActionType ?
                 !annotation.data.visible : action.type == EActionType[EActionType.ShowAnnotation] as TActionType;
             annotation?.set("visible", isVisible);
             view.updateAnnotation(annotation, true);
-        }
+        });
     }
 
     protected fireOnEndTriggers(actionID: string) {
