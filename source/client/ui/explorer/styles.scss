@@ -1517,6 +1517,30 @@ $tour-entry-indent: 12px;
   }
 }
 
+// Raking-light tool: allow controls to wrap onto multiple rows if needed.
+.sv-light-tool-view {
+  .sv-tool-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+// Raking-light trackball widget: sits inline alongside the other light controls.
+.sv-raking-light-ball {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 auto;
+  margin: 4px;
+
+  canvas {
+    border-radius: 50%;
+    // subtle drop shadow to lift the ball off the panel background
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+  }
+}
+
 .sv-tape-tool-view, .sv-slice-tool-view, .sv-environment-tool-view {
   .sv-tool-controls {
     flex-wrap: wrap;
