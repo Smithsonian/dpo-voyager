@@ -212,6 +212,16 @@ export default class CVModel2 extends CObject3D
     get derivatives() {
         return this._derivatives;
     }
+
+    /** Replace an imported Web3D derivative and request loading its quality. */
+    replaceModelAsset(filepath: string, quality: EDerivativeQuality)
+    {
+        this.derivatives.remove(EDerivativeUsage.Web3D, quality);
+        this.derivatives.createModelAsset(filepath, quality);
+        this.ins.quality.setValue(quality);
+        this.outs.updated.set();
+    }
+
     get activeDerivative() {
         return this._activeDerivative;
     }

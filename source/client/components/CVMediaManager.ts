@@ -202,10 +202,7 @@ export default class CVMediaManager extends CAssetManager
                     this.assetManager.outs.initialLoad.setValue(false)}, this);
             }
             else {
-                model.derivatives.remove(EDerivativeUsage.Web3D, quality);
-                model.derivatives.createModelAsset(filepath, quality)
-                model.ins.quality.setValue(quality);
-                model.outs.updated.set();
+                model.replaceModelAsset(filepath, quality);
                 model.once<IModelLoadEvent>("model-load", () => {selection.selectNode(model.node); 
                     this.assetManager.outs.initialLoad.setValue(false)}, this);
             }
