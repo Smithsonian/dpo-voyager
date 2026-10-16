@@ -518,7 +518,7 @@ export default class CVViewer extends Component
                 if(models.every(model => this._loadedModels.has(model))) {
                     this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
                     this.analytics.resetTimer();
-                    this.assetManager.outs.initialLoad.setValue(false);
+                    this.assetManager.completeInitialLoad();
                     this.outs.sceneLoaded.setValue(true);
                     this.dispatch('scene-load');
                 }
