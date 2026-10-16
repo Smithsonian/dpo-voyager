@@ -168,6 +168,40 @@ export default class CVTours extends Component
         }
     }
 
+    /** Insert and select a tour, maintaining the collection's published count. */
+    insertTour(tour: ITour, index = this._tours.length)
+    {
+        if (!Number.isInteger(index) || index < 0 || index > this._tours.length) {
+            throw new RangeError("Tour insertion index is outside the collection.");
+        }
+
+        this._tours.splice(index, 0, tour);
+        this.goToStep(index, 0);
+        this.outs.count.setValue(this._tours.length);
+    }
+
+    /** Remove a tour and its snapshots, preserving selection where possible. */
+    removeTour(index: number)
+    {
+        if (!Number.isInteger(index) || index < 0 || index >= this._tours.length) {
+            throw new RangeError("Tour removal index is outside the collection.");
+        }
+
+        const selectedIndex = this.outs.tourIndex.value;
+        const [tour] = this._tours.splice(index, 1);
+        tour.steps.forEach(step => this.snapshots.deleteState(step.id));
+
+        const nextIndex = selectedIndex < 0 ? -1 : Math.min(this._tours.length - 1,
+            selectedIndex > index ? selectedIndex - 1 : selectedIndex);
+        if (nextIndex >= 0) {
+            this.goToStep(nextIndex, selectedIndex === index ? 0 : Math.max(0, this.outs.stepIndex.value));
+        }
+        else {
+            this.ins.tourIndex.setValue(-1);
+        }
+        this.outs.count.setValue(this._tours.length);
+    }
+
     /** Request a step without publishing an intermediate navigation state. */
     goToStep(tourIndex: number, stepIndex: number, interpolate = false)
     {
