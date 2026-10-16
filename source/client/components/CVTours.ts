@@ -59,6 +59,7 @@ export default class CVTours extends Component
     outs = this.addOutputs(CVTours.outs);
 
     private _tours: ITour[] = [];
+    private _stepRequest: { tourIndex: number; stepIndex: number; interpolate: boolean } = null;
 
     protected get analytics() {
         return this.getMainComponent(CVAnalytics);
@@ -167,6 +168,18 @@ export default class CVTours extends Component
         }
     }
 
+    /** Request a step without publishing an intermediate navigation state. */
+    goToStep(tourIndex: number, stepIndex: number, interpolate = false)
+    {
+        if (!Number.isInteger(tourIndex) || !Number.isInteger(stepIndex) || tourIndex < 0 || stepIndex < 0) {
+            throw new RangeError("Tour and step indices must be nonnegative integers.");
+        }
+
+        this.ins.tourIndex.setValue(tourIndex);
+        this.ins.stepIndex.setValue(stepIndex);
+        this._stepRequest = { tourIndex, stepIndex, interpolate };
+    }
+
     create()
     {
         super.create();
@@ -182,6 +195,9 @@ export default class CVTours extends Component
     update(context: IPulseContext)
     {
         const { ins, outs } = this;
+
+        const stepRequest = this._stepRequest;
+        this._stepRequest = null;
 
         const tours = this._tours;
         const machine = this.snapshots;
@@ -250,7 +266,8 @@ export default class CVTours extends Component
         }
         if (ins.stepIndex.changed) {
             nextStepIndex = Math.min(tour.steps.length - 1, Math.max(0, ins.stepIndex.value));
-            tween = false;
+            tween = !!stepRequest && stepRequest.tourIndex === ins.tourIndex.value
+                && stepRequest.stepIndex === ins.stepIndex.value && stepRequest.interpolate;
         }
         if (ins.first.changed) {
             nextStepIndex = 0;
