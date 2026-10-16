@@ -204,6 +204,13 @@ export default class CVTours extends Component
         const navigation = this.setup.navigation;
         const srElement = this.setup.viewer.rootElement.shadowRoot.querySelector("#sceneview-sr");
 
+        // Completion remains observable until a subsequent navigation request.
+        // Views read this state without consuming it on behalf of other listeners.
+        if (outs.ending.value && (ins.enabled.changed || ins.tourIndex.changed || ins.stepIndex.changed
+            || ins.first.changed || ins.next.changed || ins.previous.changed)) {
+            outs.ending.setValue(false);
+        }
+
         if (ins.enabled.changed) {
 
             if (ins.enabled.value) {
@@ -341,6 +348,7 @@ export default class CVTours extends Component
             });
         });
 
+        this.outs.ending.setValue(false);
         this.ins.tourIndex.setValue(-1);
         this.outs.count.setValue(this._tours.length);
     }
