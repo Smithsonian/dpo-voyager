@@ -109,7 +109,7 @@ export default class CVReader extends Component
     create()
     {
         super.create();
-        this.getGraphComponents(CVMeta).forEach(meta => meta.on<IArticlesUpdateEvent>("update", this.updateArticles, this));
+        this.getGraphComponents(CVMeta).forEach(meta => meta.articles.on<IArticlesUpdateEvent>("update", this.updateArticles, this));
         this.graph.components.on(CVMeta, this.onMetaComponent, this);
         this.graph.components.on(CVLanguageManager, this.onLanguageComponent, this);
         this.updateArticles();
@@ -119,7 +119,7 @@ export default class CVReader extends Component
     {
         this.graph.components.off(CVLanguageManager, this.onLanguageComponent, this);
         this.graph.components.off(CVMeta, this.onMetaComponent, this);
-        this.getGraphComponents(CVMeta).forEach(meta => meta.off<IArticlesUpdateEvent>("update", this.updateArticles, this));
+        this.getGraphComponents(CVMeta).forEach(meta => meta.articles.off<IArticlesUpdateEvent>("update", this.updateArticles, this));
         super.dispose();
     }
 
@@ -236,6 +236,9 @@ export default class CVReader extends Component
                 masterList[article.id] = { article, node };
             });
         });
+
+        // Count the same graph-wide, ID-indexed collection exposed by articles.
+        this.outs.count.setValue(Object.keys(masterList).length);
     }
 
     protected updateLanguage()
