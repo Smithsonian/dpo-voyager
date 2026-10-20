@@ -59,6 +59,7 @@ export default class CVTours extends Component
     outs = this.addOutputs(CVTours.outs);
 
     private _tours: ITour[] = [];
+    private _stepRequest: { tourIndex: number; stepIndex: number; interpolate: boolean } = null;
 
     protected get analytics() {
         return this.getMainComponent(CVAnalytics);
@@ -167,6 +168,52 @@ export default class CVTours extends Component
         }
     }
 
+    /** Insert and select a tour, maintaining the collection's published count. */
+    insertTour(tour: ITour, index = this._tours.length)
+    {
+        if (!Number.isInteger(index) || index < 0 || index > this._tours.length) {
+            throw new RangeError("Tour insertion index is outside the collection.");
+        }
+
+        this._tours.splice(index, 0, tour);
+        this.goToStep(index, 0);
+        this.outs.count.setValue(this._tours.length);
+    }
+
+    /** Remove a tour and its snapshots, preserving selection where possible. */
+    removeTour(index: number)
+    {
+        if (!Number.isInteger(index) || index < 0 || index >= this._tours.length) {
+            throw new RangeError("Tour removal index is outside the collection.");
+        }
+
+        const selectedIndex = this.outs.tourIndex.value;
+        const [tour] = this._tours.splice(index, 1);
+        tour.steps.forEach(step => this.snapshots.deleteState(step.id));
+
+        const nextIndex = selectedIndex < 0 ? -1 : Math.min(this._tours.length - 1,
+            selectedIndex > index ? selectedIndex - 1 : selectedIndex);
+        if (nextIndex >= 0) {
+            this.goToStep(nextIndex, selectedIndex === index ? 0 : Math.max(0, this.outs.stepIndex.value));
+        }
+        else {
+            this.ins.tourIndex.setValue(-1);
+        }
+        this.outs.count.setValue(this._tours.length);
+    }
+
+    /** Request a step without publishing an intermediate navigation state. */
+    goToStep(tourIndex: number, stepIndex: number, interpolate = false)
+    {
+        if (!Number.isInteger(tourIndex) || !Number.isInteger(stepIndex) || tourIndex < 0 || stepIndex < 0) {
+            throw new RangeError("Tour and step indices must be nonnegative integers.");
+        }
+
+        this.ins.tourIndex.setValue(tourIndex);
+        this.ins.stepIndex.setValue(stepIndex);
+        this._stepRequest = { tourIndex, stepIndex, interpolate };
+    }
+
     create()
     {
         super.create();
@@ -183,10 +230,20 @@ export default class CVTours extends Component
     {
         const { ins, outs } = this;
 
+        const stepRequest = this._stepRequest;
+        this._stepRequest = null;
+
         const tours = this._tours;
         const machine = this.snapshots;
         const navigation = this.setup.navigation;
         const srElement = this.setup.viewer.rootElement.shadowRoot.querySelector("#sceneview-sr");
+
+        // Completion remains observable until a subsequent navigation request.
+        // Views read this state without consuming it on behalf of other listeners.
+        if (outs.ending.value && (ins.enabled.changed || ins.tourIndex.changed || ins.stepIndex.changed
+            || ins.first.changed || ins.next.changed || ins.previous.changed)) {
+            outs.ending.setValue(false);
+        }
 
         if (ins.enabled.changed) {
 
@@ -250,7 +307,8 @@ export default class CVTours extends Component
         }
         if (ins.stepIndex.changed) {
             nextStepIndex = Math.min(tour.steps.length - 1, Math.max(0, ins.stepIndex.value));
-            tween = false;
+            tween = !!stepRequest && stepRequest.tourIndex === ins.tourIndex.value
+                && stepRequest.stepIndex === ins.stepIndex.value && stepRequest.interpolate;
         }
         if (ins.first.changed) {
             nextStepIndex = 0;
@@ -324,6 +382,7 @@ export default class CVTours extends Component
             });
         });
 
+        this.outs.ending.setValue(false);
         this.ins.tourIndex.setValue(-1);
         this.outs.count.setValue(this._tours.length);
     }
