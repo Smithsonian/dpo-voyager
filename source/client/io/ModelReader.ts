@@ -41,6 +41,7 @@ export default class ModelReader
     protected loading :Record<string, {listeners : {onload: (data:ArrayBuffer)=>any, onerror: (e:Error)=>any, signal:AbortSignal}[], abortController :AbortController}> = {}
 
     protected customDracoPath = null;
+    protected ktx2SupportDetected = false;
 
     set dracoPath(path: string) 
     {
@@ -74,10 +75,6 @@ export default class ModelReader
         const ktx2Loader = new KTX2Loader(loadingManager);
         ktx2Loader.setTranscoderPath(DEFAULT_SYSTEM_ASSET_PATH + "js/basis/");
         this.gltfLoader.setKTX2Loader(ktx2Loader);
-        setTimeout(()=>{
-            //Allow an update to happen. @todo check how robust it is
-            ktx2Loader.detectSupport(this.renderer.views[0].renderer);
-        }, 0);
     }
 
     dispose()
@@ -87,6 +84,19 @@ export default class ModelReader
         this.gltfLoader.setDRACOLoader(null);
         this.gltfLoader.setKTX2Loader(null);
         this.gltfLoader = null;
+    }
+
+    /**
+     * KTX2 transcoding targets depend on the renderer's capabilities.
+     * Detected on first use, as no render view exists yet when the reader is created.
+     */
+    protected detectKTX2Support()
+    {
+        const view = this.renderer.views[0];
+        if (!this.ktx2SupportDetected && view) {
+            ((this.gltfLoader as any).ktx2Loader as KTX2Loader).detectSupport(view.renderer);
+            this.ktx2SupportDetected = true;
+        }
     }
 
     isValid(url: string): boolean
@@ -105,7 +115,10 @@ export default class ModelReader
         this.loadingManager.itemStart(url);
         let resourcePath = LoaderUtils.extractUrlBase( url );
         return this.loadModel(url, {signal})
-        .then(data=>this.gltfLoader.parseAsync(data, resourcePath))
+        .then(data=> {
+            this.detectKTX2Support();
+            return this.gltfLoader.parseAsync(data, resourcePath);
+        })
         .then(gltf=> {
             // Check for Kintsugi materials and extract them automatically from the glTF
             gltf.scene.traverse(object => {

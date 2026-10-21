@@ -279,7 +279,7 @@ export default class CVActionManager extends Component
                     if(action.type == EActionType[EActionType.ShowAnnotation] as TActionType
                         || action.type == EActionType[EActionType.HideAnnotation] as TActionType
                         || action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
-                        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
+                        const annotation = this.getAnnotationView(action.actionAnnoId)?.getAnnotationById(action.actionAnnoId);
                         if(annotation) {
                             this._visibilityLoadCache.push({annotation: annotation, visibility: annotation.data.visible});
                         }
@@ -308,8 +308,8 @@ export default class CVActionManager extends Component
                     }
                     else {
                         const model = meta.node.getComponent(CVModel2);
-                        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(id);
-                        if(annotation.data.viewId) {
+                        const annotation = this.getAnnotationView(id)?.getAnnotationById(id);
+                        if(annotation?.data.viewId) {
                             // Queue up animations for annos that have views so we can chain the transitions
                             this._actionQueue.push({model: model, action: action});
                         }
@@ -546,15 +546,28 @@ export default class CVActionManager extends Component
 
     protected setAnnotationVisibility(model: CVModel2, action: IAction)
     {
-        const view = model.getComponent(CVAnnotationView);
-        const annotations = action.actionAnnoId.length ? action.actionAnnoId.split("\x1F").map(id => view.getAnnotationById(id)) : [];
+        const ids = action.actionAnnoId.length ? action.actionAnnoId.split("\x1F") : [];
 
-        annotations.forEach(annotation => {
+        ids.forEach(id => {
+            // annotations may be attached to another model than the action's
+            const view = this.getAnnotationView(id);
+            const annotation = view?.getAnnotationById(id);
+            if (!annotation) {
+                return;
+            }
             const isVisible = action.type == EActionType[EActionType.ToggleAnnotation] as TActionType ?
                 !annotation.data.visible : action.type == EActionType[EActionType.ShowAnnotation] as TActionType;
-            annotation?.set("visible", isVisible);
+            annotation.set("visible", isVisible);
             view.updateAnnotation(annotation, true);
         });
+    }
+
+    /**
+     * Returns the annotation view holding the annotation with the given id, regardless of the model it is attached to.
+     */
+    protected getAnnotationView(id: string): CVAnnotationView
+    {
+        return this.getGraphComponents(CVAnnotationView).find(view => !!view.getAnnotationById(id));
     }
 
     protected fireOnEndTriggers(actionID: string) {

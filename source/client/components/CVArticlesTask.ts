@@ -24,7 +24,6 @@ import Notification from "@ff/ui/Notification";
 
 import Article from "../models/Article";
 
-import NVNode from "../nodes/NVNode";
 import CVDocument from "./CVDocument";
 import CVReader from "./CVReader";
 import CVMeta from "./CVMeta";
@@ -67,16 +66,21 @@ export default class CVArticlesTask extends CVTask
     ins = this.addInputs<CVTask, typeof CVArticlesTask.ins>(CVArticlesTask.ins);
     outs = this.addOutputs<CVTask, typeof CVArticlesTask.outs>(CVArticlesTask.outs);
 
-    meta: CVMeta = null;
     reader: CVReader = null;
 
-    get articles() {
-        return this.meta && this.meta.articles.items;
+    /**
+     * All articles of the active document, regardless of the node they are attached to.
+     */
+    get articles(): Article[] {
+        return this.metas.flatMap(meta => meta.articles.items);
     }
     get activeArticle() {
         return this.outs.article.value;
     }
 
+    protected get metas(): Readonly<CVMeta[]> {
+        return this.activeDocument ? this.activeDocument.innerComponents.getArray(CVMeta) : [];
+    }
     protected get mediaManager() {
         return this.getMainComponent(CVMediaManager);
     }
@@ -112,7 +116,6 @@ export default class CVArticlesTask extends CVTask
     {
         const ins = this.ins;
         const outs = this.outs;
-        const meta = this.meta;
         const activeArticle = this.activeArticle;
 
         if(!this.activeDocument) {
@@ -120,7 +123,7 @@ export default class CVArticlesTask extends CVTask
         }
         const languageManager = this.activeDocument.setup.language;
 
-        if (meta && ins.create.changed) {
+        if (ins.create.changed) {
             const article = new Article();
             article.language = languageManager.ins.primarySceneLanguage.value;
 
@@ -133,9 +136,10 @@ export default class CVArticlesTask extends CVTask
             }
 
             this.createEditArticle(article);
-            
-            meta.articles.append(article);
-            this.reader.outs.count.setValue(meta.articles.length);
+
+            // new articles are always attached to the scene node
+            this.activeDocument.root.meta.articles.append(article);
+            this.reader.outs.count.setValue(this.articles.length);
             languageManager.ins.activeLanguage.setValue(languageManager.ins.primarySceneLanguage.value);
         }
         else if(activeArticle && ins.version.changed) {
@@ -171,7 +175,7 @@ export default class CVArticlesTask extends CVTask
                 }
                 if (ins.delete.changed) {
                     this.deleteArticle(activeArticle);
-                    this.reader.outs.count.setValue(meta.articles.length);
+                    this.reader.outs.count.setValue(this.articles.length);
                 }
                 if (ins.title.changed) {
                     activeArticle.title = ins.title.value;
@@ -186,11 +190,11 @@ export default class CVArticlesTask extends CVTask
                     activeArticle.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
                 }
                 if (ins.moveArticleUp.changed) {
-                    this.meta.articles.moveItem(activeArticle, -1);
+                    this.getArticleMeta(activeArticle)?.articles.moveItem(activeArticle, -1);
                     //return true;
                 }
                 if (ins.moveArticleDown.changed) {
-                    this.meta.articles.moveItem(activeArticle, 1);
+                    this.getArticleMeta(activeArticle)?.articles.moveItem(activeArticle, 1);
                     //return true;
                 }
             }
@@ -211,9 +215,17 @@ export default class CVArticlesTask extends CVTask
         return new ArticlesTaskView(this);
     }
 
+    /**
+     * Returns the meta component the given article is attached to.
+     */
+    protected getArticleMeta(article: Article): CVMeta
+    {
+        return this.metas.find(meta => meta.articles.items.indexOf(article) >= 0) || null;
+    }
+
     protected deleteArticle(article: Article)
     {
-        this.meta.articles.removeItem(article);
+        this.getArticleMeta(article)?.articles.removeItem(article);
 
         // Make sure we delete all language variation assets
         Object.values(ELanguageType).filter((v) => !isNaN(Number(v))).forEach( type => {
@@ -277,36 +289,21 @@ export default class CVArticlesTask extends CVTask
             this.reader.outs.article.on("value", this.onArticleChange, this);
             this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onAssetRename, this);
             next.setup.language.outs.activeLanguage.on("value", this.onDocumentLanguageChange, this);
-        }
-    }
 
-    protected onActiveNode(previous: NVNode, next: NVNode)
-    {
-        if (previous) {
-            this.meta = null;
+            // update active article
+            this.onArticleChange();
         }
-        if (next) {
-            if (!next.meta) {
-                next.createComponent(CVMeta);
-            }
-
-            this.meta = next.meta;
-        }
-
-        // update active article
-        this.onArticleChange();
     }
 
     protected onArticleChange()
     {
         const ins = this.ins;
         const outs = this.outs;
-        const meta = this.meta;
         const languageManager = this.activeDocument.setup.language;
-        let article = this.reader.activeArticle;
+        const activeArticle = this.reader.activeArticle;
+        const article = activeArticle && this.articles.find(item => item.id === activeArticle.id);
 
-        if (meta && article && meta.articles.getById(article.id)) {
-            article = meta.articles.getById(article.id);
+        if (article) {
             ins.title.setValue(article.title, true);
             ins.lead.setValue(article.lead, true);
             ins.tags.setValue(article.tags.join(", "), true);
