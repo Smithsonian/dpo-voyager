@@ -112,9 +112,17 @@ export default class WebDAVProvider
                 clearTimeout(id);
                 return response.text();
             })
-            .then(xml => xmlTools.xml2js(xml, { elementNameFn: _stripNs }))
-            .then(document => _transform(document.elements[0]))
-            .then(element => this.parseMultistatus(element));
+            .then(xml => this.parseListing(xml));
+    }
+
+    /**
+     * Parses the response to a PROPFIND request.
+     * File paths are relative to the root URL.
+     */
+    parseListing(xml: string): IFileInfo[]
+    {
+        const document = xmlTools.xml2js(xml, { elementNameFn: _stripNs }) as IXMLElement;
+        return this.parseMultistatus(_transform(document.elements[0]));
     }
 
     create(parentPath: string | IFileInfo, folderName: string): Promise<void>
