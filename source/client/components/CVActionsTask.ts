@@ -256,10 +256,11 @@ export default class CVActionsTask extends CVTask
                 action.triggerDetail = this.ins.tour.value > 0 ? this.tours.tours[this.ins.tour.value-1].steps[this.ins.tourStep.value].id : "";
             }
             else {
-                const tour = this.tours.tours.find((entry) => entry.steps.some(step => step.id === action.triggerDetail));
-                ins.tour.setValue(isTour ? ins.tour.schema.options.indexOf(tour.titles[ELanguageType[this.activeDocument.setup.language.outs.uiLanguage.value]] || tour.title) : 0);
+                const tourIndex = this.tours.tours.findIndex((entry) => entry.steps.some(step => step.id === action.triggerDetail));
+                const tour = this.tours.tours[tourIndex];
+                ins.tour.setValue(isTour && tour ? tourIndex + 1 : 0);
                 this.synchTourStepOptions();
-                ins.tourStep.setValue(isTour ? tour.steps.findIndex(step => step.id === action.triggerDetail) : 0);
+                ins.tourStep.setValue(isTour && tour ? tour.steps.findIndex(step => step.id === action.triggerDetail) : 0);
             }
         }
     }
@@ -344,17 +345,18 @@ export default class CVActionsTask extends CVTask
     // Update tour options
     protected synchTourOptions() {
         const tours = this.activeDocument.setup.tours;
+        const language = this.activeDocument.setup.language.outs;
         const tourOptions = ["None"];
-        tourOptions.push(...tours.tours.map(tour => 
-            tour.titles[ELanguageType[this.activeDocument.setup.language.outs.uiLanguage.value]] || tour.title));
+        // tours may only be titled in the scene's languages
+        tourOptions.push(...tours.tours.map((tour, index) => tour.titles[ELanguageType[language.uiLanguage.value]]
+            || tour.titles[ELanguageType[language.activeLanguage.value]] || tour.title
+            || Object.values(tour.titles).find(title => !!title) || `Tour ${index + 1}`));
         this.ins.tour.setOptions(tourOptions);
     }
 
     // Update tour step options
     protected synchTourStepOptions() {
-        const tours = this.activeDocument.setup.tours.tours;
-        const tour = tours.find((tour) => (tour.titles[ELanguageType[this.activeDocument.setup.language.outs.uiLanguage.value]] || tour.title)
-            === this.ins.tour.getOptionText() );
+        const tour = this.activeDocument.setup.tours.tours[this.ins.tour.value - 1];
 
         const stepOptions = ["None"];
         if(tour) {
