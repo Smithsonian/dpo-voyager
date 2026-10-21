@@ -142,6 +142,14 @@ export default class CVAnnotationView extends CObject3D
         return this._activeAnnotation;
     }
     set activeAnnotation(annotation: Annotation) {
+        this.setActiveAnnotation(annotation);
+    }
+
+    /**
+     * Sets the active annotation. If activateView is false, the annotation's
+     * saved view (if any) is not tweened to.
+     */
+    setActiveAnnotation(annotation: Annotation, activateView = true) {
         if (annotation !== this._activeAnnotation) {
 
             const previous = this._activeAnnotation;
@@ -190,7 +198,7 @@ export default class CVAnnotationView extends CObject3D
             this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
         }
 
-        if (annotation?.data.viewId.length && !this.arManager.outs.isPresenting.value
+        if (activateView && annotation?.data.viewId.length && !this.arManager.outs.isPresenting.value
             && this.ins.visible.value) {
 
             const viewState = this.snapshots.getState(annotation.data.viewId);

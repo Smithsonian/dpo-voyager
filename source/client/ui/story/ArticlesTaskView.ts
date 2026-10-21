@@ -61,10 +61,6 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         const activeLanguage = ELanguageType[languageManager.ins.activeLanguage.value];
         const primarySceneLanguage = ELanguageType[languageManager.ins.primarySceneLanguage.value];
 
-        if (!articles) {
-            return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a scene or model node to edit its articles.")}</div>`;
-        }
-
         const detailView = activeArticle ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <div class="sv-label">Title</div>
@@ -91,7 +87,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
                 <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${languageManager.getUILocalizedString("Default:") + " " + primarySceneLanguage}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.getUILocalizedString("Active:") + " " + activeLanguage}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-article-list .data=${articles.slice()} .selectedItem=${activeArticle} .activeLanguage=${activeLanguage} .primarySceneLanguage=${primarySceneLanguage} @select=${this.onSelectArticle} @edit=${this.onEditArticle}></sv-article-list>
+                        <sv-article-list .data=${articles} .selectedItem=${activeArticle} .activeLanguage=${activeLanguage} .primarySceneLanguage=${primarySceneLanguage} @select=${this.onSelectArticle} @edit=${this.onEditArticle}></sv-article-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>

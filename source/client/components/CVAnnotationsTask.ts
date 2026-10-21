@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 
-import { Vector3, Quaternion, Matrix4, Matrix3, Object3D, Mesh } from "three";
+import { Vector3, Quaternion, Matrix4, Matrix3, Mesh } from "three";
 
 import * as helpers from "@ff/three/helpers";
 
-import { Node, types } from "@ff/graph/Component";
+import { Node, types, IComponentEvent } from "@ff/graph/Component";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import Notification from "@ff/ui/Notification";
 
 import Annotation from "../models/Annotation";
-
-import NVNode from "../nodes/NVNode";
 
 import CVDocument from "./CVDocument";
 import CVTask from "./CVTask";
@@ -34,7 +32,6 @@ import CVAnnotationView, { IAnnotationsUpdateEvent, IAnnotationClickEvent } from
 
 import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
 import CVScene from "client/components/CVScene";
-import { ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 import { getMeshTransform } from "client/utils/Helpers";
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
 import CPulse from "@ff/graph/components/CPulse";
@@ -42,12 +39,23 @@ import CPulse from "@ff/graph/components/CPulse";
 ////////////////////////////////////////////////////////////////////////////////
 
 const _position = new Vector3();
+const _direction = new Vector3();
 const _scaling = new Vector3();
 const _quat = new Quaternion();
 const _mat4 = new Matrix4();
 const _mat3 = new Matrix3();
 
 export enum EAnnotationsTaskMode { Off, Move, Create }
+
+/**
+ * Computes the transform from the annotation space of source to the annotation space of target.
+ */
+function getRelativeTransform(source: CVAnnotationView, target: CVAnnotationView, result: Matrix4): Matrix4
+{
+    source.object3D.updateWorldMatrix(true, false);
+    target.object3D.updateWorldMatrix(true, false);
+    return result.copy(target.object3D.matrixWorld).invert().multiply(source.object3D.matrixWorld);
+}
 
 export default class CVAnnotationsTask extends CVTask
 {
@@ -59,15 +67,17 @@ export default class CVAnnotationsTask extends CVTask
     protected static readonly ins = {
         mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off),
         audio: types.Option("Annotation.Audio", ["None"], 0),
+        attachment: types.Option("Annotation.Attachment", []),
         selection: types.Event("Annotation.Selection")
     };
 
 
     ins = this.addInputs<CVTask, typeof CVAnnotationsTask.ins>(CVAnnotationsTask.ins);
 
-    private _activeAnnotations: CVAnnotationView = null;
     private _defaultScale = 1;
     private _machine: CVSnapshots = null;
+    // annotation views matching the options of ins.attachment
+    private _attachmentViews: CVAnnotationView[] = [];
 
     constructor(node: Node, id: string)
     {
@@ -80,18 +90,39 @@ export default class CVAnnotationsTask extends CVTask
         configuration.bracketsVisible = false;
     }
 
-    get activeAnnotations() {
-        return this._activeAnnotations;
+    /**
+     * All annotation views of the active document.
+     */
+    get annotationViews(): Readonly<CVAnnotationView[]> {
+        return this.activeDocument ? this.activeDocument.innerComponents.getArray(CVAnnotationView) : [];
     }
-    set activeAnnotations(annotations: CVAnnotationView) {
-        if (annotations !== this._activeAnnotations) {
-            this._activeAnnotations = annotations;
-            this.emitUpdateEvent();
-        }
+
+    /**
+     * The annotation view holding the active annotation.
+     */
+    get activeAnnotations() {
+        return this.annotationViews.find(view => !!view.activeAnnotation) || null;
     }
 
     get selectedState() {
-        return this._activeAnnotations.activeAnnotation.data.viewId;
+        return this.activeAnnotations.activeAnnotation.data.viewId;
+    }
+
+    /**
+     * Makes the given annotation the active one, deselecting annotations in all other views.
+     */
+    setActiveAnnotation(annotation: Annotation, activateView = true)
+    {
+        const views = this.annotationViews;
+        const owner = annotation ? views.find(view => view.getAnnotationById(annotation.id) === annotation) : null;
+
+        // deselect first so that only one view holds an active annotation when update events fire
+        views.forEach(view => view !== owner && view.setActiveAnnotation(null));
+        if (owner) {
+            owner.setActiveAnnotation(annotation, activateView);
+        }
+
+        this.emitUpdateEvent();
     }
 
     createView()
@@ -125,11 +156,11 @@ export default class CVAnnotationsTask extends CVTask
             this.emitUpdateEvent();
         }
 
-        if(ins.audio.changed) {
+        if(ins.audio.changed && this.activeAnnotations) {
             const audioManager = this.activeDocument.setup.audio;
             const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
             if(id != audioManager.narrationId || id == "") {
-                this._activeAnnotations.ins.audioId.setValue(id);
+                this.activeAnnotations.ins.audioId.setValue(id);
             }
             else {
                 ins.audio.setValue(0);  // set to none
@@ -137,8 +168,16 @@ export default class CVAnnotationsTask extends CVTask
             }
         }
 
+        if(ins.attachment.changed) {
+            const target = this._attachmentViews[ins.attachment.getValidatedValue()];
+            if (target) {
+                this.reattachAnnotation(target);
+            }
+        }
+
         if(ins.selection.changed) {
             this.setAudio();
+            this.synchAttachmentOptions();
         }
 
         return true;
@@ -178,16 +217,16 @@ export default class CVAnnotationsTask extends CVTask
             threshold: 0.5,
         });
 
-        const annotation = this._activeAnnotations.activeAnnotation;
+        const annotation = this.activeAnnotations.activeAnnotation;
         annotation.set("viewId", id);
-        this._activeAnnotations.updateAnnotation(annotation, true);
+        this.activeAnnotations.updateAnnotation(annotation, true);
 
     }
 
     restoreAnnotationView()
     {
         const machine = this._machine;
-        const annotation = this._activeAnnotations.activeAnnotation;
+        const annotation = this.activeAnnotations.activeAnnotation;
         
         // If activeAnnotation is being tracked, make sure it is set
         const activeIdx = machine.getTargetProperties().findIndex(prop => prop.name == "ActiveId");
@@ -204,9 +243,9 @@ export default class CVAnnotationsTask extends CVTask
     {
         const machine = this._machine;
         machine.deleteState(this.selectedState);
-        const annotation = this._activeAnnotations.activeAnnotation;
+        const annotation = this.activeAnnotations.activeAnnotation;
         annotation.set("viewId", "");
-        this._activeAnnotations.updateAnnotation(annotation, true);
+        this.activeAnnotations.updateAnnotation(annotation, true);
     }
 
     protected onPointerUp(event: IPointerEvent)
@@ -216,58 +255,53 @@ export default class CVAnnotationsTask extends CVTask
             return;
         }
 
-        const annotations = this.activeAnnotations;
+        const mode = this.ins.mode.getValidatedValue();
+        if (mode === EAnnotationsTaskMode.Off) {
+            return;
+        }
+
+        // user clicked on a model: annotations are created on or moved to that model
+        const model = event.component as CVModel2;
+        const annotations = model.getComponent(CVAnnotationView, true);
         if (!annotations) {
             return;
         }
 
-        const model = annotations.getComponent(CVModel2);
+        // get click position and normal in annotation space = pose transform * model space
+        _position.fromArray(model.ins.position.value);
+        helpers.degreesToQuaternion(model.ins.rotation.value, CVModel2.rotationOrder, _quat);
+        _scaling.setScalar(1);
+        _mat4.compose(_position, _quat, _scaling);
 
-        // user clicked on model
-        if (event.component === model) {
+        const meshTransform = getMeshTransform(model.object3D, event.object3D);
+        const invMeshTransform = meshTransform.clone().invert();
+        // Get local bounding box
+        const bounds = (event.object3D as Mesh).geometry.boundingBox.clone();
 
-            // get click position and normal in annotation space = pose transform * model space
-            _position.fromArray(model.ins.position.value);
-            helpers.degreesToQuaternion(model.ins.rotation.value, CVModel2.rotationOrder, _quat);
-            _scaling.setScalar(1);
-            _mat4.compose(_position, _quat, _scaling);
+        // add mesh parent transforms in this branch
+        _mat4.copy(_mat4.multiply(invMeshTransform));   
+        _mat3.getNormalMatrix(_mat4);
 
-            const meshTransform = getMeshTransform(model.object3D, event.object3D);
-            const invMeshTransform = meshTransform.clone().invert();
-            // Get local bounding box
-            const bounds = (event.object3D as Mesh).geometry.boundingBox.clone();
+        const position = event.view.pickPosition(event, bounds).applyMatrix4(_mat4).toArray();
+        const normal = event.view.pickNormal(event).applyMatrix3(_mat3).toArray();
 
-            // add mesh parent transforms in this branch
-            _mat4.copy(_mat4.multiply(invMeshTransform));   
-            _mat3.getNormalMatrix(_mat4);
-
-            const position = event.view.pickPosition(event, bounds).applyMatrix4(_mat4).toArray();
-            const normal = event.view.pickNormal(event).applyMatrix3(_mat3).toArray();
-
-            const mode = this.ins.mode.getValidatedValue();
-
-            if (mode === EAnnotationsTaskMode.Create) {
-                this.createAnnotation(position, normal);
-                event.stopPropagation = true;           
-            }
-            else if (mode === EAnnotationsTaskMode.Move) {
-                this.moveAnnotation(position, normal);
-                event.stopPropagation = true;
-            }
+        if (mode === EAnnotationsTaskMode.Create) {
+            this.createAnnotation(annotations, position, normal);
         }
+        else if (mode === EAnnotationsTaskMode.Move) {
+            this.moveAnnotation(annotations, position, normal);
+        }
+
+        event.stopPropagation = true;
     }
 
-    protected createAnnotation(position: number[], direction: number[])
+    protected createAnnotation(annotations: CVAnnotationView, position: number[], direction: number[])
     {
         const languageManager = this.activeDocument.setup.language;
         const primarySceneLanguage = languageManager.ins.primarySceneLanguage.value;
 
-        const annotations = this.activeAnnotations;
-        if (!annotations) {
-            return;
-        }
-
-        const activeAnnotation = annotations.activeAnnotation;
+        const activeAnnotations = this.activeAnnotations;
+        const activeAnnotation = activeAnnotations && activeAnnotations.activeAnnotation;
         let template = undefined;
 
         if (activeAnnotation) {
@@ -288,28 +322,85 @@ export default class CVAnnotationsTask extends CVTask
             this._defaultScale = scene.outs.boundingRadius.value * 0.05;
             data.scale = this._defaultScale * (1 / model.outs.unitScale.value);
         }
+        else if (activeAnnotations !== annotations) {
+            // template comes from another model: keep its apparent size
+            const scale = getRelativeTransform(activeAnnotations, annotations, _mat4).getMaxScaleOnAxis();
+            data.scale *= scale;
+            data.offset *= scale;
+        }
 
         annotations.addAnnotation(annotation);
-        annotations.activeAnnotation = annotation;
+        this.setActiveAnnotation(annotation);
 
         languageManager.ins.activeLanguage.setValue(primarySceneLanguage);
     }
 
-    protected moveAnnotation(position: number[], direction: number[])
+    /**
+     * Moves the active annotation to the given position and direction, expressed in the space of the given
+     * annotation view. If the annotation belongs to another view, it is transferred to the given view.
+     */
+    protected moveAnnotation(annotations: CVAnnotationView, position: number[], direction: number[])
     {
-        const annotations = this.activeAnnotations;
-        if (annotations) {
-            const annotation = annotations.activeAnnotation;
-
-            if (annotation) {
-                annotation.data.position = position;
-                annotation.data.direction = direction;
-                annotation.update();
-
-                annotations.updateAnnotation(annotation);
-                this.emitUpdateEvent();
-            }
+        const source = this.activeAnnotations;
+        const annotation = source && source.activeAnnotation;
+        if (!annotation) {
+            return;
         }
+
+        const data = annotation.data;
+
+        if (source !== annotations) {
+            const scale = getRelativeTransform(source, annotations, _mat4).getMaxScaleOnAxis();
+            data.scale *= scale;
+            data.offset *= scale;
+        }
+
+        data.position = position;
+        data.direction = direction;
+        annotation.update();
+
+        if (source !== annotations) {
+            this.transferAnnotation(annotation, source, annotations);
+        }
+        else {
+            annotations.updateAnnotation(annotation);
+            this.emitUpdateEvent();
+        }
+    }
+
+    /**
+     * Attaches the active annotation to the given annotation view, keeping its position in world space.
+     */
+    protected reattachAnnotation(annotations: CVAnnotationView)
+    {
+        const source = this.activeAnnotations;
+        const annotation = source && source.activeAnnotation;
+        if (!annotation || source === annotations) {
+            return;
+        }
+
+        const transform = getRelativeTransform(source, annotations, _mat4);
+        const scale = transform.getMaxScaleOnAxis();
+        const data = annotation.data;
+
+        data.position = _position.fromArray(data.position).applyMatrix4(transform).toArray();
+        data.direction = _direction.fromArray(data.direction).transformDirection(transform).toArray();
+        data.scale *= scale;
+        data.offset *= scale;
+        annotation.update();
+
+        this.transferAnnotation(annotation, source, annotations);
+    }
+
+    protected transferAnnotation(annotation: Annotation, source: CVAnnotationView, target: CVAnnotationView)
+    {
+        // deactivate before removal, else the source view activates its next annotation
+        source.setActiveAnnotation(null);
+        source.removeAnnotation(annotation);
+        target.addAnnotation(annotation);
+
+        // don't tween to the annotation's view: the user is editing it, not viewing it
+        this.setActiveAnnotation(annotation, false);
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
@@ -320,42 +411,59 @@ export default class CVAnnotationsTask extends CVTask
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
             previous.setup.language.outs.activeLanguage.off("value", this.update, this);
 
+            const components = previous.innerGraph.components;
+            components.off(CVModel2, this.onModelComponent, this);
+            components.off(CVAnnotationView, this.onAnnotationsComponent, this);
+            components.getArray(CVModel2).forEach(model => this.onModelComponent({ type: model.typeName, object: model, add: false, remove: true }));
+            components.getArray(CVAnnotationView).forEach(view => {
+                this.onAnnotationsComponent({ type: view.typeName, object: view, add: false, remove: true });
+                view.activeAnnotation = null;
+            });
+
             this._machine = null;
         }
         if (next) {          
             next.setup.language.outs.activeLanguage.on("value", this.update, this);
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
 
+            const components = next.innerGraph.components;
+            components.on(CVModel2, this.onModelComponent, this);
+            components.on(CVAnnotationView, this.onAnnotationsComponent, this);
+            components.getArray(CVModel2).forEach(model => this.onModelComponent({ type: model.typeName, object: model, add: true, remove: false }));
+            components.getArray(CVAnnotationView).forEach(view => this.onAnnotationsComponent({ type: view.typeName, object: view, add: true, remove: false }));
+
             this._machine = next.setup.snapshots;
+        }
+
+        this.emitUpdateEvent();
+    }
+
+    protected onModelComponent(event: IComponentEvent<CVModel2>)
+    {
+        const model = event.object;
+
+        if (event.add) {
+            model.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        }
+        else if (event.remove) {
+            model.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
         }
     }
 
-    protected onActiveNode(previous: NVNode, next: NVNode)
+    protected onAnnotationsComponent(event: IComponentEvent<CVAnnotationView>)
     {
-        const prevAnnotations = previous ? previous.getComponent(CVAnnotationView, true) : null;
-        const nextAnnotations = next ? next.getComponent(CVAnnotationView, true) : null;
+        const annotations = event.object;
 
-        if (prevAnnotations) {
-            prevAnnotations.off<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
-            prevAnnotations.off<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
-            prevAnnotations.activeAnnotation = null;
+        if (event.add) {
+            annotations.on<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
+            annotations.on<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
         }
-        if (nextAnnotations) {
-            nextAnnotations.on<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
-            nextAnnotations.on<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
+        else if (event.remove) {
+            annotations.off<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
+            annotations.off<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
         }
 
-        const prevModel = previous ? previous.getComponent(CVModel2, true) : null;
-        const nextModel = next ? next.getComponent(CVModel2, true) : null;
-
-        if (prevModel) {
-            prevModel.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
-        }
-        if (nextModel) {
-            nextModel.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
-        }
-
-        this.activeAnnotations = nextAnnotations;
+        this.emitUpdateEvent();
     }
 
     protected emitUpdateEvent()
@@ -383,9 +491,25 @@ export default class CVAnnotationsTask extends CVTask
         this.ins.audio.setOptions(options);
     }
 
+    // Update attachment options and value
+    protected synchAttachmentOptions() {
+        const views = this._attachmentViews = this.annotationViews.slice();
+        const options = views.map(view => view.node.name || view.node.displayName);
+        const prop = this.ins.attachment;
+
+        if (options.join("\n") !== prop.schema.options.join("\n")) {
+            prop.setOptions(options);
+        }
+
+        const index = views.indexOf(this.activeAnnotations);
+        if (index >= 0 && index !== prop.value) {
+            prop.setValue(index, true);
+        }
+    }
+
     // Update audio value
     protected setAudio() {
-        const annotations = this._activeAnnotations;
+        const annotations = this.activeAnnotations;
         if(annotations) {
             const audioManager = this.activeDocument.setup.audio;
             const audio = audioManager.getAudioClip(annotations.ins.audioId.value);
