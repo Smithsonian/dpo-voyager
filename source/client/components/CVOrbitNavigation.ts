@@ -378,28 +378,28 @@ export default class CVOrbitNavigation extends CObject3D
     {
         data = data || {} as INavigation;
 
-        const orbit = data.orbit || {
-            orbit: [ -25, -25, 0 ],
-            offset: [ 0, 0, 100 ],
-            minOrbit: [ -90, -Infinity, -Infinity ],
-            minOffset: [ -Infinity, -Infinity, 0.1 ],
-            maxOrbit: [ 90, Infinity, Infinity ],
-            maxOffset: [ Infinity, Infinity, Infinity ],
-        };
+        const ins = this.ins;
+        const orbit = data.orbit ?? {} as INavigation["orbit"];
 
-        this.ins.copyValues({
-            enabled: !!data.enabled,
-            autoZoom: !!data.autoZoom,
+        ins.copyValues({
+            enabled: data.enabled ?? ins.enabled.schema.preset,
+            autoZoom: data.autoZoom ?? ins.autoZoom.schema.preset,
             autoRotation: !!data.autoRotation,
-            lightsFollowCamera: !!data.lightsFollowCamera,
-            mode: ENavigationType[data.type] || ENavigationType.Orbit,
-            orbit: orbit.orbit,
-            offset: orbit.offset,
-            minOrbit: _replaceNull(orbit.minOrbit, -Infinity),
-            maxOrbit: _replaceNull(orbit.maxOrbit, Infinity),
-            minOffset: _replaceNull(orbit.minOffset, -Infinity),
-            maxOffset: _replaceNull(orbit.maxOffset, Infinity),
+            autoRotationSpeed: data.autoRotationSpeed !== undefined ? data.autoRotationSpeed : ins.autoRotationSpeed.schema.preset,
+            lightsFollowCamera: data.lightsFollowCamera ?? ins.lightsFollowCamera.schema.preset,
+            mode: ENavigationType[data.type] ?? ins.mode.schema.preset,
+            orbit: orbit.orbit ?? ins.orbit.schema.preset,
+            offset: orbit.offset ?? ins.offset.schema.preset,
+            minOrbit: orbit.minOrbit ? _replaceNull(orbit.minOrbit, -Infinity) : ins.minOrbit.schema.preset,
+            maxOrbit: orbit.maxOrbit ? _replaceNull(orbit.maxOrbit, Infinity) : ins.maxOrbit.schema.preset,
+            minOffset: orbit.minOffset ? _replaceNull(orbit.minOffset, -Infinity) : ins.minOffset.schema.preset,
+            maxOffset: orbit.maxOffset ? _replaceNull(orbit.maxOffset, Infinity) : ins.maxOffset.schema.preset,
         });
+
+        if (this.ins.autoZoom.value) {
+            this.ins.zoomExtents.set();
+            this._isAutoZooming = true;
+        }
     }
 
     toData(): INavigation
@@ -410,6 +410,7 @@ export default class CVOrbitNavigation extends CObject3D
         data.enabled = ins.enabled.value;
         data.autoZoom = ins.autoZoom.value;
         data.autoRotation = ins.autoRotation.value;
+        data.autoRotationSpeed = ins.autoRotationSpeed.value;
         data.lightsFollowCamera = ins.lightsFollowCamera.value;
 
         data.type = ENavigationType[ins.mode.value] as TNavigationType;

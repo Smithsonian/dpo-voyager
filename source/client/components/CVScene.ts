@@ -66,6 +66,7 @@ export default class CVScene extends CVNode
     protected static readonly ins = {
         units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
         modelUpdated: types.Event("Scene.ModelUpdated"),
+        modelTransformUpdated: types.Event("Scene.ModelUpdated"),
         lightUpdated: types.Event("Scene.LightUpdated"),
         sceneTransformed: types.Event("Scene.Transformed"),
     };
@@ -115,6 +116,7 @@ export default class CVScene extends CVNode
         this.models.forEach(model => {
             model.ins.globalUnits.linkFrom(this.ins.units);
             this.ins.modelUpdated.linkFrom(model.outs.updated);
+            model.transform.ins.rotation.on("value", this.onModelTransformUpdate, this);
         });
     }
 
@@ -125,18 +127,16 @@ export default class CVScene extends CVNode
 
         if (ins.units.changed) {
             this.updateTransformHierarchy();
+        }
+        if (ins.units.changed || ins.modelUpdated.changed || ins.modelTransformUpdated.changed || ins.sceneTransformed.changed) {
             this.updateModelBoundingBox();
+        }
+        if (ins.units.changed || ins.modelUpdated.changed) {                   
             this.updateLights();
             this.updateCameras();
+        }
+        if (ins.units.changed) {
             outs.units.setValue(ins.units.value);
-        }
-        if (ins.modelUpdated.changed) {
-            this.updateModelBoundingBox();
-            this.updateLights();
-            this.updateCameras();
-        }
-        if (ins.sceneTransformed.changed) {
-            this.updateModelBoundingBox();
         }
         if (ins.lightUpdated.changed) {
             this.updateLights();
@@ -148,6 +148,9 @@ export default class CVScene extends CVNode
     dispose()
     {
         this.graph.components.off(CVModel2, this.onModelComponent, this);
+        this.models.forEach(model => {
+            model.transform.outs.matrix.off('value', this.onModelTransformUpdate, this);
+        });
         super.dispose();
     }
 
@@ -169,6 +172,7 @@ export default class CVScene extends CVNode
         if (event.add) {
             model.ins.globalUnits.linkFrom(this.ins.units);
             this.ins.modelUpdated.linkFrom(model.outs.updated);
+            model.transform.outs.matrix.on('value', this.onModelTransformUpdate, this);
         }
 
         //this.updateModelBoundingBox();
@@ -327,4 +331,9 @@ export default class CVScene extends CVNode
             }
         });
     }
+
+    protected onModelTransformUpdate(){
+        this.ins.modelTransformUpdated.set();
+    }
+
 }
