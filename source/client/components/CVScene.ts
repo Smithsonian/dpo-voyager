@@ -31,7 +31,7 @@ import CTransform from "client/../../libs/ff-scene/source/components/CTransform"
 import CVCamera from "./CVCamera";
 import CVSetup from "./CVSetup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
-import { CLight } from "./lights/CVLight";
+import { CLight, ICVLight } from "./lights/CVLight";
 import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 import CAmbientLight from "@ff/scene/components/CAmbientLight";
 import CHemisphereLight from "@ff/scene/components/CHemisphereLight";
@@ -156,13 +156,35 @@ export default class CVScene extends CVNode
 
     fromDocument(document: IDocument, scene: IScene)
     {
-        this.ins.units.setValue(EUnitType[scene.units] || 0);
-        this.outs.units.setValue(EUnitType[scene.units] || 0);
+        this.ins.units.setValue(EUnitType[scene.units] || this.ins.units.schema.preset);
+        this.outs.units.setValue(EUnitType[scene.units] || this.outs.units.schema.preset);
     }
 
     toDocument(document: IDocument, scene: IScene)
     {
         scene.units = EUnitType[this.ins.units.getValidatedValue()] as TUnitType;
+    }
+    
+    restoreSavedState(){
+        this.models.forEach(model => {
+            (model.transform as CVNode).setFromSavedData();
+            model.fromSavedDocumentState(true);
+        });
+
+        const lightNode = this.graph.findNodeByName("Lights");
+        const lightsTransform = lightNode.getComponent(CVNode, true);
+
+        lightsTransform?.setFromSavedData();
+        const lightTransforms = lightsTransform?.children as Array<CVNode>;
+        lightTransforms.forEach(lightTransform => {
+            lightTransform.setFromSavedData();
+            const lights = lightTransform.getComponents(CLight) as Array<ICVLight>;
+            lights.forEach(l => l.setFromSavedData())
+        });
+        this.cameras.forEach(camera => {
+            camera.setFromSavedData();
+        });
+       
     }
 
     protected onModelComponent(event: IComponentEvent<CVModel2>)

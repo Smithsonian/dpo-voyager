@@ -65,7 +65,7 @@ export interface IInterface
 
 export interface IViewer
 {
-    shader: TShaderMode;
+    shader?: TShaderMode;
     exposure: number;
     toneMapping: boolean;
     gamma: number;
