@@ -180,9 +180,13 @@ export default class CVSetup extends Component
             delete setupData["tours"];
         }
 
+        // save current snapshots (or remove cached if current is empty)
         const snapshotData = this.snapshots.toData(pathMap);
         if (snapshotData) {
             setupData.snapshots = snapshotData;
+        }
+        else if (setupData.snapshots) {
+            delete setupData.snapshots;
         }
 
         if (setupData) {
