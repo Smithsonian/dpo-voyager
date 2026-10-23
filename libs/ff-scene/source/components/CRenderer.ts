@@ -61,6 +61,7 @@ export default class CRenderer extends Component
         gamma: types.Number("Shading.Gamma", 2),
         shadowsEnabled: types.Boolean("Shadows.Enabled", true),
         shadowMapType: types.Enum("Shadows.MapType", EShadowMapType, EShadowMapType.PCF),
+        localClippingEnabled: types.Boolean("LocalClipping.Enabled", false),
     };
 
     static readonly outs = {
@@ -171,6 +172,9 @@ export default class CRenderer extends Component
         }
         if (ins.shadowMapType.changed) {
             this.views.forEach(view => view.renderer.shadowMap.type = _shadowMapType[ins.shadowMapType.getValidatedValue()]);
+        }
+        if (ins.localClippingEnabled.changed) {
+            this.views.forEach(view => view.renderer.localClippingEnabled = ins.localClippingEnabled.value);
         }
 
         return true;
