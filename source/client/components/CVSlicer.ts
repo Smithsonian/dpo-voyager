@@ -186,6 +186,14 @@ export default class CVSlicer extends Component
 
         if (ins.enabled.changed && material.defines) {
             const enabled = ins.enabled.value && model.ins.slicerEnabled.value;
+            // If any model is not supposed to be sliced, activate local cliping. Stays on indefinitely.
+            if (!model.ins.slicerEnabled.value){
+                const renderer = this.getMainComponent(CRenderer);
+                if (!renderer.ins.localClippingEnabled.value){
+                    renderer.ins.localClippingEnabled.setValue(true);
+                }
+            }
+
             // configure material
             material.defines["CUT_PLANE"] = enabled;
             enabled || material.userData["sideCache"] == undefined ? material.userData["sideCache"] = material.side : null;
