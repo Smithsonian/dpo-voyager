@@ -194,6 +194,7 @@ export default class CVActionsTask extends CVTask
             if(ins.tour.changed || ins.tourStep.changed) {
                 if(ins.tour.changed) {
                     this.synchTourStepOptions();
+                    this.ins.tourStep.setValue(0);
                 }
                 action.triggerDetail = this.ins.tour.value > 0 ? this.tours.tours[this.ins.tour.value-1].steps[this.ins.tourStep.value].id : "";
             }
