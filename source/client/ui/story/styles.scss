@@ -394,6 +394,33 @@ $color-component-meta-light: #d9d998;
   }
 }
 
+.sv-tour-actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li + li { margin-top: 4px; }
+}
+
+.sv-tour-action {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid common.$color-background;
+  background: common.$color-background;
+  color: common.$color-text;
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+
+  &:hover, &:focus-visible {
+    border-color: common.$color-text;
+  }
+}
+
 .sv-tour-feature-menu {
   display: flex;
   flex-wrap: wrap;

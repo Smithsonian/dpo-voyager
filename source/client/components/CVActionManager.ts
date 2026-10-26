@@ -29,6 +29,18 @@ import CVSetup from "./CVSetup";
 import CVScene from "./CVScene";
 import CVTours from "./CVTours";
 import { IPulseContext } from "@ff/graph/components/CPulse";
+import type NVNode from "../nodes/NVNode";
+
+/** An attached action and the names of its referenced resources, for authoring views. */
+export interface ITourStepAction
+{
+    action: IAction;
+    node: NVNode;
+    audioName?: string;
+    annotationTitles?: string[];
+    stateTitle?: string;
+    targetActionName?: string;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -172,6 +184,52 @@ export default class CVActionManager extends Component
                 this._actions.push(...(meta.actions.items.map(action => ({model: model, action: action}))));
             }
         });
+    }
+
+    /** Collect actions on the selected tour step across all owners, including disabled actions. */
+    getTourStepActions(): ITourStepAction[]
+    {
+        const step = this.tours.activeStep;
+        if (!step) {
+            return [];
+        }
+
+        const metas = this.getGraphComponents(CVMeta);
+        const setup = this.setup;
+        const entries: ITourStepAction[] = [];
+
+        metas.forEach(meta => {
+            meta.actions.items.forEach(action => {
+                if (action.trigger !== "OnTourStep" || action.triggerDetail !== step.id) {
+                    return;
+                }
+
+                const entry: ITourStepAction = { action, node: meta.node as NVNode };
+                switch (action.type) {
+                    case "PlayAudio":
+                        entry.audioName = setup.audio.getAudioList().find(clip => clip.id === action.audioId)?.name;
+                        break;
+                    case "ShowAnnotation":
+                    case "HideAnnotation":
+                    case "ToggleAnnotation": {
+                        const view = meta.getComponent<CVAnnotationView>("CVAnnotationView", true);
+                        entry.annotationTitles = action.actionAnnoId?.split("\x1F").filter(Boolean).map(id =>
+                            view?.getAnnotations().find(annotation => annotation.id === id)?.title);
+                        break;
+                    }
+                    case "StateChange":
+                        entry.stateTitle = setup.snapshots.deltaStates.find(state => state.id === action.stateId)?.title;
+                        break;
+                    case "EnableAction":
+                    case "DisableAction":
+                        entry.targetActionName = metas.map(meta => meta.actions.get(action.actionTargetId)).find(Boolean)?.name;
+                        break;
+                }
+                entries.push(entry);
+            });
+        });
+
+        return entries;
     }
 
     getSyncTime(id: string) : number {

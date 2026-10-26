@@ -24,6 +24,8 @@ import Table, { ITableColumn, ITableRowClickEvent } from "@ff/ui/Table";
 import CVDocument from "../../components/CVDocument";
 import CVTours from "../../components/CVTours";
 import CVToursTask from "../../components/CVToursTask";
+import CVActionsTask from "../../components/CVActionsTask";
+import { ITourStepAction } from "../../components/CVActionManager";
 
 import DocumentView, { customElement, html, TemplateResult } from "../explorer/DocumentView";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
@@ -127,6 +129,7 @@ export default class TourPanel extends DocumentView
             <sv-property-view .property=${task.ins.stepThreshold} commitonly></sv-property-view>
             <div class="sv-label">Alt Text</div>
             <ff-text-edit name="altText" text=${task.ins.stepAltText.value} @change=${this.onTextEdit}></ff-text-edit>
+            ${this.renderStepActions()}
         </div>` : html`<div class="ff-placeholder"><div>${languageManager.getUILocalizedString("Create or select a tour step to edit.")}</div></div>`;
 
         this.stateTable.rows = tours.activeSteps.map(step => {
@@ -162,6 +165,68 @@ export default class TourPanel extends DocumentView
     protected onClickTableRow(event: ITableRowClickEvent<ITweenState>)
     {
         this.tours.ins.stepIndex.setValue(event.detail.index);
+    }
+
+    protected renderStepActions()
+    {
+        const language = this.activeDocument.setup.language;
+        const entries = this.activeDocument.setup.actions.getTourStepActions();
+        if (!entries.length) {
+            return null;
+        }
+
+        return html`<div class="sv-label">${language.getUILocalizedString("Attached actions")} (${entries.length})</div>
+            <ul class="sv-tour-actions">${entries.map(entry => html`
+                <li><button type="button" class="sv-tour-action"
+                    title=${language.getUILocalizedString("Edit action")}
+                    @click=${() => this.onEditAction(entry)}>
+                    <strong>${entry.action.name || this.actionTypeLabel(entry.action.type)}</strong>
+                    <span>${this.actionTypeLabel(entry.action.type)} · ${entry.node.displayName}${entry.action.enabled === false ? " · " + language.getUILocalizedString("Disabled") : ""}</span>
+                    ${this.actionDetails(entry).map(detail => html`<span>${detail}</span>`)}
+                </button></li>`)}</ul>`;
+    }
+
+    protected actionTypeLabel(type: string)
+    {
+        return this.activeDocument.setup.language.getUILocalizedString(type.replace(/([a-z])([A-Z])/g, "$1 $2"));
+    }
+
+    protected actionDetails(entry: ITourStepAction): string[]
+    {
+        const action = entry.action;
+        const label = (text: string) => this.activeDocument.setup.language.getUILocalizedString(text);
+        switch (action.type) {
+            case "PlayAnimation":
+                return [
+                    action.animation && `${label("Animation")}: ${action.animation}`,
+                    action.style && action.style !== "Single" && label(action.style),
+                    action.speed != null && action.speed !== 1 && `${label("Speed")}: ${action.speed}×`,
+                    action.clamp && (!action.style || action.style === "Single") && label("Clamp on end"),
+                ].filter(Boolean) as string[];
+            case "PlayAudio":
+                return [
+                    action.audioId && `${label("Audio")}: ${entry.audioName || label("Missing audio")}`,
+                    action.syncWith && `${label("Sync with")}: ${action.syncWith}`,
+                ].filter(Boolean);
+            case "ShowAnnotation":
+            case "HideAnnotation":
+            case "ToggleAnnotation": {
+                const titles = entry.annotationTitles?.map(title => title || label("Missing annotation"));
+                return titles?.length ? [`${label("Annotations")}: ${titles.join(", ")}`] : [];
+            }
+            case "StateChange":
+                return action.stateId ? [`${label("State")}: ${entry.stateTitle || label("Missing state")}`] : [];
+            case "EnableAction":
+            case "DisableAction":
+                return action.actionTargetId ? [`${label("Action")}: ${entry.targetActionName || label("Missing action")}`] : [];
+            default:
+                return [];
+        }
+    }
+
+    protected onEditAction(entry: ITourStepAction)
+    {
+        this.system.getMainComponent(CVActionsTask, true)?.editAction(entry.node, entry.action.id);
     }
 
     protected onClickUpdate()

@@ -30,6 +30,7 @@ import CVModel2 from "./CVModel2";
 import CVAnnotationView, { Annotation } from "./CVAnnotationView";
 import { ELanguageType } from "client/schema/common";
 import CVTours from "./CVTours";
+import type CVTaskProvider from "./CVTaskProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -100,6 +101,16 @@ export default class CVActionsTask extends CVTask
     createView()
     {
         return new ActionsTaskView(this);
+    }
+
+    /** Open this task on an action, selecting its owner before loading the action's inputs. */
+    editAction(node: NVNode, actionId: string)
+    {
+        this.nodeProvider.activeNode = node;
+        // Resolve by name to avoid importing the provider's task set back into a task.
+        this.getMainComponent<CVTaskProvider>("CVTaskProvider").activeComponent = this;
+        // Activation observes the owner node and clears the previous action selection.
+        this.ins.activeId.setValue(actionId);
     }
 
     activateTask()
