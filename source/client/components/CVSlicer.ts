@@ -141,15 +141,24 @@ export default class CVSlicer extends Component
         localPlane.set(_vec3, this.plane[3]);
 
         // set the slicing plane in the Uber materials of each scene model
+        let needsClipping = false;
         models.forEach(model => {
             const object = model.object3D;
             object.traverse((mesh: Mesh) => {
                 if (mesh.isMesh) {
                     const material = mesh.material as Material;
                     this.updateMaterial(model, material);
+                    if(material && material.clippingPlanes) {
+                        needsClipping = true;
+                    }
                 }
             });
         });
+        
+        const renderer = this.getMainComponent(CRenderer);
+        if (renderer.ins.localClippingEnabled.value !== needsClipping){
+            renderer.ins.localClippingEnabled.setValue(needsClipping);
+        }
 
         return true;
     }
@@ -186,15 +195,14 @@ export default class CVSlicer extends Component
 
         if (ins.enabled.changed && material.defines) {
             const enabled = ins.enabled.value && model.ins.slicerEnabled.value;
-            const renderer = this.getMainComponent(CRenderer);
-            renderer.views.forEach(view => view.renderer.localClippingEnabled = enabled);
 
             // configure material
             material.defines["CUT_PLANE"] = enabled;
             enabled || material.userData["sideCache"] == undefined ? material.userData["sideCache"] = material.side : null;
             material.side = enabled ? DoubleSide : material.userData["sideCache"];
 
-            enabled ? material.clippingPlanes = [localPlane] : null;
+            material.clippingPlanes = enabled ? [localPlane] : null;
+
         }
 
         const shader = material.userData.shader;
