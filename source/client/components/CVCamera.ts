@@ -29,6 +29,8 @@ export default class CVCamera extends CCamera
     static readonly text: string = "Camera";
     static readonly icon: string = "video";
 
+    private _savedDocumentData: ICamera; 
+
     protected static readonly cameraAddIns = {
         autoNearFar: types.Boolean("Frustum.AutoNearFar", true),
     };
@@ -57,8 +59,14 @@ export default class CVCamera extends CCamera
         if (!isFinite(node.camera)) {
             throw new Error("camera property missing in node");
         }
+        this._savedDocumentData = JSON.parse(JSON.stringify(document.cameras[node.camera]));
+        this.setFromSavedData();
 
-        const data = document.cameras[node.camera];
+        return node.camera;
+    }
+
+    setFromSavedData(){
+        const data = this._savedDocumentData;
 
         if(data.autoNearFar != undefined) {
             this.addIns.autoNearFar.setValue(data.autoNearFar);
@@ -80,8 +88,6 @@ export default class CVCamera extends CCamera
                 far: data.orthographic.zfar
             });
         }
-
-        return node.camera;
     }
 
     toDocument(document: IDocument, node: INode): number

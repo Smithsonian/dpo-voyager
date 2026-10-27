@@ -98,6 +98,7 @@ export default class CTransform extends CHierarchy implements ICObject3D
         object3D.rotation.setFromVector3(_vec3a, orderName);
         object3D.scale.fromArray(scale.value);
         object3D.updateMatrix();
+        object3D.updateWorldMatrix( true, false );
 
         (object3D.matrix as any).toArray(matrix.value);
         matrix.set();

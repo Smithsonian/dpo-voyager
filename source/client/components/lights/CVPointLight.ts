@@ -32,6 +32,8 @@ export default class CVPointLight extends CPointLight implements ICVLight
     static readonly text: string = "Point Light";
     static readonly icon: string = "bulb";
 
+    private _savedDocumentData;
+
     get settingProperties() {
         return [
             this.ins.name,
@@ -69,15 +71,21 @@ export default class CVPointLight extends CPointLight implements ICVLight
         if (!isFinite(node.light)) {
             throw new Error("light property missing in node");
         }
-
-        const data = document.lights[node.light];
+        this._savedDocumentData = JSON.parse(JSON.stringify(document.lights[node.light]));
+        this._savedDocumentData.name = node.name;
+        this.setFromSavedData();
+        return node.light;
+    }
+    
+    setFromSavedData() {
         const ins = this.ins;
+        const data = this._savedDocumentData;
 
         if (data.type !== CVPointLight.type) {
             throw new Error("light type mismatch: not a point light");
         }
 
-        ins.name.setValue(node.name);
+        ins.name.setValue(data.name);
         data.point = data.point || {} as any;
 
         ins.copyValues({
@@ -96,8 +104,6 @@ export default class CVPointLight extends CPointLight implements ICVLight
             shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
         ins.tags.setValue(data.tags || "");
-
-        return node.light;
     }
 
     toDocument(document: IDocument, node: INode): number
