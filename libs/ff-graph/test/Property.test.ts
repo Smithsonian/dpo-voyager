@@ -137,9 +137,7 @@ export default function() {
                 c0.outs.num0.linkTo(c1.ins.num0);
             }
             system.graph.sort();
-            const sorted = system.graph.components.getArray();
-            console.log(sorted);
-            console.log(system.graph.components["_objLists"]["Component"]);
+            const sorted = system.graph["_sortedList"];
             assert.equal(sorted.length, comps.length, "arrays have same length");
             for (let i = 0; i < comps.length; ++i) {
                 assert.equal(comps[indices[i]], sorted[i], "correct sort order");
