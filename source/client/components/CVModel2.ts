@@ -475,6 +475,11 @@ export default class CVModel2 extends CObject3D
         this.ins.name.setValue(node.name);
         this._savedDocumentData = JSON.parse(JSON.stringify(document.models[node.model]));
 
+        const data = document.models[node.model];
+        if (data.derivatives) {
+            this.derivatives.fromJSON(data.derivatives);
+        }
+
         this.fromSavedDocumentState(true);
         return node.model;
     }
@@ -526,9 +531,6 @@ export default class CVModel2 extends CObject3D
             this.updateUnitScale();
         }
 
-        if (data.derivatives) {
-            this.derivatives.fromJSON(data.derivatives);
-        }
         if (data.material) {
             const material = data.material; 
             ins.copyValues({
@@ -956,7 +958,7 @@ export default class CVModel2 extends CObject3D
                 }
 
                 this.unload();
-                this._activeDerivative = derivative;
+                this._activeDerivative = derivative;console.log(derivative);
                 this._loadingDerivative = null;
                 this.addObject3D(derivative.model);
                 this.renderer.activeSceneComponent.scene.updateMatrixWorld(true);
