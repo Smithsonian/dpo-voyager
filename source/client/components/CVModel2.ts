@@ -475,12 +475,31 @@ export default class CVModel2 extends CObject3D
         this.ins.name.setValue(node.name);
         this._savedDocumentData = JSON.parse(JSON.stringify(document.models[node.model]));
 
+        this.fromSavedDocumentState(true);
+
         const data = document.models[node.model];
+        if (data.boundingBox) {
+            const boundingBox = this._localBoundingBox;
+            boundingBox.min.fromArray(data.boundingBox.min);
+            boundingBox.max.fromArray(data.boundingBox.max);
+            this._boxFrame = new Box3Helper(boundingBox, "#009cde");
+            this.addObject3D(this._boxFrame);
+            this._boxFrame.updateMatrixWorld(true);console.log(boundingBox.min,boundingBox.max);         
+        
+            const setup = this.getGraphComponent(CVSetup, true);
+            if(setup && setup.navigation.ins.autoZoom.value) {
+                setup.navigation.ins.zoomExtents.set();
+            }
+            this.outs.updated.set();
+            this.updateUnitScale();
+        }
         if (data.derivatives) {
             this.derivatives.fromJSON(data.derivatives);
         }
 
-        this.fromSavedDocumentState(true);
+        // trigger automatic loading of derivatives if active
+        this.ins.autoLoad.set();
+
         return node.model;
     }
 
@@ -518,22 +537,6 @@ export default class CVModel2 extends CObject3D
             ins.rotation.set();
         }
 
-        if (data.boundingBox && !triggerAutozoom) {
-            const boundingBox = this._localBoundingBox;
-            boundingBox.min.fromArray(data.boundingBox.min);
-            boundingBox.max.fromArray(data.boundingBox.max);
-            this._boxFrame = new Box3Helper(boundingBox, "#009cde");
-            this.addObject3D(this._boxFrame);
-            this._boxFrame.updateMatrixWorld(true);         
-        
-            const setup = this.getGraphComponent(CVSetup, true);
-            if(triggerAutozoom && setup && setup.navigation.ins.autoZoom.value) {
-                setup.navigation.ins.zoomExtents.set();
-            }
-            outs.updated.set();
-            this.updateUnitScale();
-        }
-
         if (data.material) {
             const material = data.material; 
             ins.copyValues({
@@ -560,9 +563,6 @@ export default class CVModel2 extends CObject3D
 
         // emit tag update event
         this.emit<ITagUpdateEvent>({ type: "tag-update" });
-
-        // trigger automatic loading of derivatives if active
-        this.ins.autoLoad.set();
     }
 
     toDocument(document: IDocument, node: INode): number
