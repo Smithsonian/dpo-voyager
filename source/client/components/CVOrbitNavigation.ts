@@ -34,6 +34,7 @@ import CVAssetManager from "./CVAssetManager";
 import CVARManager from "./CVARManager";
 import CVModel2 from "./CVModel2";
 import { getMeshTransform } from "client/utils/Helpers";
+import PivotMarker from "client/utils/PivotMarker";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -126,11 +127,13 @@ export default class CVOrbitNavigation extends CObject3D
     private _initYOrbit = null;
     private _lastClick: { time: number, x: number, y: number } = null;
     private _pivotAnimation: IPivotAnimation = null;
+    private _pivotMarker = new PivotMarker();
 
     constructor(node: Node, id: string)
     {
         super(node, id);
         this._scene = this.scene;
+        this.object3D = this._pivotMarker;
     }
 
     get settingProperties() {
@@ -190,6 +193,7 @@ export default class CVOrbitNavigation extends CObject3D
         this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);
         this.system.off<IKeyboardEvent>("keydown", this.onKeyboard, this);
 
+        this._pivotMarker.dispose();
         super.dispose();
     }
 
@@ -375,7 +379,13 @@ export default class CVOrbitNavigation extends CObject3D
             }
         }
 
+        // in Orbit mode, only panning moves the pivot while updating the camera
+        _vec3.copy(controller.pivot);
         if (controller.updateCamera(transform.object3D, forceUpdate)) {
+            if (controller.controllerMode === EControllerMode.Orbit && !_vec3.equals(controller.pivot)) {
+                this._pivotMarker.track(controller.pivot);
+            }
+
             controller.orbit.toArray(ins.orbit.value);
             ins.orbit.set(true);
             controller.offset.toArray(ins.offset.value);
@@ -402,13 +412,17 @@ export default class CVOrbitNavigation extends CObject3D
             return true;
         }
 
-        return false;
+        // keep rendering until the pivot marker is gone
+        return this._pivotMarker.active;
     }
 
     preRender(context: IRenderContext)
     {
         if (this._modelBoundingBox) {
             context.viewport.zoomExtents(this._modelBoundingBox);
+        }
+        if (this._pivotMarker.active) {
+            this._pivotMarker.update(context.camera, context.viewport.height);
         }
     }
 
@@ -574,6 +588,7 @@ export default class CVOrbitNavigation extends CObject3D
             .applyMatrix4(model.transform.object3D.matrixWorld);
 
         this.animatePivot(position);
+        this._pivotMarker.start(position);
     }
 
     /**
