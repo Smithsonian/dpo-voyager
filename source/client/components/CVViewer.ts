@@ -186,7 +186,7 @@ export default class CVViewer extends Component
             this.getGraphComponents(CVModel2).forEach(model => {
                 model.ins.variant.setOption(variant);
             });
-            ins.shader.setValue(0);
+            ins.shader.setValue(EShaderMode.Default);
         }
         if (ins.shader.changed) {
             const shader = ins.shader.getValidatedValue();
@@ -301,6 +301,10 @@ export default class CVViewer extends Component
             sortedTags: data.sortedTags || "",
             radioTags: data.radioTags !== undefined ? !!data.radioTags : ins.radioTags.schema.preset,
         });
+
+        if (data.shader && EShaderMode[data.shader]){
+            ins.shader.setValue(EShaderMode[data.shader] || EShaderMode.Default);
+        }
     }
 
     toData(): IViewer

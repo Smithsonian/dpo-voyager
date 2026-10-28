@@ -96,6 +96,7 @@ export default class CVModel2 extends CObject3D
 
     static readonly text: string = "Model";
     static readonly icon: string = "cube";
+    private _savedDocumentData: IModel | null = null;
 
     static readonly rotationOrder = "ZYX";
 
@@ -133,6 +134,7 @@ export default class CVModel2 extends CObject3D
         updated: types.Event("Updated"),
         overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
         variant: types.Option("Material.Variant", [], 0),
+        materialUpdated: types.Event("Material.Updated"),
     };
 
     ins = this.addInputs<CObject3D, typeof CVModel2.ins>(CVModel2.ins);
@@ -471,16 +473,50 @@ export default class CVModel2 extends CObject3D
 
     fromDocument(document: IDocument, node: INode): number
     {
-        const { ins, outs } = this;
         
         if (!isFinite(node.model)) {
             throw new Error("model property missing in node");
         }
+        this.ins.name.setValue(node.name);
+        this._savedDocumentData = JSON.parse(JSON.stringify(document.models[node.model]));
+
+        this.fromSavedDocumentState(true);
 
         const data = document.models[node.model];
+        if (data.boundingBox) {
+            const boundingBox = this._localBoundingBox;
+            boundingBox.min.fromArray(data.boundingBox.min);
+            boundingBox.max.fromArray(data.boundingBox.max);
+            this._boxFrame = new Box3Helper(boundingBox, "#009cde");
+            this.addObject3D(this._boxFrame);
+            this._boxFrame.updateMatrixWorld(true);         
+        
+            const setup = this.getGraphComponent(CVSetup, true);
+            if(setup && setup.navigation.ins.autoZoom.value) {
+                setup.navigation.ins.zoomExtents.set();
+            }
+            this.outs.updated.set();
+            this.updateUnitScale();
+        }
+        if (data.derivatives) {
+            this.derivatives.fromJSON(data.derivatives);
+        }
 
-        ins.name.setValue(node.name);
+        // trigger automatic loading of derivatives if active
+        this.ins.autoLoad.set();
 
+        return node.model;
+    }
+
+
+    fromSavedDocumentState(triggerAutozoom = false){
+
+        const { ins, outs } = this;
+        const data = this._savedDocumentData;
+
+        if (data === null) {
+            throw new Error("No saved document state");
+        }
         const units = EUnitType[data.units || "cm"];
         ins.localUnits.setValue(isFinite(units) ? units : EUnitType.cm);
 
@@ -506,26 +542,6 @@ export default class CVModel2 extends CObject3D
             ins.rotation.set();
         }
 
-        if (data.boundingBox) {
-            const boundingBox = this._localBoundingBox;
-            boundingBox.min.fromArray(data.boundingBox.min);
-            boundingBox.max.fromArray(data.boundingBox.max);
-
-            this._boxFrame = new Box3Helper(boundingBox, "#009cde");
-            this.addObject3D(this._boxFrame);
-            this._boxFrame.updateMatrixWorld(true);
-        
-            const setup = this.getGraphComponent(CVSetup, true);
-            if(setup && setup.navigation.ins.autoZoom.value) {
-                setup.navigation.ins.zoomExtents.set();
-            }
-            outs.updated.set();
-            this.updateUnitScale();
-        }
-
-        if (data.derivatives) {
-            this.derivatives.fromJSON(data.derivatives);
-        }
         if (data.material) {
             const material = data.material; 
             ins.copyValues({
@@ -540,6 +556,8 @@ export default class CVModel2 extends CObject3D
             });
         }
 
+        ins.slicerEnabled.setValue(typeof data.slicerEnabled != "boolean" || data.slicerEnabled);
+
         if (data.overlayMap) {
             ins.overlayMap.setValue(data.overlayMap);
         }
@@ -550,11 +568,6 @@ export default class CVModel2 extends CObject3D
 
         // emit tag update event
         this.emit<ITagUpdateEvent>({ type: "tag-update" });
-
-        // trigger automatic loading of derivatives if active
-        this.ins.autoLoad.set();
-
-        return node.model;
     }
 
     toDocument(document: IDocument, node: INode): number
@@ -599,6 +612,10 @@ export default class CVModel2 extends CObject3D
                 occlusion: ins.occlusion.value,
                 doubleSided: ins.doubleSided.value
             };
+        }
+
+        if (!ins.slicerEnabled.value){ 
+            data.slicerEnabled = false;
         }
 
         if (ins.overlayMap.value !== 0) {
@@ -785,6 +802,7 @@ export default class CVModel2 extends CObject3D
                 material.needsUpdate = true;
             }
         });
+        this.outs.materialUpdated.set()
     }
 
     protected updateUnitScale()
@@ -1013,8 +1031,12 @@ export default class CVModel2 extends CObject3D
                     const variantSet = new Set(this.ins.variant.schema.options);
                     variants.forEach(variantSet.add, variantSet);
                     this.ins.variant.setOptions([...variantSet]);
-                    this.ins.variant.setOption(variants[0],true,true);
+                    this.ins.variant.setOption(variants[this.ins.variant.value < variants.length? this.ins.variant.value :0 ],true,true);
                     this.updateVariant();
+                }
+
+                if (this.ins.variant.value !== 0){
+                    this.ins.variant.set();
                 }
 
                 if(this.ins.overlayMap.value !== 0) {

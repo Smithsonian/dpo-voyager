@@ -231,6 +231,7 @@ export default class ChromeView extends DocumentView
     }
 
     protected resetViewer() {
+        this.activeDocument.root?.scene?.restoreSavedState();
         this.activeDocument.setup.resetViewer();
     }
 

@@ -31,6 +31,8 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
     static readonly text: string = "Ambient Light";
     static readonly icon: string = "globe";
 
+    private _savedDocumentData;
+
     get settingProperties() {
         return [
             this.ins.name,
@@ -58,15 +60,21 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
         if (!isFinite(node.light)) {
             throw new Error("light property missing in node");
         }
-
-        const data = document.lights[node.light];
+        this._savedDocumentData = JSON.parse(JSON.stringify(document.lights[node.light]));
+        this._savedDocumentData.name = node.name;
+        this.setFromSavedData();
+        return node.light;
+    }
+    
+    setFromSavedData() {
         const ins = this.ins;
+        const data = this._savedDocumentData;
 
         if (data.type !== CVAmbienLight.type) {
             throw new Error("light type mismatch: not an ambient light");
         }
 
-        ins.name.setValue(node.name);
+        ins.name.setValue(data.name);
         data.point = data.point || {} as any;
 
         ins.copyValues({
@@ -75,8 +83,6 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
         });
         ins.tags.setValue(data.tags || "");
-
-        return node.light;
     }
 
     toDocument(document: IDocument, node: INode): number

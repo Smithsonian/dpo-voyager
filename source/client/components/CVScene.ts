@@ -31,7 +31,7 @@ import CTransform from "client/../../libs/ff-scene/source/components/CTransform"
 import CVCamera from "./CVCamera";
 import CVSetup from "./CVSetup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
-import { CLight } from "./lights/CVLight";
+import { CLight, ICVLight } from "./lights/CVLight";
 import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 import CAmbientLight from "@ff/scene/components/CAmbientLight";
 import CHemisphereLight from "@ff/scene/components/CHemisphereLight";
@@ -66,6 +66,7 @@ export default class CVScene extends CVNode
     protected static readonly ins = {
         units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
         modelUpdated: types.Event("Scene.ModelUpdated"),
+        modelTransformUpdated: types.Event("Scene.ModelUpdated"),
         lightUpdated: types.Event("Scene.LightUpdated"),
         sceneTransformed: types.Event("Scene.Transformed"),
     };
@@ -115,6 +116,7 @@ export default class CVScene extends CVNode
         this.models.forEach(model => {
             model.ins.globalUnits.linkFrom(this.ins.units);
             this.ins.modelUpdated.linkFrom(model.outs.updated);
+            model.transform.ins.rotation.on("value", this.onModelTransformUpdate, this);
         });
     }
 
@@ -125,18 +127,16 @@ export default class CVScene extends CVNode
 
         if (ins.units.changed) {
             this.updateTransformHierarchy();
+        }
+        if (ins.units.changed || ins.modelUpdated.changed || ins.modelTransformUpdated.changed || ins.sceneTransformed.changed) {
             this.updateModelBoundingBox();
+        }
+        if (ins.units.changed || ins.modelUpdated.changed) {                   
             this.updateLights();
             this.updateCameras();
+        }
+        if (ins.units.changed) {
             outs.units.setValue(ins.units.value);
-        }
-        if (ins.modelUpdated.changed) {
-            this.updateModelBoundingBox();
-            this.updateLights();
-            this.updateCameras();
-        }
-        if (ins.sceneTransformed.changed) {
-            this.updateModelBoundingBox();
         }
         if (ins.lightUpdated.changed) {
             this.updateLights();
@@ -148,18 +148,43 @@ export default class CVScene extends CVNode
     dispose()
     {
         this.graph.components.off(CVModel2, this.onModelComponent, this);
+        this.models.forEach(model => {
+            model.transform.outs.matrix.off('value', this.onModelTransformUpdate, this);
+        });
         super.dispose();
     }
 
     fromDocument(document: IDocument, scene: IScene)
     {
-        this.ins.units.setValue(EUnitType[scene.units] || 0);
-        this.outs.units.setValue(EUnitType[scene.units] || 0);
+        this.ins.units.setValue(EUnitType[scene.units] || this.ins.units.schema.preset);
+        this.outs.units.setValue(EUnitType[scene.units] || this.outs.units.schema.preset);
     }
 
     toDocument(document: IDocument, scene: IScene)
     {
         scene.units = EUnitType[this.ins.units.getValidatedValue()] as TUnitType;
+    }
+    
+    restoreSavedState(){
+        this.models.forEach(model => {
+            (model.transform as CVNode).setFromSavedData();
+            model.fromSavedDocumentState(true);
+        });
+
+        const lightNode = this.graph.findNodeByName("Lights");
+        const lightsTransform = lightNode.getComponent(CVNode, true);
+
+        lightsTransform?.setFromSavedData();
+        const lightTransforms = lightsTransform?.children as Array<CVNode>;
+        lightTransforms.forEach(lightTransform => {
+            lightTransform.setFromSavedData();
+            const lights = lightTransform.getComponents(CLight) as Array<ICVLight>;
+            lights.forEach(l => l.setFromSavedData())
+        });
+        this.cameras.forEach(camera => {
+            camera.setFromSavedData();
+        });
+       
     }
 
     protected onModelComponent(event: IComponentEvent<CVModel2>)
@@ -169,6 +194,7 @@ export default class CVScene extends CVNode
         if (event.add) {
             model.ins.globalUnits.linkFrom(this.ins.units);
             this.ins.modelUpdated.linkFrom(model.outs.updated);
+            model.transform.outs.matrix.on('value', this.onModelTransformUpdate, this);
         }
 
         //this.updateModelBoundingBox();
@@ -327,4 +353,9 @@ export default class CVScene extends CVNode
             }
         });
     }
+
+    protected onModelTransformUpdate(){
+        this.ins.modelTransformUpdated.set();
+    }
+
 }
