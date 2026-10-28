@@ -28,7 +28,8 @@ import DockView, { DockContentRegistry, IDockElementLayout } from "@ff/ui/DockVi
 import HierarchyTreeView from "@ff/scene/ui/HierarchyTreeView";
 
 import NavigatorPanel from "./NavigatorPanel";
-import CVTaskProvider, { ETaskMode } from "../../components/CVTaskProvider";
+import CVTaskProvider, { ETaskMode, IActiveTaskEvent } from "../../components/CVTaskProvider";
+import CVCaptureTask from "../../components/CVCaptureTask";
 
 import TaskBar from "./TaskBar";
 
@@ -141,6 +142,7 @@ export default class MainView extends CustomElement
 
         const taskProvider = system.components.get(CVTaskProvider);
         taskProvider.ins.mode.on("value", this.onTaskMode, this);
+        taskProvider.on<IActiveTaskEvent>("active-component", this.onTask, this);
 
         const registry = this.registry = new Map();
         const explorer = this.application.explorer;
@@ -197,6 +199,12 @@ export default class MainView extends CustomElement
     {
         this.storeLayout();
         this.restoreLayout();
+    }
+
+    protected onTask(event: IActiveTaskEvent)
+    {
+        // Capture overlays the thumbnail crop box on the viewport; see styles.scss.
+        this.classList.toggle("sv-capture-active", event.next instanceof CVCaptureTask);
     }
 
     protected storeLayout()
