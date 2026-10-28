@@ -383,8 +383,13 @@ export default class CVModel2 extends CObject3D
         }
 
         if (ins.override.value && ins.shader.value === EShaderMode.Default && (ins.override.changed ||
-            ins.color.changed || ins.opacity.changed || ins.doubleSided.changed ||
+            ins.color.changed || ins.opacity.changed || ins.doubleSided.changed || ins.hiddenOpacity.changed ||
                 ins.roughness.changed || ins.metalness.changed || ins.occlusion.changed)) {
+
+            if(ins.hiddenOpacity.changed && !this._visible) {
+                this.object3D.visible = this.ins.hiddenOpacity.value > 0;
+            }
+
             this.updateMaterial();
         }
         else if(ins.override.changed && !ins.override.value && ins.shader.value === EShaderMode.Default) {

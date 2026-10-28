@@ -144,10 +144,10 @@ export function injectFragmentShaderCode(shader: string) {
             vec4 zoneColor = texture2D(zoneMap, vZoneUv);\n \
         \n \
             #ifdef OVERLAY_ALPHA\n \
-                gl_FragColor += mix(vec4(0.0, 0.0, 0.0, 1.0), vec4(zoneColor.rgb, 1.0), zoneColor.a);\n \
+                gl_FragColor += mix(vec4(0.0, 0.0, 0.0, 1.0), vec4(zoneColor.rgb, 1.0), zoneColor.a * gl_FragColor.a);\n \
             #endif\n \
             #ifndef OVERLAY_ALPHA\n \
-                gl_FragColor = mix(gl_FragColor, vec4(zoneColor.rgb, 1.0), zoneColor.a);\n \
+                gl_FragColor = mix(gl_FragColor, vec4(zoneColor.rgb, 1.0), zoneColor.a * gl_FragColor.a);\n \
             #endif\n \
         #endif\n \
         \n'
