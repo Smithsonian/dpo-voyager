@@ -521,9 +521,12 @@ export default class CVModel2 extends CObject3D
         if (data.boundingBox && !triggerAutozoom) {
             const boundingBox = this._localBoundingBox;
             boundingBox.min.fromArray(data.boundingBox.min);
-            boundingBox.max.fromArray(data.boundingBox.max);         
+            boundingBox.max.fromArray(data.boundingBox.max);
+            this._boxFrame = new Box3Helper(boundingBox, "#009cde");
+            this.addObject3D(this._boxFrame);
+            this._boxFrame.updateMatrixWorld(true);         
         
-        const setup = this.getGraphComponent(CVSetup, true);
+            const setup = this.getGraphComponent(CVSetup, true);
             if(triggerAutozoom && setup && setup.navigation.ins.autoZoom.value) {
                 setup.navigation.ins.zoomExtents.set();
             }
@@ -544,17 +547,8 @@ export default class CVModel2 extends CObject3D
                 doubleSided: material.doubleSided !== undefined ? material.doubleSided : ins.doubleSided.schema.preset
             });
         }
-        
-        if (data.shader) {
-            console.log("fromSavedDocument - shader", data.shader);
-            ins.shader.setValue(data.shader);
-        }
 
         ins.slicerEnabled.setValue(typeof data.slicerEnabled != "boolean" || data.slicerEnabled);
-
-        if (data.variant) {
-            ins.variant.setValue(data.variant);
-        }
 
         if (data.overlayMap) {
             ins.overlayMap.setValue(data.overlayMap);
@@ -615,16 +609,8 @@ export default class CVModel2 extends CObject3D
             };
         }
 
-        if (ins.shader.value !== 0) {
-            data.shader = ins.shader.value;
-        }
-
         if (!ins.slicerEnabled.value){ 
             data.slicerEnabled = false;
-        }
-
-        if (ins.variant.value !== 0) {
-            data.variant = ins.variant.value;
         }
 
         if (ins.overlayMap.value !== 0) {
@@ -958,7 +944,7 @@ export default class CVModel2 extends CObject3D
                 }
 
                 this.unload();
-                this._activeDerivative = derivative;console.log(derivative);
+                this._activeDerivative = derivative;
                 this._loadingDerivative = null;
                 this.addObject3D(derivative.model);
                 this.renderer.activeSceneComponent.scene.updateMatrixWorld(true);

@@ -217,7 +217,7 @@ export default class CVSlicer extends Component
         else if (event.remove) {
             component.off<IModelLoadEvent>("model-load", this.refreshMaterial, this);
             component.ins.slicerEnabled.off("value", this.refreshMaterial, this);
-            component.outs.materialUpdated.on("value", this.refreshMaterial, this);
+            component.outs.materialUpdated.off("value", this.refreshMaterial, this);
             component.outs.variant.off("value", this.refreshMaterial, this);
         }
     }

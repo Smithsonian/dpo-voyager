@@ -50,8 +50,6 @@ export interface IModel
     visible?: boolean;
     renderOrder?: number;
     overlayMap?: number;
-    variant?: number;
-    shader?: number;
     slicerEnabled?: boolean;
     shadowSide?: TSideType;
     translation?: Vector3;

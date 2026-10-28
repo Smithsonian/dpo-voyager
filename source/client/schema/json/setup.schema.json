@@ -41,6 +41,7 @@
                 }
             },
             "required": [
+                "shader",
                 "exposure",
                 "gamma"
             ]
