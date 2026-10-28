@@ -484,7 +484,7 @@ export default class CVModel2 extends CObject3D
             boundingBox.max.fromArray(data.boundingBox.max);
             this._boxFrame = new Box3Helper(boundingBox, "#009cde");
             this.addObject3D(this._boxFrame);
-            this._boxFrame.updateMatrixWorld(true);console.log(boundingBox.min,boundingBox.max);         
+            this._boxFrame.updateMatrixWorld(true);         
         
             const setup = this.getGraphComponent(CVSetup, true);
             if(setup && setup.navigation.ins.autoZoom.value) {
