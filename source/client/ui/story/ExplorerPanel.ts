@@ -65,6 +65,7 @@ export default class ExplorerPanel extends CustomElement
         this.classList.add("sv-panel", "sv-explorer-panel");
 
         const lockableContainer = this.createElement("div", {position: "relative", flex: "1 1 auto", display: "flex", flexDirection: "row", marginLeft: "auto", marginRight: "auto", width: "100%"});
+        lockableContainer.classList.add("sv-explorer-viewport");
         
         this.appendElement(new ExplorerLockToolbar(lockableContainer));
         this.appendElement(lockableContainer);
