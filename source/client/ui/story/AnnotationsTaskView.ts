@@ -119,6 +119,16 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         // <ff-line-edit name="tags" text=${inProps.tags.value} @change=${this.onTextEdit}></ff-line-edit>
 
         const detailView = annotation ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+            <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
+            <div class="sv-indent">
+                <sv-property-view class="sv-property-block" label=${languageManager.getUILocalizedString("Title")} .property=${inProps.title}></sv-property-view>
+                <div class="sv-label" style="${overLimit ? "color: red" : ""}" @click=${(e)=>this.onClickLimit(e)}>Lead&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
+                <ff-text-edit name="lead" text=${inProps.lead.value} rows=3 maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
+                <sv-property-view .property=${inProps.article}></sv-property-view>
+                <sv-property-view .property=${inProps.tags}></sv-property-view>
+            </div>
+
+            
             <sv-property-view .property=${inProps.style}></sv-property-view>
             <sv-property-view .property=${inProps.scale}></sv-property-view>
             <sv-property-view .property=${inProps.offset}></sv-property-view>
@@ -127,14 +137,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             ${imagePropView}
             <sv-property-view .property=${audioProp}></sv-property-view>
             <sv-property-view .property=${inProps.marker}></sv-property-view>
-            <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
-            <div class="sv-indent">
-                <sv-property-view .property=${inProps.article}></sv-property-view>
-                <sv-property-view .property=${inProps.tags}></sv-property-view>
-                <sv-property-view .property=${inProps.title}></sv-property-view>
-                <div class="sv-label" style="${overLimit ? "color: red" : ""}" @click=${(e)=>this.onClickLimit(e)}>Lead&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
-                <ff-text-edit name="lead" text=${inProps.lead.value} rows=3 maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
-            </div>
+
             <div class="sv-label">${languageManager.getUILocalizedString("View Point")}</div>
             <div class="sv-commands">
                 <ff-button text="${languageManager.getUILocalizedString("Save")}" icon="camera" @click=${this.onSaveView}></ff-button>
