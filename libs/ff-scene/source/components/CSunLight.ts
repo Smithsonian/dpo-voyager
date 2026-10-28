@@ -15,9 +15,11 @@ import * as SunCalc from 'suncalc';
 import { DirectionalLight } from "three";
 import CLight from "./CLight";
 
-type TDayjsFactory = (date?: dayjs.ConfigType) => dayjs.Dayjs;
 const utcPlugin = (utc as unknown as { default?: dayjs.PluginFunc<unknown> }).default || utc as unknown as dayjs.PluginFunc<unknown>;
 const timezonePlugin = (timezone as unknown as { default?: dayjs.PluginFunc<unknown> }).default || timezone as unknown as dayjs.PluginFunc<unknown>;
+// Properties added by plugins (dayjs.tz) only exist on the dayjs function itself,
+// not on the namespace object CommonJS interop creates for `import * as dayjs`.
+type TDayjsFactory = ((date?: dayjs.ConfigType) => dayjs.Dayjs) & { tz: typeof dayjs.tz };
 const createDayjs = ((dayjs as unknown as { default?: TDayjsFactory }).default || dayjs as unknown as TDayjsFactory);
 
 dayjs.extend(utcPlugin);
@@ -39,7 +41,7 @@ export default class CSunLight extends CLight {
             preset: createDayjs()
         }),
         timezone: types.String("Light.TimeZone", {
-            preset: dayjs.tz.guess()
+            preset: createDayjs.tz.guess()
         }),
         latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90, step: 0.01 }),
         longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180, step: 0.01 }),
@@ -151,7 +153,7 @@ export default class CSunLight extends CLight {
 
         try {
             const wallClock = dateTime.format("YYYY-MM-DDTHH:mm:ss");
-            const zonedDateTime = dayjs.tz(wallClock, zone);
+            const zonedDateTime = createDayjs.tz(wallClock, zone);
 
             if (!zonedDateTime.isValid()) {
                 resetTimezoneToPrevious();
