@@ -182,14 +182,21 @@ export default class CVSlicer extends Component
     toData(): ISlicer
     {
         const ins = this.ins;
-
-        return {
-            enabled: ins.enabled.value,
-            axis: ESliceAxis[ins.axis.getValidatedValue()] as TSliceAxis,
-            position: ins.position.value,
-            inverted: ins.inverted.value,
-            color: ins.color.value
-        };
+        if (ins.enabled.value){
+            return {
+                enabled: ins.enabled.value,
+                axis: ESliceAxis[ins.axis.getValidatedValue()] as TSliceAxis,
+                position: ins.position.value,
+                inverted: ins.inverted.value,
+                color: ins.color.value
+            }
+        }
+        else {
+            return {
+                enabled: ins.enabled.value,
+                color: ins.color.value
+            };
+        }
     }
 
     private updateMaterial(model: CVModel2, material: Material)
