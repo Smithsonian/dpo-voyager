@@ -81,6 +81,13 @@ export default class CVSnapshots extends CTweenMachine
         return true;
     }
 
+    /** Enter or leave authored views using a short arc, ending on the saved turn. */
+    tweenToView(stateId: string, secondsElapsed: number)
+    {
+        const state = this.getState(stateId);
+        return state ? this.startViewTween(state, secondsElapsed) : false;
+    }
+
     /** Annotation playback in both Explorer and the editor uses the same timing. */
     tweenToAnnotationView(viewId: string, secondsElapsed: number, annotationId: string)
     {
@@ -98,10 +105,10 @@ export default class CVSnapshots extends CTweenMachine
         if (index >= 0) {
             values[index] = annotationId;
         }
-        return this.startTween({ ...state, values }, secondsElapsed, true);
+        return this.startViewTween({ ...state, values }, secondsElapsed, true);
     }
 
-    protected startTween(state: ITweenState, secondsElapsed: number, annotationView = false)
+    private startViewTween(state: ITweenState, secondsElapsed: number, annotationView = false)
     {
         const navigation = this.getGraphComponent(CVSetup).navigation;
         const { orbit, minOrbit, maxOrbit } = navigation.ins;
@@ -110,7 +117,9 @@ export default class CVSnapshots extends CTweenMachine
         const orbitIdx = this.targets.findIndex(target => target.property === orbit);
         let angleDistance = 0;
         if (orbitIdx >= 0 && values[orbitIdx] != null) {
-            values[orbitIdx] = nearestCameraOrbit(current[orbitIdx], values[orbitIdx], minOrbit.value, maxOrbit.value);
+            // Rebase only the captured start. The endpoint must retain its authored
+            // winding, otherwise the following tour step can lose complete turns.
+            current[orbitIdx] = nearestCameraOrbit(values[orbitIdx], current[orbitIdx], minOrbit.value, maxOrbit.value);
             angleDistance = values[orbitIdx].reduce((sum, angle, axis) => sum + Math.abs(angle - current[orbitIdx][axis]), 0);
         }
 
@@ -131,7 +140,7 @@ export default class CVSnapshots extends CTweenMachine
         }
 
         // Preserve saved states, including delta paths needed by endTween().
-        return super.startTween({ ...state, values, duration }, secondsElapsed);
+        return this.startTween({ ...state, values, duration }, secondsElapsed, current);
     }
 
     cancelTween()

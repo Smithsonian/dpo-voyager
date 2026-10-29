@@ -209,7 +209,7 @@ export default class CVTours extends Component
                 this.snapshots.endTween();
 
                 // recall pre-tour scene state
-                machine.tweenTo(CVTours.sceneSnapshotId, context.secondsElapsed);
+                machine.tweenToView(CVTours.sceneSnapshotId, context.secondsElapsed);
                 machine.deleteState(CVTours.sceneSnapshotId);
 
                 srElement.textContent = "";
@@ -219,6 +219,7 @@ export default class CVTours extends Component
         }
 
         const tourIndex = Math.min(tours.length - 1, Math.max(-1, ins.tourIndex.value));
+        const enteringTour = tourIndex !== outs.tourIndex.value || (ins.enabled.changed && ins.enabled.value);
         const tour = tours[tourIndex];
         const stepCount = tour ? tour.steps.length : 0;
         outs.stepCount.setValue(stepCount);
@@ -279,7 +280,16 @@ export default class CVTours extends Component
             outs.stepIndex.setValue(nextStepIndex);
             outs.stepTitle.setValue(this.stepTitle || "Missing content");
             machine.ins.id.setValue(step.id);
-            tween ? machine.ins.tween.set() : machine.ins.recall.set();
+            if (!tween) {
+                machine.ins.recall.set();
+            }
+            else if (enteringTour) {
+                machine.tweenToView(step.id, context.secondsElapsed);
+            }
+            else {
+                // Within a tour, preserve authored rotations, including full turns.
+                machine.ins.tween.set();
+            }
             srElement.textContent = this.stepAltText != "Missing content" ? "Alt text: " + this.stepAltText : "";
         }
 

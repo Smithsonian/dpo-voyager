@@ -140,11 +140,11 @@ export default class CTweenMachine extends Component
 
     }
 
-    /** Starts a transition. Subclasses may prepare a transient target state here. */
-    protected startTween(state: ITweenState, secondsElapsed: number)
+    /** Starts a transition with an optional transient state or captured starting values. */
+    protected startTween(state: ITweenState, secondsElapsed: number, currentValues = this.getCurrentValues())
     {
         this._targetState = state;
-        this._currentValues = this.getCurrentValues();
+        this._currentValues = currentValues;
         this._startTime = secondsElapsed;
         this._easingFunction = getEasingFunction(state.curve);
         this.outs.switched.setValue(false);

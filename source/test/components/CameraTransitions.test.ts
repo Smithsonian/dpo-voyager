@@ -68,6 +68,29 @@ function fixture(orbit = [0, 350, 0])
     return { node, machine, navigation, viewerIns, setup, scene, state };
 }
 
+function tourFixture()
+{
+    const data = fixture();
+    const { node, machine, setup } = data;
+    const tour = new CVTours(node, "tours");
+    Object.defineProperties(tour, {
+        setup: { value: setup }, snapshots: { value: machine },
+        language: { value: { outs: { activeLanguage: { value: 0 } } } },
+    });
+    const root = document.createElement("div");
+    root.attachShadow({ mode: "open" }).innerHTML = '<span id="sceneview-sr"></span>';
+    (setup.viewer as any).rootElement = root;
+    (tour as any)._tours = [{ titles: {}, leads: {}, steps: ["first", "second"].map(id => ({ id, titles: {}, altTexts: {} })) }];
+    tour.resetChanged();
+    const update = (time: number) => {
+        tour.update(context(time));
+        tour.resetChanged();
+        machine.update(context(time));
+        machine.resetChanged();
+    };
+    return { ...data, tour, update };
+}
+
 describe("Camera transitions", function() {
     it("takes the short arc across positive, negative and accumulated turns on all axes", function() {
         const unlimited = [-Infinity, -Infinity, -Infinity];
@@ -85,19 +108,19 @@ describe("Camera transitions", function() {
             .to.deep.equal([0, 10, 0]);
     });
 
-    it("prepares a temporary orbit while ordinary properties still interpolate linearly", function() {
+    it("rebases only the captured starting orbit when entering a saved view", function() {
         const { machine, navigation, viewerIns, state } = fixture();
         const saved = state("view");
         const original = JSON.stringify(saved);
         Object.freeze(saved.values[3]);
-        machine.tweenTo("view", 10);
+        machine.tweenToView("view", 10);
         expect(navigation.ins.orbit.value).to.deep.equal([0, 350, 0]);
         machine.tick(context(10.5));
-        expect(navigation.ins.orbit.value).to.deep.equal([0, 360, 0]);
+        expect(navigation.ins.orbit.value).to.deep.equal([0, 0, 0]);
         expect(navigation.ins.offset.value).to.deep.equal([0, 0, 15]);
         expect(viewerIns.unrelatedOrbit.value).to.deep.equal([0, 180, 0]);
         machine.tick(context(11));
-        expect(navigation.ins.orbit.value).to.deep.equal([0, 370, 0]);
+        expect(navigation.ins.orbit.value).to.deep.equal([0, 10, 0]);
         expect(JSON.stringify(saved)).to.equal(original);
     });
 
@@ -105,7 +128,7 @@ describe("Camera transitions", function() {
         const { machine, navigation, state } = fixture([20, -1090, 350]);
         const target = [25, 10, 10], offset = [5, -3, 20];
         state("view", target, offset);
-        machine.tweenTo("view", 0);
+        machine.tweenToView("view", 0);
         machine.tick(context(1));
         const matrix = (orbit: number[]) => threeMath.composeOrbitMatrix(
             new Vector3().fromArray(orbit).multiplyScalar(threeMath.DEG2RAD), new Vector3().fromArray(offset), new Matrix4());
@@ -113,27 +136,39 @@ describe("Camera transitions", function() {
         actual.elements.forEach((value, index) => expect(value).to.be.closeTo(expected.elements[index], 1e-9));
     });
 
-    it("uses the same short arc for the event driven snapshot entry point", function() {
-        const { machine, navigation, state } = fixture();
-        state("view");
-        machine.ins.id.setValue("view");
-        machine.ins.tween.set();
-        machine.update(context(0));
-        machine.tick(context(0.5));
-        expect(navigation.ins.orbit.value[1]).to.equal(360);
-    });
+    for (const entry of ["direct", "event"]) {
+        for (const direction of [1, -1]) {
+            it(`${entry} snapshot playback preserves ${direction * 720} authored degrees`, function() {
+                const { machine, navigation, state } = fixture([0, direction * 10, 0]);
+                const saved = state("view", [0, direction * 730, 0]);
+                if (entry === "direct") {
+                    machine.tweenTo("view", 0);
+                }
+                else {
+                    machine.ins.id.setValue("view");
+                    machine.ins.tween.set();
+                    machine.update(context(0));
+                }
+                machine.tick(context(0.5));
+                expect(navigation.ins.orbit.value[1]).to.equal(direction * 370);
+                machine.tick(context(1));
+                expect(navigation.ins.orbit.value[1]).to.equal(direction * 730);
+                expect(saved.values[3]).to.deep.equal([0, direction * 730, 0]);
+            });
+        }
+    }
 
     it("restarts an interrupted transition from its visible pose without modifying saved views", function() {
         const { machine, navigation, state } = fixture();
         const first = state("first"), second = state("second", [0, -10, 0]);
         const original = JSON.stringify([first, second]);
-        machine.tweenTo("first", 0);
+        machine.tweenToView("first", 0);
         machine.tick(context(0.5));
-        machine.tweenTo("second", 0.5);
+        machine.tweenToView("second", 0.5);
         machine.tick(context(1));
-        expect(navigation.ins.orbit.value[1]).to.equal(355);
+        expect(navigation.ins.orbit.value[1]).to.equal(-5);
         machine.tick(context(1.5));
-        expect(navigation.ins.orbit.value[1]).to.equal(350);
+        expect(navigation.ins.orbit.value[1]).to.equal(-10);
         expect(JSON.stringify([first, second])).to.equal(original);
     });
 
@@ -141,12 +176,12 @@ describe("Camera transitions", function() {
         const { machine, navigation, state } = fixture();
         const saved = state("null");
         saved.values[3] = null;
-        machine.tweenTo("null", 0);
+        machine.tweenToView("null", 0);
         machine.tick(context(1));
         expect(navigation.ins.orbit.value[1]).to.equal(350);
         machine.removeTargetProperty(navigation.ins.orbit);
         machine.removeTargetProperty(navigation.ins.offset);
-        machine.tweenTo("null", 1);
+        machine.tweenToView("null", 1);
         machine.tick(context(2));
         expect(navigation.ins.orbit.value[1]).to.equal(350);
     });
@@ -192,9 +227,9 @@ describe("Camera transitions", function() {
                 } as any);
             }
             machine.tick(context(0.15)); // 0.3 second minimum, linear easing
-            expect(navigation.ins.orbit.value[1]).to.equal(360);
+            expect(navigation.ins.orbit.value[1]).to.equal(0);
             machine.tick(context(0.3));
-            expect(navigation.ins.orbit.value[1]).to.equal(370);
+            expect(navigation.ins.orbit.value[1]).to.equal(10);
             expect(navigation.ins.autoRotation.value).to.equal(false);
             expect(viewerIns.activeAnnotation.value).to.equal("selected");
             expect(JSON.stringify(saved)).to.equal(original);
@@ -235,19 +270,19 @@ describe("Camera transitions", function() {
     });
 
     for (const cancel of [false, true]) {
-        it(`normalizes a reordered delta and restores targets after ${cancel ? "cancellation" : "completion"}`, function() {
+        it(`preserves authored turns in a reordered delta and restores targets after ${cancel ? "cancellation" : "completion"}`, function() {
             const { machine, navigation } = fixture();
             const originalTargets = machine.getTargetProperties();
             const delta: IDeltaState = { id: "delta", title: "Camera", paths: ["navigation/orbit"],
-                values: [[0, 10, 0]], duration: 1, curve: EEasingCurve.Linear, threshold: 0.5 };
+                values: [[0, 1090, 0]], duration: 1, curve: EEasingCurve.Linear, threshold: 0.5 };
             machine.setState(delta);
             machine.addIns.deltaID.setValue("delta");
             machine.addIns.activateDelta.set();
             machine.update(context(0));
             machine.resetChanged();
             machine.tick(context(0.5));
-            expect(navigation.ins.orbit.value[1]).to.equal(360);
-            expect(delta.values).to.deep.equal([[0, 10, 0]]);
+            expect(navigation.ins.orbit.value[1]).to.equal(720);
+            expect(delta.values).to.deep.equal([[0, 1090, 0]]);
             let completed = false;
             machine.outs.end.once("value", () => completed = true);
             if (cancel) { machine.cancelTween(); }
@@ -255,7 +290,7 @@ describe("Camera transitions", function() {
             expect(completed).to.equal(!cancel);
             expect(machine.getTargetProperties()).to.deep.equal(originalTargets);
             machine.tick(context(2));
-            expect(navigation.ins.orbit.value[1]).to.equal(cancel ? 360 : 370);
+            expect(navigation.ins.orbit.value[1]).to.equal(cancel ? 720 : 1090);
         });
     }
 
@@ -301,46 +336,123 @@ describe("Camera transitions", function() {
         expect(navigation.ins.orbit.value[1]).to.be.greaterThan(360);
     });
 
-    it("tour first/next/previous steps and exit all pass through the shared transition", function() {
-        const { node, machine, navigation, setup, state } = fixture();
-        state("first");
-        state("second", [0, 350, 0]);
-        const tour = new CVTours(node, "tours");
-        Object.defineProperties(tour, {
-            setup: { value: setup }, snapshots: { value: machine },
-            language: { value: { outs: { activeLanguage: { value: 0 } } } },
+    for (const entryStep of [0, 1]) {
+        it(`entering a tour at step ${entryStep} uses a short arc and ends on the saved turn`, function() {
+            const { tour, machine, navigation, state, update } = tourFixture();
+            state("first");
+            state("second", [0, 730, 0]);
+            tour.ins.tourIndex.setValue(0);
+            // Public setTourStep(..., true) selects a step through the same inputs.
+            tour.outs.stepIndex.setValue(entryStep - 1);
+            tour.ins.next.set();
+            update(0);
+            expect(navigation.ins.orbit.value[1]).to.equal(350);
+            machine.tick(context(0.5));
+            expect(navigation.ins.orbit.value[1]).to.equal(entryStep === 0 ? 0 : 720);
+            machine.tick(context(1));
+            expect(navigation.ins.orbit.value[1]).to.equal(entryStep === 0 ? 10 : 730);
         });
-        const root = document.createElement("div");
-        root.attachShadow({ mode: "open" }).innerHTML = '<span id="sceneview-sr"></span>';
-        (setup.viewer as any).rootElement = root;
-        (tour as any)._tours = [{ titles: {}, leads: {}, steps: ["first", "second"].map(id => ({ id, titles: {}, altTexts: {} })) }];
-        tour.resetChanged();
+    }
+
+    for (const back of ["previous", "first"]) {
+        it(`tour next and ${back} preserve authored turns, including transitions back to step zero`, function() {
+            const { tour, machine, navigation, state, update } = tourFixture();
+            state("first");
+            state("second", [0, 730, 0]);
+            tour.ins.tourIndex.setValue(0);
+            tour.ins.enabled.setValue(true);
+            update(0);
+            machine.tick(context(1));
+            expect(navigation.ins.orbit.value[1]).to.equal(10);
+            tour.ins.next.set();
+            update(2);
+            machine.tick(context(2.5));
+            expect(navigation.ins.orbit.value[1]).to.equal(370);
+            machine.tick(context(3));
+            expect(navigation.ins.orbit.value[1]).to.equal(730);
+            tour.ins[back].set();
+            update(4);
+            machine.tick(context(4.5));
+            expect(navigation.ins.orbit.value[1]).to.equal(370);
+            machine.tick(context(5));
+            expect(navigation.ins.orbit.value[1]).to.equal(10);
+        });
+    }
+
+    it("reselecting the same tour through the API preserves authored steps", function() {
+        const { tour, machine, navigation, state, update } = tourFixture();
+        state("first");
+        state("second", [0, 730, 0]);
         tour.ins.tourIndex.setValue(0);
-        tour.ins.enabled.setValue(true);
-        const update = (time: number) => {
-            tour.update(context(time));
-            tour.resetChanged();
-            machine.update(context(time));
-            machine.resetChanged();
-        };
         update(0);
-        machine.tick(context(0.5));
-        expect(navigation.ins.orbit.value[1]).to.equal(360);
         machine.tick(context(1));
+        // setTourStep(0, 1, true) sets tourIndex even when it hasn't changed.
+        tour.ins.tourIndex.setValue(0);
+        tour.outs.stepIndex.setValue(0);
         tour.ins.next.set();
         update(2);
         machine.tick(context(2.5));
-        expect(navigation.ins.orbit.value[1]).to.equal(360);
+        expect(navigation.ins.orbit.value[1]).to.equal(370);
         machine.tick(context(3));
-        tour.ins.previous.set();
+        expect(navigation.ins.orbit.value[1]).to.equal(730);
+    });
+
+    for (const destination of ["another tour", "the tour menu"]) {
+        it(`selecting from ${destination} enters through the short-arc view path`, function() {
+            const { tour, machine, navigation, state, update } = tourFixture();
+            state("first");
+            state("second", [0, 730, 0]);
+            state("other", [0, 0, 0]);
+            (tour as any)._tours.push({ titles: {}, leads: {}, steps: [{ id: "other", titles: {}, altTexts: {} }] });
+            tour.ins.tourIndex.setValue(0);
+            update(0);
+            machine.tick(context(1));
+            tour.ins.next.set();
+            update(2);
+            machine.tick(context(3));
+            if (destination === "the tour menu") {
+                tour.ins.next.set();
+                update(4);
+                expect(tour.outs.tourIndex.value).to.equal(-1);
+                tour.ins.tourIndex.setValue(0);
+            }
+            else {
+                tour.ins.tourIndex.setValue(1);
+            }
+            update(5);
+            machine.tick(context(5.5));
+            expect(navigation.ins.orbit.value[1]).to.equal(destination === "the tour menu" ? 10 : 5);
+            machine.tick(context(6));
+            expect(navigation.ins.orbit.value[1]).to.equal(destination === "the tour menu" ? 10 : 0);
+        });
+    }
+
+    it("leaving and re-entering a tour uses the shared short arc without changing authored states", function() {
+        const { tour, machine, navigation, state, update } = tourFixture();
+        const first = state("first");
+        const second = state("second", [0, 730, 0]);
+        const saved = JSON.stringify([first, second]);
+        tour.ins.tourIndex.setValue(0);
+        tour.ins.enabled.setValue(true);
+        update(0);
+        machine.tick(context(1));
+        tour.ins.next.set();
+        update(2);
+        machine.tick(context(3));
+        tour.ins.enabled.setValue(false);
         update(4);
         machine.tick(context(4.5));
-        expect(navigation.ins.orbit.value[1]).to.equal(360);
+        expect(navigation.ins.orbit.value[1]).to.equal(355); // EaseOutQuad, 370 -> 350
         machine.tick(context(5));
-        tour.ins.enabled.setValue(false);
-        update(6);
-        machine.tick(context(7));
         expect(navigation.ins.orbit.value[1]).to.equal(350);
+        tour.ins.enabled.setValue(true);
+        tour.ins.first.set();
+        update(6);
+        machine.tick(context(6.5));
+        expect(navigation.ins.orbit.value[1]).to.equal(0);
+        machine.tick(context(7));
+        expect(navigation.ins.orbit.value[1]).to.equal(10);
+        expect(JSON.stringify([first, second])).to.equal(saved);
     });
 
     it("applying a preset or an external pose discards pointer inertia and pending input", function() {
