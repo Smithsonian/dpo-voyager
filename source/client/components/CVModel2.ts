@@ -176,6 +176,8 @@ export default class CVModel2 extends CObject3D
 
     /** Aborts the overlay map request in progress once another one supersedes it. */
     private _overlayLoad: AbortController = null;
+    /** Aborts the variant switch in progress once another one supersedes it. */
+    private _variantLoad: AbortController = null;
 
     private _visible: boolean = true;
     private _boxFrame: Box3Helper = null;
@@ -425,6 +427,7 @@ export default class CVModel2 extends CObject3D
     dispose()
     {
         this._overlayLoad?.abort(new DOMException("The model was disposed", "AbortError"));
+        this._variantLoad?.abort(new DOMException("The model was disposed", "AbortError"));
         this.derivatives.clear();
         this._activeDerivative = null;
         for (let key in this._overlays) {
@@ -695,22 +698,35 @@ export default class CVModel2 extends CObject3D
         }
     }
 
+    /**
+     * Switches to the selected variant. A switch is all or nothing: it waits for every material
+     * the variant needs, and applies none of them if one fails to load.
+     */
     protected updateVariant()
     {
         if(!this.activeDerivative) {
             return;
         }
 
+        const derivative = this.activeDerivative;
+        const variants = derivative.model.userData["variants"];
         const variantName = this.ins.variant.getOptionText();
-        const variantIndex = this.activeDerivative.model.userData["variants"].findIndex( ( v ) => v.name.includes( variantName ) );
+        const variantIndex = variants.findIndex( ( v ) => v.name.includes( variantName ) );
 
         if(variantIndex < 0) {
             return;
         }
 
-        const parser = this.activeDerivative.model.userData["parser"];
+        // glTF material loads can't be cancelled: an aborted switch only applies nothing
+        this._variantLoad?.abort(new DOMException("Superseded by another variant", "AbortError"));
+        const { signal } = this._variantLoad = new AbortController();
 
-        this.object3D.traverse( async ( subobject ) => {
+        const parser = derivative.model.userData["parser"];
+
+        // the material of each mesh in this variant, null for its original material
+        const switches: Promise<[any, Material | null]>[] = [];
+
+        this.object3D.traverse( ( subobject ) => {
             var object = subobject as any;
 
             if ( ! object.isMesh || ! object.userData.gltfExtensions ) return;
@@ -726,13 +742,24 @@ export default class CVModel2 extends CObject3D
             const mapping = meshVariantDef.mappings
                 .find( ( mapping ) => mapping.variants.includes( variantIndex ) );
 
-            if ( mapping ) {
-                parser.getDependency( 'material', mapping.material ).then((variantMat) => {
+            switches.push(mapping
+                ? parser.getDependency( 'material', mapping.material ).then(variantMat => [ object, variantMat ])
+                : Promise.resolve([ object, null ]));
+        } );
+
+        Promise.all(switches).then(materials => {
+            // another variant or derivative may have been selected meanwhile
+            if (signal.aborted || this.activeDerivative !== derivative) {
+                return;
+            }
+
+            materials.forEach(([ object, variantMat ]) => {
+                if ( variantMat ) {
                     const shader = object.material.userData.shader;
                     object.material.copy( variantMat);
                     object.material.userData.shader = shader; // add back shader reference that's lost
                     //parser.assignFinalMaterial( object );
-                    this.activeDerivative.model.userData["variants"].variantMaterials[variantMat.uuid] = variantMat;
+                    variants.variantMaterials[variantMat.uuid] = variantMat;
 
                     // cache variant
                     const material = object.material;
@@ -746,18 +773,23 @@ export default class CVModel2 extends CObject3D
                         doubleSided: material.side == DoubleSide,
                         transparent: material.transparent
                     }
-                });
-            } else {
-                object.material = object.userData.originalMaterial;
-            }
+                } else {
+                    object.material = object.userData.originalMaterial;
+                }
+            });
 
             if (this.ins.override.value) {
                 this.updateMaterial();
             }
             this.outs.variant.setValue(this.ins.variant.value);
-        } );
-        
-        this.outs.updated.set();
+            this.outs.updated.set();
+        }).catch(error => {
+            if (signal.aborted) {
+                return;
+            }
+            console.error(error);
+            Notification.show(`Failed to load variant '${variantName}': ${error.message}`, "warning");
+        });
     }
 
     // helper function to update overlay map state
