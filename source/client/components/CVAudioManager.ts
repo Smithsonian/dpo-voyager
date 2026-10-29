@@ -58,6 +58,7 @@ export default class CVAudioManager extends Component
     private _audioMap: Dictionary<string> = {};
     private _playerUri: string = null;
     private _playRequest = 0;
+    private _useDefaultPlayer = false;
     private _disposed = false;
     private _durationLoads = new Map<IAudioClip, Map<string, IAudioDurationLoad>>();
 
@@ -256,11 +257,13 @@ export default class CVAudioManager extends Component
             }
             entry.duration = buffer.duration;
             this.audioViews[id]?.requestUpdate();
+            this.updateGlobalPlayer();
         }).catch(error => {
             if (current()) {
                 entry.error = error;
                 console.error(`Failed to read audio duration at '${uri}':`, error);
                 this.audioViews[id]?.requestUpdate();
+                this.updateGlobalPlayer();
             }
         });
     }
@@ -275,6 +278,9 @@ export default class CVAudioManager extends Component
     }
 
     setTimeElapsed(time: number) {
+        if (!Number.isFinite(time) || time < 0) {
+            return;
+        }
         if(this.audioPlayer && this.audioView) { 
             if(this.audioPlayer.seekable.length === 0) {
                 this.audioPlayer.addEventListener("canplay",() => this.setTimeElapsed(time), {once: true});
@@ -416,9 +422,8 @@ export default class CVAudioManager extends Component
             outs.isPlaying.setValue(true);
             this.isPlaying = true;
             outs.narrationPlaying.setValue(id == this.narrationId);
-            const duration = this.getDuration(id);
-            outs.globalPlaying.setValue((useDefaultPlayer && duration > 2)
-                || outs.narrationPlaying.value);
+            this._useDefaultPlayer = useDefaultPlayer;
+            this.updateGlobalPlayer();
             Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
             this.analytics.sendProperty("Audio_Play", uri);
         })
@@ -455,10 +460,19 @@ export default class CVAudioManager extends Component
         const { outs } = this;
         
         this.isPlaying = false;
+        this._useDefaultPlayer = false;
         outs.isPlaying.setValue(false);
+        outs.narrationPlaying.setValue(false);
         outs.globalPlaying.setValue(false);
         this.audioView?.requestUpdate();
         this.ins.activeCaption.setValue("");
+    }
+
+    protected updateGlobalPlayer() {
+        const duration = this.getDuration(this.activeId);
+        // Unknown duration must not hide the controls of an otherwise playable clip.
+        this.outs.globalPlaying.setValue(this.outs.narrationPlaying.value || (this._useDefaultPlayer
+            && (isNaN(duration) || duration > 2)));
     }
 
     // Initialize player for a specific audio clip
@@ -611,13 +625,13 @@ export class AudioView extends CustomElement
         const isPlaying = this.audio.outs.isPlaying.value && this.audioId == this.audio.activeId;
         const isGlobal = this.parentElement.id === "global-audio";
         const duration = this.audio.getDuration(this.audioId);
-        const disabledSlider = this.synched ? "disabled" : "";
+        const canSeek = duration > 0;
         const elapsedStr = this.formatSeconds(this.elapsed);
-        const durationStr = isNaN(duration) ? "pending" : this.formatSeconds(duration);
+        const durationStr = this.formatSeconds(duration);
         const exitBtn = isGlobal ? html`<ff-button title="exit audio" id="exit-btn" icon="close" @pointerdown=${this.stopAudio}></ff-button>` : null;
         return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId, isGlobal)}></ff-button>
             <div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div>
-            <input title="audio slider" ?disabled=${this.synched} id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" step="0.1" max="${duration}" value="${this.elapsed}" class="slider">
+            <input title="audio slider" ?disabled=${this.synched || !canSeek} id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" step="0.1" max="${canSeek ? duration : 0}" value="${this.elapsed}" class="slider">
             ${exitBtn}`;
     }
 
@@ -661,21 +675,21 @@ export class AudioView extends CustomElement
 
     protected onTimeChange() {
         const isActive = this.audioId == this.audio.activeId;
+        const duration = this.audio.getDuration(this.audioId);
 
-        if(isActive) {
+        if(isActive && !this.synched && duration > 0) {
+            const time = parseFloat((this.querySelector("#time-slider") as HTMLInputElement).value);
             this.audio.initializeClip(this.audioId);
-            this.audio.setTimeElapsed(parseFloat((this.querySelector("#time-slider") as HTMLInputElement).value) | 0);
+            this.audio.setTimeElapsed(Math.max(0, Math.min(duration, time)));
         }
     }
 
     // Format seconds in friendlier datetime-like string
     protected formatSeconds(seconds: number) {
-        if (!Number.isFinite(seconds)) {
+        if (!Number.isFinite(seconds) || seconds < 0) {
             return "--:--";
         }
-        var date = new Date(0);
-        date.setSeconds(seconds);
-        var formatString = date.toISOString().substring(14, 19);
-        return formatString;
+        return Math.floor(seconds / 60).toString().padStart(2, "0") + ":"
+            + Math.floor(seconds % 60).toString().padStart(2, "0");
     }
 }
