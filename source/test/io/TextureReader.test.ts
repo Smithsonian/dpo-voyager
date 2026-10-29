@@ -8,11 +8,13 @@ describe("TextureReader", function(){
   let reader: TextureReader;
   /** Completes the texture load in progress */
   let load: (texture: Texture) => void;
+  /** Fails it, as an image element does */
+  let fail: (event: Event) => void;
 
   beforeEach(function(){
     reader = new TextureReader(new LoadingManager());
     // there are no images to decode in Node
-    (reader as any).textureLoader = { load: (url, onLoad) => load = onLoad };
+    (reader as any).textureLoader = { load: (url, onLoad, onProgress, onError) => { load = onLoad; fail = onError; } };
   });
 
   it("resolves with the loaded texture", async function(){
@@ -21,6 +23,15 @@ describe("TextureReader", function(){
     load(texture);
 
     expect(await loading).to.equal(texture);
+  });
+
+  it("tells which texture failed to load", async function(){
+    const loading = reader.get("http://example.com/a.jpg", "a.jpg");
+    fail(new Event("error"));
+
+    let error: any;
+    await loading.catch(e => error = e);
+    expect(error.message).to.contain("http://example.com/a.jpg");
   });
 
   it("rejects with the signal's reason once aborted, and disposes of a texture arriving later", async function(){
