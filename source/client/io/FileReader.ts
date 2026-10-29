@@ -63,14 +63,15 @@ export default class FileReader
      * Get text. Will prefer text/html over text/plain if url ends with .html.
      * Fails as [[fetchOk]] does.
      */
-    async getText(url: string): Promise<any>
+    async getText(url: string, {signal}:{signal?:AbortSignal}={}): Promise<any>
     {
         //this._loadingManager.itemStart(url);
 
         return fetchOk(url, {
             headers: {
                 "Accept": url.endsWith(".html")?"text/html":"text/plain"
-            }
+            },
+            signal,
         }).then(result => {
             //this._loadingManager.itemEnd(url);
             return result.text();
