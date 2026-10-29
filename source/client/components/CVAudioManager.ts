@@ -32,6 +32,15 @@ import CVActionManager from "./CVActionManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+interface IAudioDurationLoad {
+    uri: string;
+    /** In seconds, NaN while unknown. */
+    duration: number;
+    /** Why the request failed. Play retries it. */
+    error: Error;
+    controller: AbortController;
+}
+
 /**
  * Component that manages audio settings and functions.
  */
@@ -50,6 +59,7 @@ export default class CVAudioManager extends Component
     private _playerUri: string = null;
     private _playRequest = 0;
     private _disposed = false;
+    private _durationLoads = new Map<IAudioClip, Map<string, IAudioDurationLoad>>();
 
     protected audioClips: Dictionary<IAudioClip> = {};
     protected audioPlayer: HTMLAudioElement = null;
@@ -119,6 +129,8 @@ export default class CVAudioManager extends Component
     dispose()
     {
         this._disposed = true;
+        this._durationLoads.forEach(loads => loads.forEach(entry => entry.controller.abort()));
+        this._durationLoads.clear();
         ++this._playRequest;
         this.audioPlayer?.pause();
         this.audioPlayer?.removeAttribute("src");
@@ -190,51 +202,67 @@ export default class CVAudioManager extends Component
         return clip ? clip.captionUris[ELanguageType[this.language.outs.activeLanguage.value]] : null;
     }
 
-    getDuration(id: string) {
+    /** The clip's duration in seconds, NaN while unknown, as for media elements. Starts no request. */
+    getDuration(id: string): number {
+        return this.durationLoad(id)?.duration ?? NaN;
+    }
+
+    /** The duration request for the clip's file in the active language, if any. */
+    private durationLoad(id: string): IAudioDurationLoad {
         const clip = this.audioClips[id];
-        const activeLanguage = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType;
-        if (!clip?.uris[activeLanguage]) {
-            return "unknown";
-        }
-        const cachedDuration = clip.durations[activeLanguage];
-        if(cachedDuration) {
-            return cachedDuration;
-        }
-        else {
-            const durations = clip.durations;
-            const current = () => !this._disposed && this.audioClips[id] === clip && clip.durations === durations;
-            Object.keys(clip.uris).forEach(language => {
-                const uri = clip.uris[language];
-                if(uri && !durations[language]) {
-                    durations[language] = "pending";
+        const language = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()];
+        const entry = this._durationLoads.get(clip)?.get(language);
+        return entry && entry.uri === clip.uris[language] ? entry : null;
+    }
 
-                    this.assetReader.getAudio(uri).then((arrayBuffer) => {
-                        if (!current()) {
-                            return;
-                        }
-                        if(!Object.keys(this._audioMap).includes(uri)) {
-                            const blob = new Blob([arrayBuffer], { type: "audio/mpeg" });
-                            const url = window.URL.createObjectURL(blob);
-                            this._audioMap[uri] = url;
-                        }
-                        return this.audioContext.decodeAudioData(arrayBuffer).then(buffer => {
-                            if (current()) {
-                                durations[language] = buffer.duration.toString();
-                                this.audioViews[id]?.requestUpdate();
-                            }
-                        });
-                    }).catch(error => {
-                        if (current()) {
-                            durations[language] = "unknown";
-                            console.error(`Failed to read audio duration at '${uri}':`, error);
-                            this.audioViews[id]?.requestUpdate();
-                        }
-                    });
-                }
-            });
-
-            return "pending";
+    /** Prepares only the active language. Failed preparations retry only on an explicit request. */
+    loadDuration(id: string, { retry = false }: { retry?: boolean } = {}) {
+        const clip = this.audioClips[id];
+        const language = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()];
+        const uri = clip?.uris[language];
+        if (this._disposed || !uri) {
+            return;
         }
+
+        let entries = this._durationLoads.get(clip);
+        if (!entries) {
+            this._durationLoads.set(clip, entries = new Map());
+        }
+        const previous = entries.get(language);
+        if (previous?.uri === uri && (!previous.error || !retry)) {
+            return;
+        }
+        previous?.controller.abort(new DOMException("Superseded by another audio file", "AbortError"));
+
+        const entry: IAudioDurationLoad = { uri, duration: NaN, error: null, controller: null };
+        entries.set(language, entry);
+        const { signal } = entry.controller = new AbortController();
+        const current = () => !this._disposed && !signal.aborted && this.audioClips[id] === clip
+            && clip.uris[language] === uri && entries.get(language) === entry;
+
+        this.assetReader.getAudio(uri).then(async bytes => {
+            if (!current()) {
+                return;
+            }
+            if (!this._audioMap[uri]) {
+                this._audioMap[uri] = window.URL.createObjectURL(new Blob([bytes]));
+            }
+            const buffer = await this.audioContext.decodeAudioData(bytes);
+            if (!current()) {
+                return;
+            }
+            if (!Number.isFinite(buffer.duration) || buffer.duration < 0) {
+                throw new Error("Audio has no finite duration");
+            }
+            entry.duration = buffer.duration;
+            this.audioViews[id]?.requestUpdate();
+        }).catch(error => {
+            if (current()) {
+                entry.error = error;
+                console.error(`Failed to read audio duration at '${uri}':`, error);
+                this.audioViews[id]?.requestUpdate();
+            }
+        });
     }
 
     getTimeElapsed() {
@@ -267,9 +295,13 @@ export default class CVAudioManager extends Component
 
     removeAudioClip(id: string)
     {
-        if(this.isPlaying && id == this.activeId) {
+        if(id === this.activeId || this.audioView?.audioId === id) {
             this.stop();
         }
+        const clip = this.audioClips[id];
+        this._durationLoads.get(clip)?.forEach(entry => entry.controller.abort());
+        this._durationLoads.delete(clip);
+        delete this.audioViews[id];
 
         // check for audio ids in annotations
         const views = this.system.getComponents(CVAnnotationView); 
@@ -290,8 +322,15 @@ export default class CVAudioManager extends Component
 
     updateAudioClip(id: string)
     {
-        this.audioClips[id].durations = {};
-        this.getDuration(id);
+        const clip = this.audioClips[id];
+        this._durationLoads.get(clip)?.forEach((entry, language, entries) => {
+            if (entry.uri !== clip.uris[language]) {
+                entry.controller.abort(new DOMException("Audio file changed", "AbortError"));
+                entries.delete(language);
+            }
+        });
+        this.loadDuration(id);
+        this.audioViews[id]?.requestUpdate();
         this.outs.updated.set();
     }
 
@@ -349,11 +388,7 @@ export default class CVAudioManager extends Component
 
         const request = ++this._playRequest;
         this.audioView = this.getPlayerById(id);
-        const language = ELanguageType[this.language.outs.activeLanguage.value];
-        if (this.audioClips[id].durations[language] === "unknown") {
-            delete this.audioClips[id].durations[language];
-            this.getDuration(id);
-        }
+        this.loadDuration(id, { retry: true });
 
         // handle currently playing track
         if(outs.isPlaying.value) {
@@ -381,7 +416,9 @@ export default class CVAudioManager extends Component
             outs.isPlaying.setValue(true);
             this.isPlaying = true;
             outs.narrationPlaying.setValue(id == this.narrationId);
-            outs.globalPlaying.setValue((useDefaultPlayer && +this.getDuration(id) > 2) || outs.narrationPlaying.value);
+            const duration = this.getDuration(id);
+            outs.globalPlaying.setValue((useDefaultPlayer && duration > 2)
+                || outs.narrationPlaying.value);
             Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
             this.analytics.sendProperty("Audio_Play", uri);
         })
@@ -513,6 +550,17 @@ export default class CVAudioManager extends Component
 
     protected onLanguageChange() {
         this.stop();
+        const language = ELanguageType[this.language.outs.activeLanguage.value];
+        this._durationLoads.forEach(entries => entries.forEach((entry, key) => {
+            if (key !== language && isNaN(entry.duration) && !entry.error) {
+                entry.controller.abort(new DOMException("Audio language changed", "AbortError"));
+                entries.delete(key);
+            }
+        }));
+        Object.keys(this.audioClips).forEach(id => {
+            this.loadDuration(id);
+            this.audioViews[id]?.requestUpdate();
+        });
     }
 }
 
@@ -565,7 +613,7 @@ export class AudioView extends CustomElement
         const duration = this.audio.getDuration(this.audioId);
         const disabledSlider = this.synched ? "disabled" : "";
         const elapsedStr = this.formatSeconds(this.elapsed);
-        const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
+        const durationStr = isNaN(duration) ? "pending" : this.formatSeconds(duration);
         const exitBtn = isGlobal ? html`<ff-button title="exit audio" id="exit-btn" icon="close" @pointerdown=${this.stopAudio}></ff-button>` : null;
         return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId, isGlobal)}></ff-button>
             <div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div>
