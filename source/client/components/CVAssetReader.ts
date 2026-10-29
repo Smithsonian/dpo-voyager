@@ -95,10 +95,10 @@ export default class CVAssetReader extends Component
         return (this.systemAssetPath || DEFAULT_SYSTEM_ASSET_PATH) + assetPath;
     }
 
-    async getJSON(assetPath: string): Promise<any>
+    async getJSON(assetPath: string, {signal}:{signal?:AbortSignal}={}): Promise<any>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
-        return this.fileLoader.getJSON(url);
+        return this.fileLoader.getJSON(url, {signal});
     }
 
     async getText(assetPath: string): Promise<string>

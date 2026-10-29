@@ -31,7 +31,7 @@ export default class FileReader
         this._loadingManager = loadingManager;
     }
 
-    async getJSON(url: string): Promise<any>
+    async getJSON(url: string, {signal}:{signal?:AbortSignal}={}): Promise<any>
     {
         this._loadingManager.itemStart(url);
 
@@ -39,7 +39,8 @@ export default class FileReader
             const result = await fetch(url, {
                 headers: {
                     "Accept": "application/json"
-                }
+                },
+                signal,
             });
 
             if (!result.ok) {
