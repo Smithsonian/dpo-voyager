@@ -47,6 +47,9 @@ export default class CVAudioManager extends Component
     private _narrationId: string = null;
     private _activeId: string = null;
     private _audioMap: Dictionary<string> = {};
+    private _playerUri: string = null;
+    private _playRequest = 0;
+    private _disposed = false;
 
     protected audioClips: Dictionary<IAudioClip> = {};
     protected audioPlayer: HTMLAudioElement = null;
@@ -115,6 +118,10 @@ export default class CVAudioManager extends Component
 
     dispose()
     {
+        this._disposed = true;
+        ++this._playRequest;
+        this.audioPlayer?.pause();
+        this.audioPlayer?.removeAttribute("src");
         // Clean up cached audio
         Object.keys(this._audioMap).forEach(( key ) => URL.revokeObjectURL( this._audioMap[key] ));
         Object.keys(this.audioViews).forEach(( key ) => this.audioViews[key] = null);
@@ -186,31 +193,42 @@ export default class CVAudioManager extends Component
     getDuration(id: string) {
         const clip = this.audioClips[id];
         const activeLanguage = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType;
+        if (!clip?.uris[activeLanguage]) {
+            return "unknown";
+        }
         const cachedDuration = clip.durations[activeLanguage];
         if(cachedDuration) {
             return cachedDuration;
         }
         else {
-            const clip = this.audioClips[id];
+            const durations = clip.durations;
+            const current = () => !this._disposed && this.audioClips[id] === clip && clip.durations === durations;
             Object.keys(clip.uris).forEach(language => {
                 const uri = clip.uris[language];
-                if(uri) {
-                    const absUri = this.assetManager.getAssetUrl(uri);
-                    clip.durations[language] = "pending";
+                if(uri && !durations[language]) {
+                    durations[language] = "pending";
 
                     this.assetReader.getAudio(uri).then((arrayBuffer) => {
+                        if (!current()) {
+                            return;
+                        }
                         if(!Object.keys(this._audioMap).includes(uri)) {
                             const blob = new Blob([arrayBuffer], { type: "audio/mpeg" });
                             const url = window.URL.createObjectURL(blob);
                             this._audioMap[uri] = url;
                         }
-                        this.audioContext.decodeAudioData(arrayBuffer,
-                            (buffer) => {
-                                let duration = buffer.duration;
-                                clip.durations[language] = duration.toString();
-                                language === activeLanguage ? this.getPlayerById(id).requestUpdate() : null;                                         
+                        return this.audioContext.decodeAudioData(arrayBuffer).then(buffer => {
+                            if (current()) {
+                                durations[language] = buffer.duration.toString();
+                                this.audioViews[id]?.requestUpdate();
                             }
-                        )                                         
+                        });
+                    }).catch(error => {
+                        if (current()) {
+                            durations[language] = "unknown";
+                            console.error(`Failed to read audio duration at '${uri}':`, error);
+                            this.audioViews[id]?.requestUpdate();
+                        }
                     });
                 }
             });
@@ -323,11 +341,18 @@ export default class CVAudioManager extends Component
     {
         const { outs } = this;
         const uri = this.getAudioClipUri(id);
-        this.audioView = this.audioViews[id];
 
         if(!uri) {
             Notification.show("Failed to play audio clip - no uri", "warning");
             return;
+        }
+
+        const request = ++this._playRequest;
+        this.audioView = this.getPlayerById(id);
+        const language = ELanguageType[this.language.outs.activeLanguage.value];
+        if (this.audioClips[id].durations[language] === "unknown") {
+            delete this.audioClips[id].durations[language];
+            this.getDuration(id);
         }
 
         // handle currently playing track
@@ -335,6 +360,7 @@ export default class CVAudioManager extends Component
             this.audioPlayer.pause();
         }
 
+        this.initializeClip(id);
         if(this.activeId !== id) {
             this.setTimeElapsed(0);
         }
@@ -346,10 +372,11 @@ export default class CVAudioManager extends Component
             this.audioView.synched = true;
         }
 
-        this.initializeClip(id);
-        
         this.audioPlayer.play()
         .then(() => {
+            if (this._disposed || request !== this._playRequest) {
+                return;
+            }
             this.activeId = id;
             outs.isPlaying.setValue(true);
             this.isPlaying = true;
@@ -358,11 +385,16 @@ export default class CVAudioManager extends Component
             Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
             this.analytics.sendProperty("Audio_Play", uri);
         })
-        .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));
+        .catch(error => {
+            if (!this._disposed && request === this._playRequest) {
+                Notification.show(`Failed to play audio at '${uri}': ${error}`, "warning");
+            }
+        });
     }
 
     pause()
     {
+        ++this._playRequest;
         if(!this.audioPlayer) {
             return;
         } 
@@ -401,9 +433,14 @@ export default class CVAudioManager extends Component
         const clip = this.audioClips[id];
         if(clip) {
             const uri = clip.uris[ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType];
-            if(this.audioPlayer.src != this._audioMap[uri]) {
-                this.audioPlayer.setAttribute("src", this._audioMap[uri]);
-                //this.audioPlayer.load();
+            if (!uri) {
+                return;
+            }
+            const assetUrl = this.assetManager.getAssetUrl(uri);
+            // Keep a streaming source stable if its cached blob arrives during playback.
+            if(this._playerUri !== assetUrl) {
+                this.audioPlayer.setAttribute("src", this._audioMap[uri] || assetUrl);
+                this._playerUri = assetUrl;
             }
 
             // Set caption track source
@@ -585,6 +622,9 @@ export class AudioView extends CustomElement
 
     // Format seconds in friendlier datetime-like string
     protected formatSeconds(seconds: number) {
+        if (!Number.isFinite(seconds)) {
+            return "--:--";
+        }
         var date = new Date(0);
         date.setSeconds(seconds);
         var formatString = date.toISOString().substring(14, 19);
