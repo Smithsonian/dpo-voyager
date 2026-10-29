@@ -45,7 +45,6 @@ import { ELanguageType, EUnitType } from "client/schema/common";
 import CVAssetReader from "./CVAssetReader";
 import CVAssetManager from "./CVAssetManager";
 import CVSnapshots from "./CVSnapshots";
-import CVOrbitNavigation from "./CVOrbitNavigation";
 import CPulse from "client/../../libs/ff-graph/source/components/CPulse";
 import CVScene from "./CVScene";
 import CVSetup from "./CVSetup";
@@ -209,23 +208,8 @@ export default class CVAnnotationView extends CObject3D
                     this._activeView = false;
                 }
 
-                // stop auto-rotation when an annotation is activated
-                const navigation = this.getGraphComponent(CVOrbitNavigation, true);
-                if (navigation) {
-                    navigation.ins.autoRotation.setValue(false);
-                    navigation.ins.isInUse.setValue(true);
-                }
-
-                this.normalizeViewOrbit(annotation.data.viewId);
-                
-                // If activeAnnotation is being tracked, make sure it is set
-                const activeIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "ActiveId");
-                if (activeIdx >= 0) {
-                    viewState.values[activeIdx] = annotation.data.id;
-                }
-
                 const pulse = this.getMainComponent(CPulse);
-                this.snapshots.tweenTo(annotation.data.viewId, pulse.context.secondsElapsed);
+                this.snapshots.tweenToAnnotationView(annotation.data.viewId, pulse.context.secondsElapsed, annotation.data.id);
                 this._activeView = true;
             }
         }
@@ -648,27 +632,4 @@ export default class CVAnnotationView extends CObject3D
         ins.article.setOptions(names);
     }
 
-    // helper function to bring saved state orbit into alignment with current view orbit
-    protected normalizeViewOrbit(viewId: string) {
-        const orbitIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Orbit");
-        const viewState = this.snapshots.getState(viewId);
-
-        const currentOrbit = this.snapshots.getCurrentValues()[orbitIdx];
-        let angleOffset = 0;
-        currentOrbit.forEach((n, i) => {
-            const mult = Math.round((n-viewState.values[orbitIdx][i])/360);
-            viewState.values[orbitIdx][i] += 360*mult;
-            angleOffset += Math.abs(n-viewState.values[orbitIdx][i]);
-        });
-
-        // Factor offset into duration calculation
-        const scene = this.getGraphComponent(CVScene);
-        const bounds = scene.outs.boundingRadius.value;
-        const offsetIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Offset");
-        const currentOffset = this.snapshots.getCurrentValues()[offsetIdx];
-        const offset = viewState.values[offsetIdx];
-        const dist = Math.sqrt(Math.pow(offset[0]-currentOffset[0],2)+Math.pow(offset[1]-currentOffset[1],2)+Math.pow(offset[2]-currentOffset[2],2));
-
-        viewState.duration = Math.min(Math.max(angleOffset/180, dist/bounds, 0.3),1.5); // max 1.5s, min 0.3s
-    }
 }

@@ -208,8 +208,6 @@ export default class CVTours extends Component
                 outs.tourIndex.set();
                 this.snapshots.endTween();
 
-                this.normalizeViewOrbit(CVTours.sceneSnapshotId);
-
                 // recall pre-tour scene state
                 machine.tweenTo(CVTours.sceneSnapshotId, context.secondsElapsed);
                 machine.deleteState(CVTours.sceneSnapshotId);
@@ -273,13 +271,8 @@ export default class CVTours extends Component
             nextStepIndex = (outs.stepIndex.value + stepCount - 1) % stepCount;
         }
 
-        // normalize orbit on tour start
-        if(nextStepIndex === 0) {
-            this.snapshots.endTween();
-            this.normalizeViewOrbit(tour.steps[0].id);
-        }
-
         if (nextStepIndex >= 0) {
+            this.snapshots.endTween();
             navigation.setChanged(true); // disable autoZoom
             // tween to the next step
             const step = tour.steps[nextStepIndex];
@@ -377,16 +370,4 @@ export default class CVTours extends Component
         });
     }
 
-    // helper function to bring saved state orbit into alignment with current view orbit
-    protected normalizeViewOrbit(viewId: string) {
-        const orbitIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Orbit");
-        const viewState = this.snapshots.getState(viewId);
-        const currentOrbit = this.snapshots.getCurrentValues()[orbitIdx];
-        if(viewState) {
-            currentOrbit.forEach((n, i) => {
-                const mult = Math.round((viewState.values[orbitIdx][i]-n)/360);
-                this.snapshots.getTargetProperties()[orbitIdx].value[i] += 360*mult;
-            });
-        }
-    }
 }

@@ -29,6 +29,8 @@ import CVModel2 from "./CVModel2";
 import Property, { types } from "@ff/graph/Property";
 import CVTours from "./CVTours";
 import CVAnnotationView from "./CVAnnotationView";
+import CVScene from "./CVScene";
+import { nearestCameraOrbit } from "client/utils/CameraTransition";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,6 +42,7 @@ export default class CVSnapshots extends CTweenMachine
 
     targetFeatures: Dictionary<boolean> = {};
     deltaStates: IDeltaState[] = [];
+    private _deltaTargetCache: ITargetEntry[] = null;
 
     protected static readonly snapshotAddIns = {
         deltaID: types.String("Snapshot.deltaID"),
@@ -78,6 +81,87 @@ export default class CVSnapshots extends CTweenMachine
         return true;
     }
 
+    /** Annotation playback in both Explorer and the editor uses the same timing. */
+    tweenToAnnotationView(viewId: string, secondsElapsed: number, annotationId: string)
+    {
+        const state = this.getState(viewId);
+        if (!state) {
+            return false;
+        }
+        const navigation = this.getGraphComponent(CVSetup).navigation;
+        navigation.ins.autoRotation.setValue(false);
+        navigation.ins.isInUse.setValue(true);
+        navigation.setChanged(true);
+        const values = state.values.slice();
+        const activeId = this.getGraphComponent(CVSetup).viewer.ins.activeAnnotation;
+        const index = this.targets.findIndex(target => target.property === activeId);
+        if (index >= 0) {
+            values[index] = annotationId;
+        }
+        return this.startTween({ ...state, values }, secondsElapsed, true);
+    }
+
+    protected startTween(state: ITweenState, secondsElapsed: number, annotationView = false)
+    {
+        const navigation = this.getGraphComponent(CVSetup).navigation;
+        const { orbit, minOrbit, maxOrbit } = navigation.ins;
+        const current = this.getCurrentValues();
+        const values = state.values.slice();
+        const orbitIdx = this.targets.findIndex(target => target.property === orbit);
+        let angleDistance = 0;
+        if (orbitIdx >= 0 && values[orbitIdx] != null) {
+            values[orbitIdx] = nearestCameraOrbit(current[orbitIdx], values[orbitIdx], minOrbit.value, maxOrbit.value);
+            angleDistance = values[orbitIdx].reduce((sum, angle, axis) => sum + Math.abs(angle - current[orbitIdx][axis]), 0);
+        }
+
+        let duration = state.duration;
+        if (annotationView) {
+            // Include all positional camera channels, including future ones (e.g. pivot).
+            const distance = this.targets.reduce((sum, target, index) => {
+                if (target.property === orbit || !target.isNumber || !target.isArray
+                    || !navigation.snapshotProperties.includes(target.property)
+                    || values[index] == null) {
+                    return sum;
+                }
+                return sum + Math.hypot(...values[index].map((value, axis) => value - current[index][axis]));
+            }, 0);
+            const bounds = this.getGraphComponent(CVScene).outs.boundingRadius.value;
+            const relativeDistance = distance === 0 ? 0 : bounds > 0 ? distance / bounds : Infinity;
+            duration = Math.min(Math.max(angleDistance / 180, relativeDistance, 0.3), 1.5);
+        }
+
+        // Preserve saved states, including delta paths needed by endTween().
+        return super.startTween({ ...state, values, duration }, secondsElapsed);
+    }
+
+    cancelTween()
+    {
+        super.cancelTween();
+        this.addIns.activateDelta.changed = false;
+        this.restoreDeltaTargets();
+    }
+
+    private restoreDeltaTargets()
+    {
+        if (this._deltaTargetCache) {
+            this.targets = this._deltaTargetCache;
+            this._deltaTargetCache = null;
+            this.outs.end.off("value", this.restoreDeltaTargets, this);
+        }
+    }
+
+    /** Annotation views only store properties declared by navigation. */
+    keepCameraValues(values: any[]): any[]
+    {
+        const properties = this.getGraphComponent(CVSetup).navigation.snapshotProperties;
+        this.targets.forEach((target, index) => {
+            if (!properties.includes(target.property)) {
+                values[index] = null;
+            }
+        });
+        return values;
+    }
+
     initializeTargetFeatures()
     {
         const features = this.targetFeatures;
@@ -111,18 +195,9 @@ export default class CVSnapshots extends CTweenMachine
             // Handle properties getting added to annotation views after initial setup
             model.getComponent(CVAnnotationView).getAnnotations().forEach(anno => {
                 if(anno.data.viewId) {
-                    const props = this.getTargetProperties();
-                    const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
-                    const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
-
-                    // set non camera properties to null to skip them
                     const values = this.states[anno.data.viewId]?.values;
                     if(values) {
-                        values.forEach((v, idx) => {
-                            if(idx != orbitIdx && idx != offsetIdx) {
-                                values[idx] = null;
-                            }
-                        });
+                        this.keepCameraValues(values);
                     }
                     else {
                         console.warn("Unknown view state for anno: " + anno.title);
@@ -155,9 +230,8 @@ export default class CVSnapshots extends CTweenMachine
         
         const id = this.addIns.deltaID.value;
         const state = this.getState(id) as IDeltaState;
-        const targetCache : ITargetEntry[] = [];
-        this.targets.forEach(target => { targetCache.push(target);});
-        this.targets.length = 0;
+        this._deltaTargetCache = this.targets;
+        this.targets = [];
         state.paths.forEach(path => {
             const pathTokens = path.split('/');
             const property = this.getProperty(pathTokens[0], pathTokens[1]);
@@ -170,7 +244,7 @@ export default class CVSnapshots extends CTweenMachine
         this.ins.id.setValue(id);
         this.ins.tween.set();
 
-        this.outs.end.once("value", () => {this.targets.length = 0; this.targets.push(...targetCache);}, this);
+        this.outs.end.once("value", this.restoreDeltaTargets, this);
     }
 
     protected onLightComponentEvent = (event: IObjectEvent<CLight>) => {

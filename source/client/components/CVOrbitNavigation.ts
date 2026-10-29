@@ -226,6 +226,7 @@ export default class CVOrbitNavigation extends CObject3D
 
         // orbit, offset and limits
         if (orbit.changed || offset.changed) {
+            controller.stop();
             controller.orbit.fromArray(orbit.value);
             controller.offset.fromArray(offset.value);
         }
@@ -255,6 +256,7 @@ export default class CVOrbitNavigation extends CObject3D
 
                 controller.camera = cameraComponent.camera;
             
+                controller.stop();
                 controller.zoomExtents(this._modelBoundingBox);
                 //cameraComponent.ins.zoom.set();
                 this._hasZoomed = true;
@@ -299,7 +301,7 @@ export default class CVOrbitNavigation extends CObject3D
             const delta = (now - this._autoRotationStartTime) * 0.001;
             if(ins.autoRotation.value) {
                 // auto-rotation function
-                controller.orbit.y = (controller.orbit.y + ins.autoRotationSpeed.value * delta) % 360.0;
+                controller.orbit.y += ins.autoRotationSpeed.value * delta;
                 this._autoRotationStartTime = now;
             }
             else {
