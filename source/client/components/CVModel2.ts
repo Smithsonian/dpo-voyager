@@ -174,6 +174,9 @@ export default class CVModel2 extends CObject3D
      */
     private _loadingDerivative :Derivative = null;
 
+    /** Aborts the overlay map request in progress once another one supersedes it. */
+    private _overlayLoad: AbortController = null;
+
     private _visible: boolean = true;
     private _boxFrame: Box3Helper = null;
     private _localBoundingBox = new Box3();
@@ -421,6 +424,7 @@ export default class CVModel2 extends CObject3D
 
     dispose()
     {
+        this._overlayLoad?.abort(new DOMException("The model was disposed", "AbortError"));
         this.derivatives.clear();
         this._activeDerivative = null;
         for (let key in this._overlays) {
@@ -647,12 +651,17 @@ export default class CVModel2 extends CObject3D
     }
 
     updateOverlayMap() {
+        this._overlayLoad?.abort(new DOMException("Superseded by another overlay map", "AbortError"));
+        const { signal } = this._overlayLoad = new AbortController();
+
         // only update if we are not currently tweening
         const setup = this.getGraphComponent(CVSetup, true);
         if (setup && setup.snapshots.outs.tweening.value) {
             setup.snapshots.outs.end.once("value", () => {
-                this.ins.overlayMap.set();
-                this.update();
+                if (!signal.aborted) {
+                    this.ins.overlayMap.set();
+                    this.update();
+                }
             });
             return;
         }
@@ -660,15 +669,24 @@ export default class CVModel2 extends CObject3D
         const overlays = this.getOverlays();
         const currIdx = this.ins.overlayMap.value-1;
         if (currIdx >= 0 && overlays.length > currIdx) {
-            const mapURI = this.getOverlays()[currIdx].asset.data.uri;
-            const texture = this.getOverlay(mapURI).texture;
-            if(texture) {
-                this.updateOverlayMaterial(texture, mapURI);
+            const mapURI = overlays[currIdx].asset.data.uri;
+            const overlay = this.getOverlay(mapURI);
+            if(overlay.texture) {
+                this.updateOverlayMaterial(overlay.texture, mapURI);
             }
             else {
-                this.assetReader.getTexture(mapURI).then(map => {
-                    this.getOverlay(mapURI).texture = map;
-                    this.updateOverlayMaterial(map, mapURI);
+                this.assetReader.getTexture(mapURI, { signal }).then(map => {
+                    overlay.texture = map;
+                    // the texture may have arrived just as another overlay was requested
+                    if (!signal.aborted) {
+                        this.updateOverlayMaterial(map, mapURI);
+                    }
+                }).catch(error => {
+                    if (signal.aborted) {
+                        return;
+                    }
+                    console.error(error);
+                    Notification.show(`Failed to load overlay map: ${error.message}`);
                 });
             }
         }
