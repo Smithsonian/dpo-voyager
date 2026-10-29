@@ -173,6 +173,8 @@ export default class CVModel2 extends CObject3D
      * we want to keep the active model until the new one is ready
      */
     private _loadingDerivative :Derivative = null;
+    /** The load of _loadingDerivative, for whoever asks for the same derivative meanwhile. */
+    private _loading: Promise<void> = null;
 
     /** Aborts the overlay map request in progress once another one supersedes it. */
     private _overlayLoad: AbortController = null;
@@ -341,12 +343,14 @@ export default class CVModel2 extends CObject3D
         }
 
         if (!this.activeDerivative && ins.autoLoad.changed && ins.autoLoad.value) {
+            const tried = this.derivatives.select(EDerivativeUsage.Web3D, ins.quality.value);
             this.autoLoad().then(()=> {
                 let setup = this.getGraphComponent(CVSetup);
                  if (!setup.derivatives.ins.enabled.value){
                     // a model with no Web3D derivative at all (an AR-only model) has nothing to select
                     const derivative = this.derivatives.select(EDerivativeUsage.Web3D, EDerivativeQuality.High);
-                    if (derivative) {
+                    // don't ask again right away for the derivative that just failed
+                    if (derivative && !(this._failed && derivative === tried)) {
                         this.ins.quality.setValue(derivative.data.quality);
                     }
                  }
@@ -947,17 +951,21 @@ export default class CVModel2 extends CObject3D
         if(this._loadingDerivative && this._loadingDerivative != derivative) {
             this._loadingDerivative.unload();
             this._loadingDerivative = null;
+            this._loading = null;
         }
         if (this._activeDerivative == derivative){
             return;
         }
         if(this._loadingDerivative == derivative) {
-            return new Promise(resolve=> this._loadingDerivative.on("load", resolve));
+            return this._loading;
         }
         
         this._loadingDerivative = derivative;
 
-        return derivative.load(this.assetReader)
+        const loaded = derivative.load(this.assetReader)
+            ?? Promise.reject(new Error(`No model or geometry to load for '${this.displayName}'.`));
+
+        const loading = this._loading = loaded
             .then(() => {
                 if ( !derivative.model
                   || !this.node
@@ -978,6 +986,7 @@ export default class CVModel2 extends CObject3D
                 this.unload();
                 this._activeDerivative = derivative;
                 this._loadingDerivative = null;
+                this._loading = null;
                 this.addObject3D(derivative.model);
                 this.renderer.activeSceneComponent.scene.updateMatrixWorld(true);
 
@@ -1079,7 +1088,16 @@ export default class CVModel2 extends CObject3D
                 if (!this._activeDerivative) {
                     this.setError(error);
                 }
+            })
+            .finally(() => {
+                // however the load ended, unless another derivative superseded it
+                if (this._loadingDerivative === derivative) {
+                    this._loadingDerivative = null;
+                    this._loading = null;
+                }
             });
+
+        return loading;
     }
 
     protected addObject3D(object: Object3D)
