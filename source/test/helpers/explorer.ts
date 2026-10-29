@@ -60,7 +60,10 @@ export interface IExplorer
     app: ExplorerApplication;
     assetManager: CVAssetManager;
     readonly document: CVDocument;
-    /** Answers to requests, by file name. Missing files are 404s, missing models and textures load. */
+    /**
+     * Answers to requests, by file name. Missing files are 404s, except for empty language strings.
+     * Missing models and textures load.
+     */
     responses: Map<string, TResponse>;
     /** Requests waiting on a "deferred" response, by file name. */
     pending: Map<string, Deferred<any>>;
@@ -81,7 +84,8 @@ export function createExplorer(): IExplorer
     const events: IViewerEvent[] = [];
 
     const respond = <T>(name: string, signal: AbortSignal, answer: (response: TResponse) => T): Promise<T> => {
-        const response = responses.get(name);
+        // the interface's strings are not what tests are about
+        const response = responses.get(name) ?? (name.startsWith("string.resources.") ? {} as IDocument : undefined);
         if (response === "deferred") {
             const deferred = new Deferred<T>(signal);
             pending.set(name, deferred);

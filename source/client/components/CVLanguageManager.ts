@@ -16,6 +16,7 @@
  */
 
 import Component, { types } from "@ff/graph/Component";
+import Notification from "@ff/ui/Notification";
 import { ILanguage, ILanguageOption } from "client/schema/setup";
 import { ELanguageType, TLanguageType, ELanguageStringType, DEFAULT_LANGUAGE } from "client/schema/common";
 import CVAssetReader from "./CVAssetReader";
@@ -27,6 +28,9 @@ import { enumToArray } from "@ff/core/types";
 export interface ITranslation {
     [key: string]: string;
 }
+
+/** What strings are loaded for: the active language, the interface, or the scene's setup. */
+type TStringsUse = "active" | "ui" | "setup";
 
 
 /**
@@ -47,6 +51,9 @@ export default class CVLanguageManager extends Component
     private _sceneLanguages: {[key in TLanguageType]?: ILanguageOption} = {}; // All available languages in the scene
 
     private _activeSeneLanguageTranslations: ITranslation = {};  // Translation in the active language
+
+    /** Aborts the strings load in progress for each use, once another language supersedes it. */
+    private _stringLoads: Partial<Record<TStringsUse, AbortController>> = {};
 
     static readonly isSystemSingleton = true;
 
@@ -117,18 +124,22 @@ export default class CVLanguageManager extends Component
             || (Object.keys(this._activeSeneLanguageTranslations).length === 0))) {
             const newLanguage = ins.activeLanguage.value;
             this.addLanguage(newLanguage);
-            this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.activeLanguage.value].toLowerCase() + ".json").then( json => {
-                this._activeSeneLanguageTranslations = json;
-                this.updateLanguage(newLanguage);
-                
+            this.loadStrings("active", newLanguage).then( json => {
+                if (json) {
+                    this._activeSeneLanguageTranslations = json;
+                    this.updateLanguage(newLanguage);
+                }
                 //this.analytics.sendProperty("Menu.Language", outs.language.value);
             });          
         }
 
         if (ins.uiLanguage.changed) {
-            this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.uiLanguage.value].toLowerCase() + ".json").then( json => {
-                this._uiLanguageTranslations = json;
-                this.updateUILanguage(ins.uiLanguage.value);
+            const uiLanguage = ins.uiLanguage.value;
+            this.loadStrings("ui", uiLanguage).then( json => {
+                if (json) {
+                    this._uiLanguageTranslations = json;
+                    this.updateUILanguage(uiLanguage);
+                }
             });
         }
 
@@ -143,10 +154,32 @@ export default class CVLanguageManager extends Component
         const language = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
         this.ins.primarySceneLanguage.setValue(ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE]);
 
-        this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.primarySceneLanguage.value].toLowerCase() + ".json").then(json => 
-            {this._sceneSetupTranslations = json});
+        this.loadStrings("setup", this.ins.primarySceneLanguage.value).then(json => {
+            if (json) {
+                this._sceneSetupTranslations = json;
+            }
+        });
 
         ins.activeLanguage.setValue(language);
+    }
+
+    /**
+     * Loads the strings of a language, superseding the previous load for the same use.
+     * Resolves with nothing if superseded, or if they can't be loaded: the current strings stay.
+     */
+    protected loadStrings(use: TStringsUse, language: ELanguageType): Promise<ITranslation | undefined>
+    {
+        this._stringLoads[use]?.abort(new DOMException("Superseded by another language", "AbortError"));
+        const { signal } = this._stringLoads[use] = new AbortController();
+
+        return this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[language].toLowerCase() + ".json", { signal })
+        .then(json => signal.aborted ? undefined : json, error => {
+            if (!signal.aborted) {
+                console.error(error);
+                Notification.show(`Failed to load the ${ELanguageStringType[ELanguageType[language]]} language: ${error.message}`, "warning");
+            }
+            return undefined;
+        });
     }
 
     toData(): ILanguage
