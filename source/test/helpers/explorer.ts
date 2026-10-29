@@ -14,10 +14,14 @@ import ExplorerApplication from "client/applications/ExplorerApplication";
 import CVAssetManager from "client/components/CVAssetManager";
 import CVAssetReader from "client/components/CVAssetReader";
 import CVDocument from "client/components/CVDocument";
+import CVImagePlane from "client/components/CVImagePlane";
 import CVDocumentProvider, { IActiveDocumentEvent } from "client/components/CVDocumentProvider";
 import { IDocument } from "client/schema/document";
 
 import documentTemplate from "client/templates/default.svx.json";
+
+// image planes compile their shader on their first render, which needs WebGL
+Object.assign(CVImagePlane.prototype, { updateShader() {}, updateOverlayMaterial() {} });
 
 // happy-dom has no Web Audio API, which CVAudioManager creates a context of
 if (!globalThis.AudioContext) {
@@ -166,6 +170,8 @@ export interface IModelFixture
     name: string;
     /** Qualities of the model's Web3D derivatives, each served from "<name>-<quality>.glb". */
     qualities?: string[];
+    /** Makes this an image plane, showing the given image instead. */
+    image?: string;
     autoLoad?: boolean;
 }
 
@@ -182,11 +188,13 @@ export function createDocumentData(models: IModelFixture[]): IDocument
         data.nodes.push({ name: model.name, model: data.models.length });
         data.models.push({
             units: "cm",
-            derivatives: (model.qualities || [ "High" ]).map(quality => ({
-                usage: "Web3D",
-                quality,
-                assets: [{ uri: `${model.name}-${quality}.glb`, type: "Model" }],
-            })),
+            derivatives: model.image
+                ? [{ usage: "Image2D", quality: "High", assets: [{ uri: model.image, type: "Image" }] }]
+                : (model.qualities || [ "High" ]).map(quality => ({
+                    usage: "Web3D",
+                    quality,
+                    assets: [{ uri: `${model.name}-${quality}.glb`, type: "Model" }],
+                })),
         });
     });
 

@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { Texture } from "three";
 
 import CVModel2 from "client/components/CVModel2";
 import { HTTPError } from "client/utils/errors";
@@ -56,6 +57,32 @@ describe("Initial scene load", function(){
     expect(explorer.events.find(event => event.type === "scene-error").detail).to.equal(error);
     expect(explorer.document.setup.viewer.outs.sceneLoaded.value).to.be.false;
     expect(explorer.assetManager.outs.initialLoad.value).to.be.false;
+  });
+
+  describe("with image planes", function(){
+    it("waits for their image", async function(){
+      explorer.responses.set("a-High.glb", "model");
+      explorer.responses.set("p.jpg", "deferred");
+      await load({ name: "a" }, { name: "p", image: "p.jpg" });
+      expect(sceneEvents(explorer)).to.deep.equal([]);
+
+      explorer.pending.get("p.jpg").resolve(new Texture({ width: 2, height: 1 }));
+      await explorer.settle();
+
+      expect(sceneEvents(explorer)).to.deep.equal([ "scene-load" ]);
+      expect(explorer.events.map(event => event.type)).to.include("scene-content-load");
+    });
+
+    it("dispatches scene-error when their image fails to load", async function(){
+      const error = new Error("missing image");
+      explorer.responses.set("a-High.glb", "model");
+      explorer.responses.set("p.jpg", error);
+      await load({ name: "a" }, { name: "p", image: "p.jpg" });
+
+      expect(explorer.events.map(event => event.type)).to.include("model-error");
+      expect(sceneEvents(explorer)).to.deep.equal([ "scene-error" ]);
+      expect(explorer.events.find(event => event.type === "scene-error").detail).to.equal(error);
+    });
   });
 
   describe("ends every document load", function(){
