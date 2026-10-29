@@ -156,8 +156,8 @@ export default class CVScene extends CVNode
 
     fromDocument(document: IDocument, scene: IScene)
     {
-        this.ins.units.setValue(EUnitType[scene.units] || this.ins.units.schema.preset);
-        this.outs.units.setValue(EUnitType[scene.units] || this.outs.units.schema.preset);
+        this.ins.units.setValue(scene.units ? EUnitType[scene.units] : this.ins.units.schema.preset);
+        this.outs.units.setValue(scene.units ? EUnitType[scene.units] : this.outs.units.schema.preset);
     }
 
     toDocument(document: IDocument, scene: IScene)
