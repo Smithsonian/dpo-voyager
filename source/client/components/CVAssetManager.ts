@@ -55,7 +55,6 @@ export default class CVAssetManager extends Component
 
     private _loadingManager = new AssetLoadingManager(this);
     private _baseUrl: string = window.location.href;
-    private _initialLoad: boolean = false;
 
     get loadingManager() {
         return this._loadingManager;
@@ -115,6 +114,18 @@ export default class CVAssetManager extends Component
     {
         super.create();
         //this.outs.baseUrl.setValue(window.location.href);
+    }
+
+    /**
+     * Ends the initial load requested through `ins.initialLoad`, whether `outs.initialLoad`
+     * has been raised already or not. The request is only published on a busy notification:
+     * a load that ends before one arrives would otherwise leave it pending, to be raised later
+     * by some unrelated download.
+     */
+    endInitialLoad()
+    {
+        this.outs.initialLoad.setValue(false);
+        this.ins.initialLoad.setValue(false, true);
     }
 
     update()
