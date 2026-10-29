@@ -3,7 +3,7 @@ import { BufferGeometry, Group, Material, Mesh, MeshStandardMaterial, Texture } 
 
 import CVModel2 from "client/components/CVModel2";
 import CVAssetReader from "client/components/CVAssetReader";
-import { EAssetType, EMapType } from "client/schema/model";
+import { EAssetType, EDerivativeQuality, EMapType } from "client/schema/model";
 
 import { createDocumentData, createExplorer, Deferred, IExplorer } from "../helpers/explorer";
 
@@ -155,6 +155,56 @@ describe("CVModel2", function(){
       expect(colors()).to.deep.equal([ red, red ]);
       expect(model.outs.variant.value).to.equal(0);
       expect(unhandled).not.to.include(error);
+    });
+  });
+
+  describe("derivatives", function(){
+    it("doesn't request a derivative that failed to load again on its own", async function(){
+      let requests = 0;
+      const respond = explorer.app.system.getMainComponent(CVAssetReader).getModel;
+      explorer.app.system.getMainComponent(CVAssetReader).getModel = (path, options) => (requests++, respond(path, options));
+      explorer.responses.set("a-High.glb", new Error("offline"));
+      await load();
+
+      expect(requests).to.equal(1);
+      expect(explorer.events.filter(event => event.type === "model-error")).to.have.length(1);
+    });
+
+    it("falls back to the high quality when the thumbnail fails to load", async function(){
+      explorer.responses.set("scene.svx.json", createDocumentData([ { name: "a", qualities: [ "Thumb", "High" ] } ]));
+      explorer.responses.set("a-Thumb.glb", new Error("offline"));
+      await explorer.app.loadDocument("scene.svx.json");
+      await explorer.settle();
+      model = explorer.document.getInnerComponents(CVModel2)[0];
+
+      expect(model.activeDerivative?.data.quality).to.equal(EDerivativeQuality.High);
+    });
+
+    it("loads a derivative again after it failed to load", async function(){
+      explorer.responses.set("a-High.glb", new Error("offline"));
+      await load();
+      expect(model.isLoading()).to.be.false;
+      expect(model.activeDerivative).to.be.null;
+
+      explorer.responses.set("a-High.glb", "model");
+      model.ins.quality.setValue(EDerivativeQuality.High);
+      await explorer.settle();
+
+      expect(model.activeDerivative).to.be.ok;
+      expect(explorer.events.map(event => event.type)).to.include("model-load");
+    });
+
+    it("fails a derivative with nothing to load", async function(){
+      const data = createDocumentData([ { name: "a" } ]);
+      data.models[0].derivatives[0].assets = [ { uri: "a.points", type: "Points" } ] as any;
+      explorer.responses.set("scene.svx.json", data);
+      await explorer.app.loadDocument("scene.svx.json");
+      await explorer.settle();
+      model = explorer.document.getInnerComponents(CVModel2)[0];
+
+      expect(model.isLoading()).to.be.false;
+      expect(model.isSettled).to.be.true;
+      expect(explorer.events.map(event => event.type)).to.include("model-error");
     });
   });
 });
