@@ -1,6 +1,6 @@
 /**
  * Runs a headless ExplorerApplication whose network is under the test's control:
- * files are served by a fetch() stub, models and textures by CVAssetReader.getModel() and getTexture() stubs.
+ * files are served by a fetch() stub, models and textures by CVAssetReader.getModel() and get(System)Texture() stubs.
  * Graph updates don't run on their own: call `update()` or `settle()`.
  */
 // before any module importing a stylesheet
@@ -114,6 +114,8 @@ export function createExplorer(): IExplorer
         respond(path, signal, () => new Group());
     system.getMainComponent(CVAssetReader).getTexture = (path: string, { signal }: { signal?: AbortSignal } = {}) =>
         respond(path, signal, () => new Texture());
+    system.getMainComponent(CVAssetReader).getSystemTexture = (path: string, { signal }: { signal?: AbortSignal } = {}) =>
+        respond(path.split("/").pop(), signal, () => new Texture());
 
     const documentProvider = system.getMainComponent(CVDocumentProvider);
     let milliseconds = Date.now();
