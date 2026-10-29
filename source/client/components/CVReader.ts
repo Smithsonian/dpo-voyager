@@ -106,6 +106,9 @@ export default class CVReader extends Component
 
     protected _articles: Dictionary<IArticleEntry>;
 
+    /** Aborts the article read in progress once another article, or none, is shown. */
+    private _articleLoad: AbortController = null;
+
     create()
     {
         super.create();
@@ -117,6 +120,7 @@ export default class CVReader extends Component
 
     dispose()
     {
+        this.abortArticleRead("The reader was disposed");
         this.graph.components.off(CVLanguageManager, this.onLanguageComponent, this);
         this.graph.components.off(CVMeta, this.onMetaComponent, this);
         this.getGraphComponents(CVMeta).forEach(meta => meta.off<IArticlesUpdateEvent>("update", this.updateArticles, this));
@@ -138,6 +142,7 @@ export default class CVReader extends Component
             }
         }
         if (ins.articleId.changed) {
+            this.abortArticleRead("Superseded by another article");
             const entry = this._articles[ins.articleId.value] || null;
             const article = entry && entry.article;
             //outs.node.setValue(entry && entry.node);
@@ -162,15 +167,31 @@ export default class CVReader extends Component
         const outs = this.outs;
         const uri = article.uri;
 
+        this.abortArticleRead("Superseded by another read");
+        const { signal } = this._articleLoad = new AbortController();
+
         if (!uri) {
             outs.content.setValue(`<h2>Can't display article: no URI.</h2>`);
             return;
         }
 
-        return this.assetReader.getText(uri)
+        return this.assetReader.getText(uri, { signal })
         .then(content => this.parseArticle(content, uri))
-        .then(content => outs.content.setValue(content))
-        .catch(error => outs.content.setValue(`<h2>Article not found at ${uri}</h2>`));
+        .then(content => {
+            signal.throwIfAborted();
+            outs.content.setValue(content);
+        })
+        .catch(error => {
+            if (!signal.aborted) {
+                outs.content.setValue(`<h2>Article not found at ${uri}</h2>`);
+            }
+        });
+    }
+
+    protected abortArticleRead(message: string)
+    {
+        this._articleLoad?.abort(new DOMException(message, "AbortError"));
+        this._articleLoad = null;
     }
 
     protected parseArticle(content: string, articlePath: string): Promise<string>
