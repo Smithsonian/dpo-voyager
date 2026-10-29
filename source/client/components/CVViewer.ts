@@ -46,6 +46,7 @@ export interface IViewerEventDetail
     "model-error": string;
     "scene-content-load": void;
     "scene-load": void;
+    "scene-error": Error;
 }
 
 /** Forces a detail argument on the events that carry one, and forbids it on the others. */
@@ -62,8 +63,11 @@ export default class CVViewer extends Component
     private _rootElement: HTMLElement = null;
     private _needsAnnoFocus: boolean = false;
 
-    /** Models that have loaded the derivative they currently request. Drives the initial load. */
-    private _loadedModels = new Set<CVModel2>();
+    /**
+     * Initial load outcome of the models that have one: `null` once a model has loaded
+     * the derivative it was asked for, the error that prevented it otherwise.
+     */
+    private _loadedModels = new Map<CVModel2, Error>();
 
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
@@ -503,32 +507,59 @@ export default class CVViewer extends Component
         this.updateSceneContentLoaded();
 
         // Track initial scene loading so the spinner is only shown once, during the initial load.
-        // A model counts as loaded when it has loaded the derivative it currently requests:
-        //  - with LOD enabled, that is the quality picked by the derivatives controller
-        //  - otherwise it is the scene quality.
-        if(this.assetManager.outs.initialLoad.value) {
-            const lodEnabled = this.getGraphComponent(CVSetup).derivatives.ins.enabled.value;
-            const requestedQuality = lodEnabled
-                ? event.model.ins.quality.value
-                : event.model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value).data.quality;
-
-            if(event.quality === requestedQuality) {
-                this._loadedModels.add(event.model);
-
-                if(models.every(model => this._loadedModels.has(model))) {
-                    this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
-                    this.analytics.resetTimer();
-                    this.assetManager.endInitialLoad();
-                    this.outs.sceneLoaded.setValue(true);
-                    this.dispatch('scene-load');
-                }
-            }
+        if(this.assetManager.outs.initialLoad.value && event.quality === this.getRequestedQuality(event.model)) {
+            this._loadedModels.set(event.model, null);
+            this.updateSceneLoaded();
         }
     }
 
     protected onModelError(event: IModelErrorEvent) {
         this.dispatch('model-error', event.error.message);
         this.updateSceneContentLoaded();
+
+        // The model gave up whatever quality it was asked for
+        if(this.assetManager.outs.initialLoad.value) {
+            this._loadedModels.set(event.model, event.error);
+            this.updateSceneLoaded();
+        }
+    }
+
+    /**
+     * The quality a model has to load for the initial load to be over:
+     *  - with LOD enabled, the quality picked by the derivatives controller
+     *  - otherwise the scene quality.
+     */
+    protected getRequestedQuality(model: CVModel2): EDerivativeQuality
+    {
+        const lodEnabled = this.getGraphComponent(CVSetup).derivatives.ins.enabled.value;
+        return lodEnabled
+            ? model.ins.quality.value
+            : model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value)?.data.quality;
+    }
+
+    /**
+     * Ends the initial load once every model has an outcome: dispatches "scene-load" if they all
+     * loaded the quality they were asked for, "scene-error" with the first failure otherwise.
+     */
+    protected updateSceneLoaded()
+    {
+        const models = this.getGraphComponents(CVModel2).filter(component => component.typeName != "CVImagePlane");
+        if(!models.every(model => this._loadedModels.has(model))) {
+            return;
+        }
+
+        const error = models.map(model => this._loadedModels.get(model)).find(error => !!error);
+        if(error) {
+            this.assetManager.endInitialLoad();
+            this.dispatch('scene-error', error);
+        }
+        else {
+            this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
+            this.analytics.resetTimer();
+            this.assetManager.endInitialLoad();
+            this.outs.sceneLoaded.setValue(true);
+            this.dispatch('scene-load');
+        }
     }
 
     /**
