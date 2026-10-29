@@ -16,12 +16,14 @@
  */
 
 import { PlaneGeometry, Mesh, Quaternion, MeshStandardMaterial, SRGBColorSpace, FrontSide, Vector3 } from "three";
-import CVModel2 from "./CVModel2";
+import Notification from "@ff/ui/Notification";
+
+import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import CVAnnotationView, { ITagUpdateEvent } from "./CVAnnotationView";
 import { IDocument } from "./CVDocument";
 import { EUnitType, INode } from "client/schema/document";
 import * as helpers from "@ff/three/helpers";
-import { IModel } from "client/schema/model";
+import { EDerivativeQuality, EDerivativeUsage, IModel } from "client/schema/model";
 import { addCustomMaterialDefines, extendShaders } from "client/shaders/ShaderExtension";
 import CRenderer from "@ff/scene/components/CRenderer";
 
@@ -39,6 +41,20 @@ export default class CVImagePlane extends CVModel2
     private _material: MeshStandardMaterial = null;
     private _geometry: PlaneGeometry = null;
     private _backside: Mesh = null;
+
+    /** Aborts the image load in progress once another image is set, or the plane is disposed. */
+    private _imageLoad: AbortController = null;
+    private _imageLoaded = false;
+
+    /** Settled once its image is on display, or failed to load. */
+    get isSettled(): boolean {
+        return this._imageLoaded || super.isSettled;
+    }
+
+    /** The quality of the image derivative, which a plane reports its image loads with. */
+    get imageQuality(): EDerivativeQuality {
+        return this.derivatives.select(EDerivativeUsage.Image2D, EDerivativeQuality.High)?.data.quality ?? EDerivativeQuality.High;
+    }
 
     get settingProperties() {
         return [
@@ -73,20 +89,41 @@ export default class CVImagePlane extends CVModel2
 
     dispose()
     {
-        this._material.map.dispose();
+        this._imageLoad?.abort(new DOMException("The image plane was disposed", "AbortError"));
+        this._material.map?.dispose();
         this._material.dispose();
         this._geometry.dispose();
         super.dispose();
     }
 
+    /**
+     * Loads and displays the given image. Like other models, emits "model-load" once it's
+     * on display, or "model-error" if it can't be loaded.
+     */
     setImage(uri: string)
     {
-        // load image
-        this.assetReader.getTexture(uri).then(map => {
+        this._imageLoad?.abort(new DOMException("Superseded by another image", "AbortError"));
+        const { signal } = this._imageLoad = new AbortController();
+
+        this.assetReader.getTexture(uri, { signal }).then(map => {
+            // the image may have arrived just as another one was set
+            if (signal.aborted) {
+                return map.dispose();
+            }
             map.colorSpace = SRGBColorSpace;
             this._material.map = map;
             this._material.needsUpdate = true;
             this._geometry.scale(map.width/map.height, 1, 1);
+
+            this._imageLoaded = true;
+            this.emit<IModelLoadEvent>({ type: "model-load", quality: this.imageQuality, model: this });
+        }).catch(error => {
+            if (signal.aborted) {
+                return;
+            }
+            console.error(error);
+            Notification.show(`Failed to load image: ${error.message}`);
+            this.setError(error);
         });
     }
 

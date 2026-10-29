@@ -921,7 +921,7 @@ export default class CVModel2 extends CObject3D
     }
 
     /** Marks this model as never going to display anything, and tells the scene about it. */
-    private setError(error: Error){
+    protected setError(error: Error){
         this._failed = true;
         this.emit<IModelErrorEvent>({ type: "model-error", model: this, error });
     }

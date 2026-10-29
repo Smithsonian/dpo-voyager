@@ -24,6 +24,7 @@ import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
 import { EDerivativeQuality, EDerivativeUsage, TDerivativeQuality } from "client/schema/model";
 
 import CVModel2, { IModelErrorEvent, IModelLoadEvent } from "./CVModel2";
+import type CVImagePlane from "./CVImagePlane";
 import CVAnnotationView, { IActiveTagUpdateEvent, IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
 import CVLanguageManager from "./CVLanguageManager";
@@ -568,6 +569,11 @@ export default class CVViewer extends Component
      */
     protected getRequestedQuality(model: CVModel2): EDerivativeQuality
     {
+        // an image plane has a single image to load
+        if (model.typeName == "CVImagePlane") {
+            return (model as CVImagePlane).imageQuality;
+        }
+
         const lodEnabled = this.getGraphComponent(CVSetup).derivatives.ins.enabled.value;
         return lodEnabled
             ? model.ins.quality.value
@@ -585,7 +591,7 @@ export default class CVViewer extends Component
             return;
         }
 
-        const models = this.getGraphComponents(CVModel2).filter(component => component.typeName != "CVImagePlane");
+        const models = this.getGraphComponents(CVModel2);
         if(!models.every(model => this._loadedModels.has(model))) {
             return;
         }
