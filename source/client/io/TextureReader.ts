@@ -69,7 +69,8 @@ export default class TextureReader
             const onError = errorEvent => {
                 signal?.removeEventListener("abort", onAbort);
                 console.error(errorEvent);
-                reject(new Error((errorEvent as any).message));
+                // an image element's error event tells nothing more
+                reject(new Error((errorEvent as any).message || `Failed to load the texture at '${url}'`));
             };
 
             if(assetPath.endsWith(".hdr")) {
