@@ -46,24 +46,37 @@ export default class TextureReader
         return TextureReader.mimeTypes.indexOf(mimeType) >= 0;
     }
 
-    get(url: string, assetPath: string): Promise<Texture>
+    /**
+     * Loads a texture. Three's loaders can't cancel a single request: once the signal aborts,
+     * this rejects with its reason, and the texture is disposed of if it arrives anyway.
+     */
+    get(url: string, assetPath: string, {signal}:{signal?:AbortSignal}={}): Promise<Texture>
     {
         return new Promise((resolve, reject) => {
+            if (signal?.aborted) {
+                return reject(signal.reason);
+            }
+            const onAbort = () => reject(signal.reason);
+            signal?.addEventListener("abort", onAbort, { once: true });
+
+            const onLoad = (texture: Texture) => {
+                signal?.removeEventListener("abort", onAbort);
+                if (signal?.aborted) {
+                    return texture.dispose();
+                }
+                resolve(texture);
+            };
+            const onError = errorEvent => {
+                signal?.removeEventListener("abort", onAbort);
+                console.error(errorEvent);
+                reject(new Error((errorEvent as any).message));
+            };
+
             if(assetPath.endsWith(".hdr")) {
-                this.hdriLoader.load(url, texture => {
-                    resolve(texture);
-                }, null, errorEvent => {
-                    console.error(errorEvent);
-                    reject(new Error((errorEvent as any).message));
-                });
+                this.hdriLoader.load(url, onLoad, null, onError);
             }
             else {
-                this.textureLoader.load(url, texture => {
-                    resolve(texture);
-                }, null, errorEvent => {
-                    console.error(errorEvent);
-                    reject(new Error((errorEvent as any).message));
-                });
+                this.textureLoader.load(url, onLoad, null, onError);
             }
         });
     }

@@ -101,10 +101,10 @@ export default class CVAssetReader extends Component
         return this.fileLoader.getJSON(url, {signal});
     }
 
-    async getText(assetPath: string): Promise<string>
+    async getText(assetPath: string, {signal}:{signal?:AbortSignal}={}): Promise<string>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
-        return this.fileLoader.getText(url);
+        return this.fileLoader.getText(url, {signal});
     }
 
     async getModel(assetPath: string, {signal}:{signal?:AbortSignal}={}): Promise<Object3D>
@@ -119,10 +119,10 @@ export default class CVAssetReader extends Component
         return this.geometryLoader.get(url);
     }
 
-    async getTexture(assetPath: string): Promise<Texture>
+    async getTexture(assetPath: string, {signal}:{signal?:AbortSignal}={}): Promise<Texture>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
-        return this.textureLoader.get(url, assetPath);
+        return this.textureLoader.get(url, assetPath, {signal});
     }
 
     async getFont(assetPath: string): Promise<IBitmapFont>
@@ -137,15 +137,15 @@ export default class CVAssetReader extends Component
         return this.audioReader.get(url);
     }
 
-    async getSystemTexture(assetPath: string): Promise<Texture>
+    async getSystemTexture(assetPath: string, {signal}:{signal?:AbortSignal}={}): Promise<Texture>
     {
         const url = this.getSystemAssetUrl(assetPath);
-        return this.textureLoader.get(url, assetPath);
+        return this.textureLoader.get(url, assetPath, {signal});
     }
 
-    async getSystemJSON(assetPath: string): Promise<any>
+    async getSystemJSON(assetPath: string, {signal}:{signal?:AbortSignal}={}): Promise<any>
     {
         const url = this.getSystemAssetUrl(assetPath);
-        return this.fileLoader.getJSON(url);
+        return this.fileLoader.getJSON(url, {signal});
     }
 }
