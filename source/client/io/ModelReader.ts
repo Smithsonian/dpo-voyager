@@ -26,6 +26,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
 import { disposeObject } from "@ff/three/helpers";
 import { addCustomMaterialDefines, extendShaders } from "client/shaders/ShaderExtension";
+import fetchOk from "client/utils/fetchOk";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -187,12 +188,9 @@ export default class ModelReader
     
             const {listeners, abortController:{signal}} = this.loading[url] = {listeners:[], abortController: new AbortController()};
     
-            fetch(url, {
+            fetchOk(url, {
                 signal,
             }).then(r=>{
-                if(!r.ok){
-                    throw new Error( `fetch for "${r.url}" responded with ${r.status}: ${r.statusText}`);
-                }
                 //Skip all the progress tracking from FileLoader since we don't use it.
                 return r.arrayBuffer();
             }).finally(()=>{

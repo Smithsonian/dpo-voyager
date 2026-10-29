@@ -18,7 +18,7 @@
 import Component, { Node } from "@ff/graph/Component";
 
 import { INodeComponents } from "../nodes/NVNode";
-import { HTTPError } from "../utils/errors";
+import fetchOk from "../utils/fetchOk";
 
 import CVDocument from "./CVDocument";
 import CVAssetManager from "./CVAssetManager";
@@ -69,29 +69,15 @@ export default class CVAssetWriter extends Component
         }
 
         const url = this.assetManager.getAssetUrl(assetPath);
-        let res: Response;
-        try {
-            res = await fetch(url, {
-                method: "PUT",
-                headers:{
-                    "Accept": "text/plain",
-                    "Content-Type": contentType,
-                },
-                body,
-                signal,
-            });
-        }
-        catch (e) {
-            if (e?.name === "AbortError") {
-                throw e;
-            }
-            throw new DOMException(`Failed to reach ${url}: ${e?.message ?? e}`, "NetworkError");
-        }
-        if(!res.ok) {
-            // The status is the answer; the explanation is a bonus that may fail to arrive.
-            const txt = await res.text().catch(() => "");
-            throw new HTTPError(url, res.status, txt || res.statusText);
-        }
+        await fetchOk(url, {
+            method: "PUT",
+            headers:{
+                "Accept": "text/plain",
+                "Content-Type": contentType,
+            },
+            body,
+            signal,
+        });
     }
 
     async putJSON(json: any, assetPath: string, {signal}:{signal?:AbortSignal}={}): Promise<void>
