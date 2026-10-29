@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Texture } from "three";
+import { BufferGeometry, Group, Material, Mesh, MeshStandardMaterial, Texture } from "three";
 
 import CVModel2 from "client/components/CVModel2";
 import CVAssetReader from "client/components/CVAssetReader";
@@ -14,19 +14,23 @@ describe("CVModel2", function(){
   let unhandled: any[];
   const onUnhandled = (reason: any) => unhandled.push(reason);
 
-  beforeEach(async function(){
+  beforeEach(function(){
     unhandled = [];
     process.on("unhandledRejection", onUnhandled);
     explorer = createExplorer();
-    explorer.responses.set("scene.svx.json", createDocumentData([ { name: "a" } ]));
-    await explorer.app.loadDocument("scene.svx.json");
-    await explorer.settle();
-    model = explorer.document.getInnerComponents(CVModel2)[0];
   });
 
   afterEach(function(){
     process.off("unhandledRejection", onUnhandled);
   });
+
+  /** Loads a document holding a single model, "a". */
+  async function load() {
+    explorer.responses.set("scene.svx.json", createDocumentData([ { name: "a" } ]));
+    await explorer.app.loadDocument("scene.svx.json");
+    await explorer.settle();
+    model = explorer.document.getInnerComponents(CVModel2)[0];
+  }
 
   describe("overlay maps", function(){
     /** Texture requests by file name. They ignore abort signals, like Three's loaders. */
@@ -34,7 +38,8 @@ describe("CVModel2", function(){
     /** The overlays applied to the model's materials, in order. */
     let applied: string[];
 
-    beforeEach(function(){
+    beforeEach(async function(){
+      await load();
       textures = new Map();
       explorer.app.system.getMainComponent(CVAssetReader).getTexture = (path: string) => {
         const deferred = new Deferred<Texture>();
@@ -81,6 +86,74 @@ describe("CVModel2", function(){
 
       expect(applied).to.deep.equal([]);
       expect(model.outs.overlayMap.value).to.equal(0);
+      expect(unhandled).not.to.include(error);
+    });
+  });
+
+  describe("variants", function(){
+    const white = 0xffffff, red = 0xff0000, blue = 0x0000ff, green = 0x00ff00;
+    /** Material requests to the glTF parser, by material index */
+    let materials: Map<number, Deferred<Material>>;
+    /** Two meshes, each with a material per variant: red (0, 1), blue (2, 3), green (4, 5) */
+    let meshes: Mesh[];
+
+    beforeEach(async function(){
+      materials = new Map();
+      explorer.app.system.getMainComponent(CVAssetReader).getModel = () => {
+        const group = new Group();
+        meshes = [ 0, 1 ].map(index => {
+          const mesh = new Mesh(new BufferGeometry(), new MeshStandardMaterial({ color: white }));
+          mesh.userData.gltfExtensions = { KHR_materials_variants: { mappings: [ 0, 1, 2 ].map(variant =>
+            ({ material: variant * 2 + index, variants: [ variant ] })) } };
+          group.add(mesh);
+          return mesh;
+        });
+        group.userData.variants = Object.assign([ { name: "red" }, { name: "blue" }, { name: "green" } ], { variantMaterials: {} });
+        group.userData.parser = { getDependency: (type: string, index: number) => {
+          const deferred = new Deferred<Material>();
+          materials.set(index, deferred);
+          return deferred.promise;
+        } };
+        return Promise.resolve(group);
+      };
+      await load();
+      // loading the model selected its first variant
+      materials.get(0).resolve(new MeshStandardMaterial({ color: red }));
+      materials.get(1).resolve(new MeshStandardMaterial({ color: red }));
+      await explorer.settle();
+    });
+
+    function select(variant: string) {
+      model.ins.variant.setOption(variant);
+      explorer.update();
+    }
+    const colors = () => meshes.map(mesh => (mesh.material as MeshStandardMaterial).color.getHex());
+
+    it("switches to the variant selected last, whatever order materials arrive in", async function(){
+      expect(colors()).to.deep.equal([ red, red ]);
+      select("blue");
+      select("green");
+      [ 4, 5 ].forEach(index => materials.get(index).resolve(new MeshStandardMaterial({ color: green })));
+      await explorer.settle();
+      [ 2, 3 ].forEach(index => materials.get(index).resolve(new MeshStandardMaterial({ color: blue })));
+      await explorer.settle();
+
+      expect(colors()).to.deep.equal([ green, green ]);
+      expect(model.outs.variant.value).to.equal(2);
+    });
+
+    it("switches all meshes or none", async function(){
+      select("blue");
+      materials.get(2).resolve(new MeshStandardMaterial({ color: blue }));
+      await explorer.settle();
+      expect(colors(), "while the other material loads").to.deep.equal([ red, red ]);
+
+      const error = new Error("missing material");
+      materials.get(3).reject(error);
+      await explorer.settle();
+
+      expect(colors()).to.deep.equal([ red, red ]);
+      expect(model.outs.variant.value).to.equal(0);
       expect(unhandled).not.to.include(error);
     });
   });
