@@ -208,10 +208,8 @@ export default class CVTours extends Component
                 outs.tourIndex.set();
                 this.snapshots.endTween();
 
-                this.normalizeViewOrbit(CVTours.sceneSnapshotId);
-
                 // recall pre-tour scene state
-                machine.tweenTo(CVTours.sceneSnapshotId, context.secondsElapsed);
+                machine.tweenToView(CVTours.sceneSnapshotId, context.secondsElapsed);
                 machine.deleteState(CVTours.sceneSnapshotId);
 
                 srElement.textContent = "";
@@ -221,6 +219,7 @@ export default class CVTours extends Component
         }
 
         const tourIndex = Math.min(tours.length - 1, Math.max(-1, ins.tourIndex.value));
+        const enteringTour = tourIndex !== outs.tourIndex.value || (ins.enabled.changed && ins.enabled.value);
         const tour = tours[tourIndex];
         const stepCount = tour ? tour.steps.length : 0;
         outs.stepCount.setValue(stepCount);
@@ -273,20 +272,24 @@ export default class CVTours extends Component
             nextStepIndex = (outs.stepIndex.value + stepCount - 1) % stepCount;
         }
 
-        // normalize orbit on tour start
-        if(nextStepIndex === 0) {
-            this.snapshots.endTween();
-            this.normalizeViewOrbit(tour.steps[0].id);
-        }
-
         if (nextStepIndex >= 0) {
+            this.snapshots.endTween();
             navigation.setChanged(true); // disable autoZoom
             // tween to the next step
             const step = tour.steps[nextStepIndex];
             outs.stepIndex.setValue(nextStepIndex);
             outs.stepTitle.setValue(this.stepTitle || "Missing content");
             machine.ins.id.setValue(step.id);
-            tween ? machine.ins.tween.set() : machine.ins.recall.set();
+            if (!tween) {
+                machine.ins.recall.set();
+            }
+            else if (enteringTour) {
+                machine.tweenToView(step.id, context.secondsElapsed);
+            }
+            else {
+                // Within a tour, preserve authored rotations, including full turns.
+                machine.ins.tween.set();
+            }
             srElement.textContent = this.stepAltText != "Missing content" ? "Alt text: " + this.stepAltText : "";
         }
 
@@ -377,16 +380,4 @@ export default class CVTours extends Component
         });
     }
 
-    // helper function to bring saved state orbit into alignment with current view orbit
-    protected normalizeViewOrbit(viewId: string) {
-        const orbitIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Orbit");
-        const viewState = this.snapshots.getState(viewId);
-        const currentOrbit = this.snapshots.getCurrentValues()[orbitIdx];
-        if(viewState) {
-            currentOrbit.forEach((n, i) => {
-                const mult = Math.round((viewState.values[orbitIdx][i]-n)/360);
-                this.snapshots.getTargetProperties()[orbitIdx].value[i] += 360*mult;
-            });
-        }
-    }
 }

@@ -210,6 +210,7 @@ export default class CVSetup extends Component
     // Restores cached setup state for future saving.
     protected restoreSetupState()
     {
+        this.snapshots.cancelTween();
         const cachedData = this._savedSetupData;
         const features = CVSetup.featureMap;
 
