@@ -17,7 +17,7 @@
 
 import { NeutralToneMapping, NoToneMapping, Mesh } from "three";
 
-import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import Component, { IComponentEvent, ITypedEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
 
 import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
@@ -46,6 +46,12 @@ export interface IViewerEventDetail
     "model-error": string;
     "scene-content-load": void;
     "scene-load": void;
+}
+
+
+// Internal typed event to indicate a user interactively changed the active annotation
+export interface IViewerUpdateEvent extends ITypedEvent<"annotation-activate">
+{
 }
 
 /** Forces a detail argument on the events that carry one, and forbids it on the others. */
@@ -429,6 +435,7 @@ export default class CVViewer extends Component
         const id = event.annotation ? event.annotation.id : "";
         this.ins.activeAnnotation.setValue(id);
 
+        this.emit<IViewerUpdateEvent>({type: "annotation-activate"});
         this.dispatch('annotation-active', id);
     }
 
