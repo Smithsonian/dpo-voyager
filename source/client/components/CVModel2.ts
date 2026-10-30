@@ -345,6 +345,10 @@ export default class CVModel2 extends CObject3D
         if (!this.activeDerivative && ins.autoLoad.changed && ins.autoLoad.value) {
             const tried = this.derivatives.select(EDerivativeUsage.Web3D, ins.quality.value);
             this.autoLoad().then(()=> {
+                // an aborted load resolves too, including the one dispose() aborts
+                if (!this.node) {
+                    return;
+                }
                 let setup = this.getGraphComponent(CVSetup);
                  if (!setup.derivatives.ins.enabled.value){
                     // a model with no Web3D derivative at all (an AR-only model) has nothing to select
