@@ -94,6 +94,8 @@ export default class ContentView extends DocumentView
     {
         super.connected();
         this.assetManager.outs.busy.on("value", this.onUpdate, this);
+        // the loading indicator hides as the initial load ends, even if other downloads go on
+        this.assetManager.outs.initialLoad.on("value", this.onUpdate, this);
         this.sceneView.on("layout", this._layoutHandler);     
         this.assetPath = this.assetReader.getSystemAssetUrl("");
         this.addEventListener("keydown", this.onKeyDown);
@@ -104,6 +106,7 @@ export default class ContentView extends DocumentView
         this.removeEventListener("keydown", this.onKeyDown);
         this.sceneView.off("layout", this._layoutHandler);
         this.assetManager.outs.busy.off("value", this.onUpdate, this);
+        this.assetManager.outs.initialLoad.off("value", this.onUpdate, this);
         super.disconnected();
     }
 

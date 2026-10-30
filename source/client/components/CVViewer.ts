@@ -24,6 +24,7 @@ import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
 import { EDerivativeQuality, EDerivativeUsage, TDerivativeQuality } from "client/schema/model";
 
 import CVModel2, { IModelErrorEvent, IModelLoadEvent } from "./CVModel2";
+import type CVImagePlane from "./CVImagePlane";
 import CVAnnotationView, { IActiveTagUpdateEvent, IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
 import CVLanguageManager from "./CVLanguageManager";
@@ -46,6 +47,13 @@ export interface IViewerEventDetail
     "model-error": string;
     "scene-content-load": void;
     "scene-load": void;
+    "scene-error": Error;
+}
+
+interface ISceneLoad
+{
+    /** The document is in the scene: its models are all there. */
+    applied: boolean;
 }
 
 /** Forces a detail argument on the events that carry one, and forbids it on the others. */
@@ -62,8 +70,14 @@ export default class CVViewer extends Component
     private _rootElement: HTMLElement = null;
     private _needsAnnoFocus: boolean = false;
 
-    /** Models that have loaded the derivative they currently request. Drives the initial load. */
-    private _loadedModels = new Set<CVModel2>();
+    /** The document load waiting for its "scene-load" or "scene-error". See trackSceneLoad(). */
+    private _sceneLoad: ISceneLoad = null;
+
+    /**
+     * Initial load outcome of the models that have one: `null` once a model has loaded
+     * the derivative it was asked for, the error that prevented it otherwise.
+     */
+    private _loadedModels = new Map<CVModel2, Error>();
 
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
@@ -144,6 +158,30 @@ export default class CVViewer extends Component
     }
 
     /**
+     * Tracks a load of this viewer's document, from its request to the end of the initial load.
+     * Dispatches exactly one "scene-load" or "scene-error": the latter if `applied` rejects,
+     * or `signal` aborts first.
+     * @param signal Aborts the load, e.g. once a new document load supersedes it.
+     * @param applied Resolves once the document has been applied to the scene.
+     */
+    trackSceneLoad(signal: AbortSignal, applied: Promise<unknown>)
+    {
+        if (this._sceneLoad) {
+            this.endSceneLoad(this._sceneLoad, new DOMException("Superseded by a new document load", "AbortError"));
+        }
+
+        const load: ISceneLoad = { applied: false };
+        this._sceneLoad = load;
+        this.assetManager.ins.initialLoad.setValue(true);
+
+        signal.addEventListener("abort", () => this.endSceneLoad(load, signal.reason), { once: true });
+        applied.then(() => {
+            load.applied = true;
+            this.updateSceneLoaded();
+        }, error => this.endSceneLoad(load, error));
+    }
+
+    /**
      * Fires events on the host element.
      * Does nothing while the viewer is detached, as nobody could be listening.
      */
@@ -168,6 +206,10 @@ export default class CVViewer extends Component
 
     dispose()
     {
+        if (this._sceneLoad) {
+            this.endSceneLoad(this._sceneLoad, new DOMException("The viewer was disposed", "AbortError"));
+        }
+
         this.outs.tagCloud.off("value", this.onTagCloudUpdate, this);
         this.graph.components.off(CVModel2, this.onModelComponent, this);
         this.graph.components.off(CLight, this.onLightComponent, this);
@@ -503,32 +545,81 @@ export default class CVViewer extends Component
         this.updateSceneContentLoaded();
 
         // Track initial scene loading so the spinner is only shown once, during the initial load.
-        // A model counts as loaded when it has loaded the derivative it currently requests:
-        //  - with LOD enabled, that is the quality picked by the derivatives controller
-        //  - otherwise it is the scene quality.
-        if(this.assetManager.outs.initialLoad.value) {
-            const lodEnabled = this.getGraphComponent(CVSetup).derivatives.ins.enabled.value;
-            const requestedQuality = lodEnabled
-                ? event.model.ins.quality.value
-                : event.model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value).data.quality;
-
-            if(event.quality === requestedQuality) {
-                this._loadedModels.add(event.model);
-
-                if(models.every(model => this._loadedModels.has(model))) {
-                    this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
-                    this.analytics.resetTimer();
-                    this.assetManager.outs.initialLoad.setValue(false);
-                    this.outs.sceneLoaded.setValue(true);
-                    this.dispatch('scene-load');
-                }
-            }
+        if(this._sceneLoad && event.quality === this.getRequestedQuality(event.model)) {
+            this._loadedModels.set(event.model, null);
+            this.updateSceneLoaded();
         }
     }
 
     protected onModelError(event: IModelErrorEvent) {
         this.dispatch('model-error', event.error.message);
         this.updateSceneContentLoaded();
+
+        // The model gave up whatever quality it was asked for
+        if(this._sceneLoad) {
+            this._loadedModels.set(event.model, event.error);
+            this.updateSceneLoaded();
+        }
+    }
+
+    /**
+     * The quality a model has to load for the initial load to be over:
+     *  - with LOD enabled, the quality picked by the derivatives controller
+     *  - otherwise the scene quality.
+     */
+    protected getRequestedQuality(model: CVModel2): EDerivativeQuality
+    {
+        // an image plane has a single image to load
+        if (model.typeName == "CVImagePlane") {
+            return (model as CVImagePlane).imageQuality;
+        }
+
+        const lodEnabled = this.getGraphComponent(CVSetup).derivatives.ins.enabled.value;
+        return lodEnabled
+            ? model.ins.quality.value
+            : model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value)?.data.quality;
+    }
+
+    /**
+     * Ends the initial load once the document is applied and every model has an outcome:
+     * successful if they all loaded the quality they were asked for.
+     */
+    protected updateSceneLoaded()
+    {
+        const load = this._sceneLoad;
+        if(!load?.applied) {
+            return;
+        }
+
+        const models = this.getGraphComponents(CVModel2);
+        if(!models.every(model => this._loadedModels.has(model))) {
+            return;
+        }
+
+        this.endSceneLoad(load, models.map(model => this._loadedModels.get(model)).find(error => !!error));
+    }
+
+    /**
+     * Dispatches "scene-load", or "scene-error" if given an error, unless the load has ended already.
+     */
+    protected endSceneLoad(load: ISceneLoad, error?: Error)
+    {
+        if(this._sceneLoad !== load) {
+            return;
+        }
+        this._sceneLoad = null;
+
+        if(error) {
+            this.assetManager.endInitialLoad();
+            this.dispatch('scene-error', error);
+        }
+        else {
+            this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
+            this.analytics.resetTimer();
+            this.assetManager.endInitialLoad();
+            this.outs.sceneLoaded.setValue(true);
+            this.dispatch('scene-load');
+        }
     }
 
     /**

@@ -173,6 +173,13 @@ export default class CVModel2 extends CObject3D
      * we want to keep the active model until the new one is ready
      */
     private _loadingDerivative :Derivative = null;
+    /** The load of _loadingDerivative, for whoever asks for the same derivative meanwhile. */
+    private _loading: Promise<void> = null;
+
+    /** Aborts the overlay map request in progress once another one supersedes it. */
+    private _overlayLoad: AbortController = null;
+    /** Aborts the variant switch in progress once another one supersedes it. */
+    private _variantLoad: AbortController = null;
 
     private _visible: boolean = true;
     private _boxFrame: Box3Helper = null;
@@ -336,12 +343,18 @@ export default class CVModel2 extends CObject3D
         }
 
         if (!this.activeDerivative && ins.autoLoad.changed && ins.autoLoad.value) {
+            const tried = this.derivatives.select(EDerivativeUsage.Web3D, ins.quality.value);
             this.autoLoad().then(()=> {
+                // an aborted load resolves too, including the one dispose() aborts
+                if (!this.node) {
+                    return;
+                }
                 let setup = this.getGraphComponent(CVSetup);
                  if (!setup.derivatives.ins.enabled.value){
                     // a model with no Web3D derivative at all (an AR-only model) has nothing to select
                     const derivative = this.derivatives.select(EDerivativeUsage.Web3D, EDerivativeQuality.High);
-                    if (derivative) {
+                    // don't ask again right away for the derivative that just failed
+                    if (derivative && !(this._failed && derivative === tried)) {
                         this.ins.quality.setValue(derivative.data.quality);
                     }
                  }
@@ -421,6 +434,8 @@ export default class CVModel2 extends CObject3D
 
     dispose()
     {
+        this._overlayLoad?.abort(new DOMException("The model was disposed", "AbortError"));
+        this._variantLoad?.abort(new DOMException("The model was disposed", "AbortError"));
         this.derivatives.clear();
         this._activeDerivative = null;
         for (let key in this._overlays) {
@@ -647,12 +662,17 @@ export default class CVModel2 extends CObject3D
     }
 
     updateOverlayMap() {
+        this._overlayLoad?.abort(new DOMException("Superseded by another overlay map", "AbortError"));
+        const { signal } = this._overlayLoad = new AbortController();
+
         // only update if we are not currently tweening
         const setup = this.getGraphComponent(CVSetup, true);
         if (setup && setup.snapshots.outs.tweening.value) {
             setup.snapshots.outs.end.once("value", () => {
-                this.ins.overlayMap.set();
-                this.update();
+                if (!signal.aborted) {
+                    this.ins.overlayMap.set();
+                    this.update();
+                }
             });
             return;
         }
@@ -660,15 +680,24 @@ export default class CVModel2 extends CObject3D
         const overlays = this.getOverlays();
         const currIdx = this.ins.overlayMap.value-1;
         if (currIdx >= 0 && overlays.length > currIdx) {
-            const mapURI = this.getOverlays()[currIdx].asset.data.uri;
-            const texture = this.getOverlay(mapURI).texture;
-            if(texture) {
-                this.updateOverlayMaterial(texture, mapURI);
+            const mapURI = overlays[currIdx].asset.data.uri;
+            const overlay = this.getOverlay(mapURI);
+            if(overlay.texture) {
+                this.updateOverlayMaterial(overlay.texture, mapURI);
             }
             else {
-                this.assetReader.getTexture(mapURI).then(map => {
-                    this.getOverlay(mapURI).texture = map;
-                    this.updateOverlayMaterial(map, mapURI);
+                this.assetReader.getTexture(mapURI, { signal }).then(map => {
+                    overlay.texture = map;
+                    // the texture may have arrived just as another overlay was requested
+                    if (!signal.aborted) {
+                        this.updateOverlayMaterial(map, mapURI);
+                    }
+                }).catch(error => {
+                    if (signal.aborted) {
+                        return;
+                    }
+                    console.error(error);
+                    Notification.show(`Failed to load overlay map: ${error.message}`);
                 });
             }
         }
@@ -677,22 +706,35 @@ export default class CVModel2 extends CObject3D
         }
     }
 
+    /**
+     * Switches to the selected variant. A switch is all or nothing: it waits for every material
+     * the variant needs, and applies none of them if one fails to load.
+     */
     protected updateVariant()
     {
         if(!this.activeDerivative) {
             return;
         }
 
+        const derivative = this.activeDerivative;
+        const variants = derivative.model.userData["variants"];
         const variantName = this.ins.variant.getOptionText();
-        const variantIndex = this.activeDerivative.model.userData["variants"].findIndex( ( v ) => v.name.includes( variantName ) );
+        const variantIndex = variants.findIndex( ( v ) => v.name.includes( variantName ) );
 
         if(variantIndex < 0) {
             return;
         }
 
-        const parser = this.activeDerivative.model.userData["parser"];
+        // glTF material loads can't be cancelled: an aborted switch only applies nothing
+        this._variantLoad?.abort(new DOMException("Superseded by another variant", "AbortError"));
+        const { signal } = this._variantLoad = new AbortController();
 
-        this.object3D.traverse( async ( subobject ) => {
+        const parser = derivative.model.userData["parser"];
+
+        // the material of each mesh in this variant, null for its original material
+        const switches: Promise<[any, Material | null]>[] = [];
+
+        this.object3D.traverse( ( subobject ) => {
             var object = subobject as any;
 
             if ( ! object.isMesh || ! object.userData.gltfExtensions ) return;
@@ -708,13 +750,24 @@ export default class CVModel2 extends CObject3D
             const mapping = meshVariantDef.mappings
                 .find( ( mapping ) => mapping.variants.includes( variantIndex ) );
 
-            if ( mapping ) {
-                parser.getDependency( 'material', mapping.material ).then((variantMat) => {
+            switches.push(mapping
+                ? parser.getDependency( 'material', mapping.material ).then(variantMat => [ object, variantMat ])
+                : Promise.resolve([ object, null ]));
+        } );
+
+        Promise.all(switches).then(materials => {
+            // another variant or derivative may have been selected meanwhile
+            if (signal.aborted || this.activeDerivative !== derivative) {
+                return;
+            }
+
+            materials.forEach(([ object, variantMat ]) => {
+                if ( variantMat ) {
                     const shader = object.material.userData.shader;
                     object.material.copy( variantMat);
                     object.material.userData.shader = shader; // add back shader reference that's lost
                     //parser.assignFinalMaterial( object );
-                    this.activeDerivative.model.userData["variants"].variantMaterials[variantMat.uuid] = variantMat;
+                    variants.variantMaterials[variantMat.uuid] = variantMat;
 
                     // cache variant
                     const material = object.material;
@@ -728,18 +781,23 @@ export default class CVModel2 extends CObject3D
                         doubleSided: material.side == DoubleSide,
                         transparent: material.transparent
                     }
-                });
-            } else {
-                object.material = object.userData.originalMaterial;
-            }
+                } else {
+                    object.material = object.userData.originalMaterial;
+                }
+            });
 
             if (this.ins.override.value) {
                 this.updateMaterial();
             }
             this.outs.variant.setValue(this.ins.variant.value);
-        } );
-        
-        this.outs.updated.set();
+            this.outs.updated.set();
+        }).catch(error => {
+            if (signal.aborted) {
+                return;
+            }
+            console.error(error);
+            Notification.show(`Failed to load variant '${variantName}': ${error.message}`, "warning");
+        });
     }
 
     // helper function to update overlay map state
@@ -867,7 +925,7 @@ export default class CVModel2 extends CObject3D
     }
 
     /** Marks this model as never going to display anything, and tells the scene about it. */
-    private setError(error: Error){
+    protected setError(error: Error){
         this._failed = true;
         this.emit<IModelErrorEvent>({ type: "model-error", model: this, error });
     }
@@ -897,17 +955,21 @@ export default class CVModel2 extends CObject3D
         if(this._loadingDerivative && this._loadingDerivative != derivative) {
             this._loadingDerivative.unload();
             this._loadingDerivative = null;
+            this._loading = null;
         }
         if (this._activeDerivative == derivative){
             return;
         }
         if(this._loadingDerivative == derivative) {
-            return new Promise(resolve=> this._loadingDerivative.on("load", resolve));
+            return this._loading;
         }
         
         this._loadingDerivative = derivative;
 
-        return derivative.load(this.assetReader)
+        const loaded = derivative.load(this.assetReader)
+            ?? Promise.reject(new Error(`No model or geometry to load for '${this.displayName}'.`));
+
+        const loading = this._loading = loaded
             .then(() => {
                 if ( !derivative.model
                   || !this.node
@@ -928,6 +990,7 @@ export default class CVModel2 extends CObject3D
                 this.unload();
                 this._activeDerivative = derivative;
                 this._loadingDerivative = null;
+                this._loading = null;
                 this.addObject3D(derivative.model);
                 this.renderer.activeSceneComponent.scene.updateMatrixWorld(true);
 
@@ -1029,7 +1092,16 @@ export default class CVModel2 extends CObject3D
                 if (!this._activeDerivative) {
                     this.setError(error);
                 }
+            })
+            .finally(() => {
+                // however the load ended, unless another derivative superseded it
+                if (this._loadingDerivative === derivative) {
+                    this._loadingDerivative = null;
+                    this._loading = null;
+                }
             });
+
+        return loading;
     }
 
     protected addObject3D(object: Object3D)

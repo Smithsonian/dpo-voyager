@@ -18,6 +18,7 @@
 import { PMREMGenerator, WebGLRenderTarget, Texture, Euler } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import Notification from "@ff/ui/Notification";
 import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
 import { IEnvironment } from "client/schema/setup";
@@ -56,10 +57,11 @@ export default class CVEnvironment extends Component
 
     private _target: WebGLRenderTarget = null;
     private _pmremGenerator :PMREMGenerator = null;
+    /** Index of the map requested last, or -1 to request it again. */
     private _currentIdx = 0;
-    private _loadRequestId = 0;
+    /** The map load in progress, aborted once another map is requested. */
+    private _environmentLoad: AbortController = null;
     private _imageOptions: string[] = images.slice();
-    private _loadingCount = 0;
     private _hasContent = false;
     private _isLegacy = false;      // flag if scene is legacy (no loaded env light)
     private _isLegacyRefl = false;  // fkag if scene is legacy and has reflective material
@@ -100,6 +102,7 @@ export default class CVEnvironment extends Component
 
     dispose()
     {
+        this._environmentLoad?.abort(new DOMException("The environment was disposed", "AbortError"));
         this.graph.components.off(CVModel2, this.onModelComponent, this);
         this.system.components.off(CVMeta, this.onMetaComponent, this);
         if(this.sceneNode.scene.environment){
@@ -158,7 +161,8 @@ export default class CVEnvironment extends Component
             }
             this.sceneNode.scene.environment = ins.enabled.value ? this._target?.texture : null;
         }
-        if(ins.visible.changed && this._loadingCount == 0)
+        // a pending load applies the background once it ends
+        if(ins.visible.changed && !this._environmentLoad)
         { 
             if(ins.visible.value && this._target === null) 
             {
@@ -229,30 +233,49 @@ export default class CVEnvironment extends Component
                 throw new Error("Error loading map name for image index " + ins.imageIndex.value);
             }
 
-            const requestId = ++this._loadRequestId;
+            this._environmentLoad?.abort(new DOMException("Superseded by another environment map", "AbortError"));
+            const load = this._environmentLoad = new AbortController();
+            const { signal } = load;
 
-            if(images.includes(mapName)) {
-                this._loadingCount++;
-                this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName, requestId);
-                });
-            }
-            else {
-                this._loadingCount++;
-                this.assetReader.getTexture(mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName, requestId);
-                });
-            }
+            const loading = images.includes(mapName)
+                ? this.assetReader.getSystemTexture("images/"+mapName, { signal })
+                : this.assetReader.getTexture(mapName, { signal });
+
+            loading.then(texture => {
+                // the texture may have arrived just as another map was requested
+                if (signal.aborted) {
+                    return texture.dispose();
+                }
+                this.updateEnvironmentMap(texture, mapName);
+            }).catch(error => {
+                if (signal.aborted) {
+                    return;
+                }
+                // request it again next time
+                this._currentIdx = -1;
+                console.error(error);
+                Notification.show(`Failed to load environment map: ${error.message}`, "warning");
+            }).finally(() => {
+                if (this._environmentLoad === load) {
+                    this._environmentLoad = null;
+                    // apply visibility changes made meanwhile. Without any map, that would request it again.
+                    if (this._target) {
+                        this.ins.visible.set();
+                    }
+                }
+            });
+
             this._currentIdx = ins.imageIndex.value;
         }
     }
 
-    protected updateEnvironmentMap(texture: Texture, name: string, requestId: number)
+    protected updateEnvironmentMap(texture: Texture, name: string)
     {
         const ins = this.ins;
         const mapIdx = this._imageOptions.indexOf(name);
 
-        if(requestId === this._loadRequestId && mapIdx == ins.imageIndex.value) {
+        // the index may have changed without requesting another map, the environment being off
+        if(mapIdx == ins.imageIndex.value) {
             const previousTarget = this._target;
             this._target = this._pmremGenerator.fromEquirectangular(texture);
 
@@ -276,8 +299,6 @@ export default class CVEnvironment extends Component
 
         texture.dispose();
         texture = null;
-        this._loadingCount--;
-        this.ins.visible.set();
     }
 
     protected onMetaComponent(event: IComponentEvent<CVMeta>)

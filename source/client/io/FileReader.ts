@@ -17,6 +17,8 @@
 
 import { LoadingManager } from "three";
 
+import fetchOk from "../utils/fetchOk";
+
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * Most generic loader, for files that require little to no processing.
@@ -31,20 +33,20 @@ export default class FileReader
         this._loadingManager = loadingManager;
     }
 
-    async getJSON(url: string): Promise<any>
+    /**
+     * Get parsed JSON. Fails as [[fetchOk]] does.
+     */
+    async getJSON(url: string, {signal}:{signal?:AbortSignal}={}): Promise<any>
     {
         this._loadingManager.itemStart(url);
 
         try {
-            const result = await fetch(url, {
+            const result = await fetchOk(url, {
                 headers: {
                     "Accept": "application/json"
-                }
+                },
+                signal,
             });
-
-            if (!result.ok) {
-                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
-            }
 
             return await result.json();
         }
@@ -59,22 +61,18 @@ export default class FileReader
 
     /**
      * Get text. Will prefer text/html over text/plain if url ends with .html.
+     * Fails as [[fetchOk]] does.
      */
-    async getText(url: string): Promise<any>
+    async getText(url: string, {signal}:{signal?:AbortSignal}={}): Promise<any>
     {
         //this._loadingManager.itemStart(url);
 
-        return fetch(url, {
+        return fetchOk(url, {
             headers: {
                 "Accept": url.endsWith(".html")?"text/html":"text/plain"
-            }
+            },
+            signal,
         }).then(result => {
-            if (!result.ok) {
-                //this._loadingManager.itemError(url);
-                //this._loadingManager.itemEnd(url);
-                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
-            }
-
             //this._loadingManager.itemEnd(url);
             return result.text();
         });
