@@ -231,6 +231,10 @@ export default class CVModel2 extends CObject3D
         return !!this._activeDerivative || this._failed || !this.ins.autoLoad.value;
     }
 
+    get hasRestoreState() : boolean {
+        return this._savedDocumentData !== null;
+    }
+
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }

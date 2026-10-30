@@ -167,8 +167,10 @@ export default class CVScene extends CVNode
     
     restoreSavedState(){
         this.models.forEach(model => {
-            (model.transform as CVNode).setFromSavedData();
-            model.fromSavedDocumentState(true);
+            if(model.hasRestoreState) {
+                (model.transform as CVNode).setFromSavedData();
+                model.fromSavedDocumentState(true);
+            }
         });
 
         const lightNode = this.graph.findNodeByName("Lights");
