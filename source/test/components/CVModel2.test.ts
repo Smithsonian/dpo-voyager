@@ -194,6 +194,20 @@ describe("CVModel2", function(){
       expect(explorer.events.map(event => event.type)).to.include("model-load");
     });
 
+    it("doesn't pick a quality after its document was swapped during the download", async function(){
+      explorer.responses.set("a-High.glb", "deferred");
+      explorer.responses.set("first.svx.json", createDocumentData([ { name: "a" } ]));
+      explorer.responses.set("second.svx.json", createDocumentData([]));
+      await explorer.app.loadDocument("first.svx.json");
+      await explorer.settle();
+      expect(explorer.pending.has("a-High.glb"), "still downloading").to.be.true;
+
+      await explorer.app.loadDocument("second.svx.json");
+      await explorer.settle();
+
+      expect(unhandled).to.deep.equal([]);
+    });
+
     it("fails a derivative with nothing to load", async function(){
       const data = createDocumentData([ { name: "a" } ]);
       data.models[0].derivatives[0].assets = [ { uri: "a.points", type: "Points" } ] as any;
