@@ -229,9 +229,9 @@ export default class CVSetup extends Component
         this.reader.ins.position.set();
     }
 
-    resetViewer() {
-        this.actions.ins.reset.set();
+    resetViewer() {    
         this.audio.ins.reset.set();
         this.ins.restoreState.set();
+        this.actions.ins.reset.set();
     }
 }

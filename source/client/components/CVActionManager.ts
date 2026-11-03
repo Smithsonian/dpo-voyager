@@ -28,7 +28,7 @@ import CVSnapshots from "./CVSnapshots";
 import CVSetup from "./CVSetup";
 import CVScene from "./CVScene";
 import CVTours from "./CVTours";
-import { IPulseContext } from "@ff/graph/components/CPulse";
+import CPulse, { IPulseContext } from "@ff/graph/components/CPulse";
 import { IViewerUpdateEvent } from "./CVViewer";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -148,6 +148,7 @@ export default class CVActionManager extends Component
 
         if (ins.reset.changed) {
             this._mixer.stopAllAction();
+            this.restoreAnimationState(true);
             Object.keys(this._direction).forEach(key => delete this._direction[key]);
             this._activeClips.length = 0;
 
@@ -289,7 +290,7 @@ export default class CVActionManager extends Component
                         || action.type == EActionType[EActionType.HideAnnotation] as TActionType
                         || action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
                         const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
-                        if(annotation) {
+                        if(annotation && !this._visibilityLoadCache.some(entry => entry.annotation.id === annotation.id)) {
                             this._visibilityLoadCache.push({annotation: annotation, visibility: annotation.data.visible});
                         }
                     }
@@ -377,8 +378,6 @@ export default class CVActionManager extends Component
     protected onTourEnabled()
     {
         Object.keys(this._direction).forEach(key => delete this._direction[key]);
-        this._activeClips.length = 0;
-
         this._actionQueue.length = 0;
 
         const toursEnabled = this.tours.ins.enabled.value;
@@ -395,6 +394,7 @@ export default class CVActionManager extends Component
             });           
         }
         else {
+            this._activeClips.length = 0;
             this._mixer.stopAllAction();
             this.restoreAnimationState();
 
@@ -516,7 +516,7 @@ export default class CVActionManager extends Component
             }
             if(!this._animGroups[groupId]) {
                 this._animGroups[groupId] = new AnimationObjectGroup(mesh, annotations.parent);
-                if(!this._animatedNodes.includes(mesh)) {
+                if(!this.tours.ins.enabled.value && !this._animatedNodes.includes(mesh)) {
                     this._animatedNodes.push(...[mesh, annotations.parent]);
                 }
             }
@@ -585,8 +585,16 @@ export default class CVActionManager extends Component
     }
 
     protected cacheAnimationState() {
+        // push active clips to their end before caching
+        this._activeClips.forEach(item => {
+            item.clip.time = item.clip.timeScale > 0 ? item.clip.getClip().duration : 0;
+        });
+        this._activeClips.length = 0;
+        this.getMainComponent(CPulse).pulse(Date.now());
+
         this._animatedNodes.forEach((node) => {
-            this._animCache[node.id] = new Matrix4().copy(node.matrix);
+            this._animCache[node.id] ??= new Matrix4();
+            this._animCache[node.id].copy(node.matrix);
         })
     }
 
@@ -599,9 +607,22 @@ export default class CVActionManager extends Component
             node.position.setFromMatrixPosition(node.matrix);
             node.scale.setFromMatrixScale(node.matrix);
             node.matrixWorldNeedsUpdate = true;
+            
+            if(!this._initialOffset[node.id]) {
+                if(isDefault) {
+                    this._animatedNodes[idx-1].parent.parent.matrix.decompose(_vec3a, _quat, _vec3b);
+                    _vec3a.multiplyScalar(1/_vec3b.x);
+                    _vec3b.setScalar(1);
+                    node.children[0].matrix.compose(_vec3a, _quat, _vec3b).invert();
+                    node.children[0].matrix.premultiply(_mat4.copy(cachedMatrix).invert()) // include potential base mesh offset
+                    node.children[0].matrix.multiplyScalar(1/_vec3b.x);
 
-            if(!isDefault) {
-                this._animCache[node.id] = null;
+                    node.children[0].setRotationFromMatrix(node.children[0].matrix);
+                    node.children[0].position.setFromMatrixPosition(node.children[0].matrix);
+                }
+
+                isDefault ? node.parent.matrix.identity() : node.parent.matrix.copy(this._animatedNodes[idx-1].parent.parent.matrix);
+                node.parent.updateMatrixWorld(true);
             }
         })
     }
