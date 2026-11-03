@@ -269,9 +269,25 @@ export default class CVSnapshots extends CTweenMachine
         });
     }
 
+    /** Ids of the states tour steps and annotation views use. */
+    protected getUsedStateIds(): Set<string>
+    {
+        const ids = new Set<string>();
+        this.getComponent(CVTours).tours.forEach(tour => tour.steps.forEach(step => ids.add(step.id)));
+        this.getGraphComponents(CVAnnotationView).forEach(view => view.getAnnotations().forEach(annotation => {
+            if (annotation.data.viewId) {
+                ids.add(annotation.data.viewId);
+            }
+        }));
+        // the scene's state changes, which actions may play
+        this.deltaStates.forEach(state => ids.add(state.id));
+        return ids;
+    }
+
     toData(pathMap: Map<Component, string>): ISnapshots | null
     {
         const features = this.targetFeatures;
+        const usedIds = this.getUsedStateIds();
 
         const data: ISnapshots = {
             features: Object.keys(features).filter(key => features[key]),
@@ -286,7 +302,8 @@ export default class CVSnapshots extends CTweenMachine
                 }
                 return componentPath + "/" + key;
             }),
-            states: Object.keys(this.states).map(key => {
+            // only the states tour steps, annotation views and state changes use: not those left behind, nor the scene kept during a tour
+            states: Object.keys(this.states).filter(key => usedIds.has(key)).map(key => {
                 const state = this.states[key];
                 const data: any = { id: state.id, values: state.values };
                 if (state.curve !== EEasingCurve.EaseQuad) {

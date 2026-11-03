@@ -34,6 +34,8 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
     static readonly text: string = "Directional Light";
     static readonly icon: string = "sun";
 
+    private _savedDocumentData;
+
     get settingProperties() {
         return [
             this.ins.name,
@@ -70,15 +72,21 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         if (!isFinite(node.light)) {
             throw new Error("light property missing in node");
         }
-
-        const data = document.lights[node.light];
+        this._savedDocumentData = JSON.parse(JSON.stringify(document.lights[node.light]));
+        this._savedDocumentData.name = node.name;
+        this.setFromSavedData();
+        return node.light;
+    }
+    
+    setFromSavedData() {
         const ins = this.ins;
+        const data = this._savedDocumentData;
 
         if (data.type !== "directional") {
             throw new Error("light type mismatch: not a directional light");
         }
 
-        ins.name.setValue(node.name);
+        ins.name.setValue(data.name);
 
         ins.copyValues({
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
@@ -90,13 +98,12 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
             shadowEnabled: data.shadowEnabled || false,
             shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
-            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 0 : ins.shadowResolution.schema.preset,
+            shadowResolution: EShadowMapResolution[data.shadowResolution] ?? ins.shadowResolution.schema.preset,
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
             shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
         ins.tags.setValue(data.tags || "");
 
-        return node.light;
     }
 
     toDocument(document: IDocument, node: INode): number

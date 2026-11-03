@@ -61,6 +61,29 @@ voyager-story {
   @include common.font-ui-normal;
   font-size: 16px; //0.85rem;
   line-height: 1.35;
+
+  // Capture overlays the square the thumbnail renders: cameras keep their vertical field of view,
+  // so it spans the viewport's height, centered. The grid splits it in thirds.
+  &.sv-capture-active .sv-explorer-viewport::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 100%;
+    aspect-ratio: 1;
+    transform: translateX(-50%);
+    box-sizing: border-box;
+    $opacity: 0.4;
+    $grid: rgba(common.$color-text, $opacity);
+    border: 2px solid rgba(common.$color-error, $opacity);
+    background:
+      linear-gradient($grid, $grid) 33.333% 0 / 1px 100% no-repeat,
+      linear-gradient($grid, $grid) 66.667% 0 / 1px 100% no-repeat,
+      linear-gradient($grid, $grid) 0 33.333% / 100% 1px no-repeat,
+      linear-gradient($grid, $grid) 0 66.667% / 100% 1px no-repeat;
+    pointer-events: none;
+    z-index: 1;
+  }
 }
 
 ff-dock-view {

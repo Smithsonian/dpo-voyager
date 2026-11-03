@@ -31,6 +31,8 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
     static readonly text: string = "Hemisphere Light";
     static readonly icon: string = "half-sun";
 
+    private _savedDocumentData;
+
     get settingProperties() {
         return [
             this.ins.name,
@@ -61,14 +63,21 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
             throw new Error("light property missing in node");
         }
 
-        const data = document.lights[node.light];
+        this._savedDocumentData = JSON.parse(JSON.stringify(document.lights[node.light]));
+        this._savedDocumentData.name = node.name;
+        this.setFromSavedData();
+        return node.light;
+    }
+    
+    setFromSavedData() {
         const ins = this.ins;
+        const data = this._savedDocumentData;
 
         if (data.type !== CVHemisphereLight.type) {
             throw new Error("light type mismatch: not an hemisphere light");
         }
 
-        ins.name.setValue(node.name);
+        ins.name.setValue(data.name);
         data.point = data.point || {} as any;
 
         ins.copyValues({
@@ -78,8 +87,6 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
             ground: data.hemisphere?.ground ?? ins.ground.schema.preset,
         });
         ins.tags.setValue(data.tags || "");
-
-        return node.light;
     }
 
     toDocument(document: IDocument, node: INode): number

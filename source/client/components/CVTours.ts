@@ -203,6 +203,7 @@ export default class CVTours extends Component
                     values: machine.getCurrentValues(),
                 };
                 machine.setState(state);
+                ins.first.set();
             }
             else {
                 outs.tourIndex.set();

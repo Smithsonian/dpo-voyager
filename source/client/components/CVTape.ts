@@ -46,10 +46,10 @@ export default class CVTape extends CObject3D
     static readonly icon: string = "";
 
     protected static readonly tapeIns = {
-        startPosition: types.Vector3("Start.Position"),
-        startDirection: types.Vector3("Start.Direction"),
-        endPosition: types.Vector3("End.Position"),
-        endDirection: types.Vector3("End.Direction"),
+        startPosition: types.Vector3("Start.Position", [ 0, 0, 0 ]),
+        startDirection: types.Vector3("Start.Direction", [ 1, 0, 0 ]),
+        endPosition: types.Vector3("End.Position", [ 0, 0, 0 ]),
+        endDirection: types.Vector3("End.Direction", [ 1, 0, 0 ]),
         boundingBox: types.Object("Scene.BoundingBox", Box3),
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
@@ -217,7 +217,11 @@ export default class CVTape extends CObject3D
         }
 
         if (ins.globalUnits.changed) {
-            this.updateUnitScale();
+            if (ins.startPosition.changed && ins.endPosition.changed){
+                ins.localUnits.setValue(ins.globalUnits.getValidatedValue());
+            } else {
+                this.updateUnitScale();
+            }
         }
 
         // update tape start point
@@ -273,34 +277,34 @@ export default class CVTape extends CObject3D
     {
         this.ins.copyValues({
             visible: data.enabled,   // TODO: should probably be visible instead of enabled
-            startPosition: data.startPosition || [ 0, 0, 0 ],
-            startDirection: data.startDirection || [ 1, 0, 0 ],
-            endPosition: data.endPosition || [ 0, 0, 0 ],
-            endDirection: data.endDirection || [ 1, 0, 0 ],
-            markerStyle: EMarkerStyle[data.markerStyle] || EMarkerStyle.Pin
+            startPosition: data.startPosition ?? this.ins.startPosition.schema.preset,
+            startDirection: data.startDirection ?? this.ins.startDirection.schema.preset,
+            endPosition: data.endPosition ?? this.ins.endPosition.schema.preset,
+            endDirection: data.endDirection ?? this.ins.endDirection.schema.preset,
+            markerStyle: EMarkerStyle[data.markerStyle] ?? this.ins.markerStyle.schema.preset
         });
-        this.ins.enabled.copyValue(false);  // enable not set from data
-
-        if (data.markerStyle) {
-            /*const styleIndex = ["Sphere", "Ring", "Crosshair", "Disc", "Pin"].indexOf(data.markerStyle);
-            if (styleIndex >= 0) {
-                this.ins.markerStyle.setValue(styleIndex);
-            }*/
-        }
+        
     }
 
     toData(): ITape
     {
         const ins = this.ins;
 
+        if (ins.visible.value){
+            return {
+                enabled: ins.visible.cloneValue(),
+                markerStyle: EMarkerStyle[ins.markerStyle.value] as TMarkerStyle,
+                startPosition: ins.startPosition.cloneValue(),
+                startDirection: ins.startDirection.cloneValue(),
+                endPosition: ins.endPosition.cloneValue(),
+                endDirection: ins.endDirection.cloneValue()
+            };
+        } else {
         return {
-            enabled: ins.visible.cloneValue(),
-            markerStyle: EMarkerStyle[ins.markerStyle.value] as TMarkerStyle,
-            /*startPosition: ins.startPosition.cloneValue(),
-            startDirection: ins.startDirection.cloneValue(),
-            endPosition: ins.endPosition.cloneValue(),
-            endDirection: ins.endDirection.cloneValue()*/
-        };
+                enabled: ins.visible.cloneValue(),
+                markerStyle: EMarkerStyle[ins.markerStyle.value] as TMarkerStyle,
+            }
+        }
     }
 
     protected onPointerUp(event: IPointerEvent)
