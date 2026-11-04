@@ -15,14 +15,12 @@
  * limitations under the License.
  */
 
-import Color from "@ff/core/Color";
 import Property from "@ff/graph/Property";
 
 import "@ff/scene/ui/PropertyField";
 import "@ff/ui/ColorButton";
-import { IColorEditChangeEvent } from "@ff/ui/ColorButton";
 
-import CustomElement, { customElement, property, html, PropertyValues } from "@ff/ui/CustomElement";
+import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
 import "../properties/PropertyColor";
 import "../properties/PropertyBoolean";
@@ -31,6 +29,7 @@ import "../properties/PropertySlider";
 import "../properties/PropertyNumber";
 import "../properties/PropertyOptions";
 import "../properties/PropertyEvent";
+import "../properties/PropertyTags";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -61,11 +60,6 @@ export default class PropertyView extends CustomElement
         this.classList.add("sv-property-view");
     }
 
-    protected onPropertyChange()
-    {
-        console.log("PROPERTY CHANGE");
-    }
-
     protected render()
     {
         const property = this.property;
@@ -91,6 +85,8 @@ export default class PropertyView extends CustomElement
             return html`${headerElement}<div class="sv-property-group">${fields}</div>`;
         }else if (schema.event) {
             return html`<sv-property-event aria-disabled=${disabled} name=${label} .property=${property}></sv-property-event>`;
+        }else if(property.type === "string" && schema.semantic === "tags"){
+            return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property}></sv-property-tags>`
         }else if (schema.options) {
             return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property}></sv-property-options>`;
         }else if(property.type === "boolean"){

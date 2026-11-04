@@ -50,6 +50,12 @@ export default class CVMeta extends Component
         return this.getGraphComponent(CVLanguageManager, true);
     }
 
+    hasContent(): boolean
+    {
+        return this.collection.length > 0 || this.process.length > 0 || this.images.length > 0 || 
+            this.articles.length > 0 || this.audio.length > 0 || this.actions.length > 0 || this.notes.length > 0;
+    }
+
     fromDocument(document: IDocument, node: INode | IScene): number
     {
         if (!isFinite(node.meta)) {
@@ -71,7 +77,11 @@ export default class CVMeta extends Component
         }
         if (data.images) {
             const imageDict = {};
-            data.images.forEach(image => imageDict[image.quality] = image);
+            data.images.forEach(image => {
+                image.usage ??= "Render";
+                const key = image.usage === "Render" ? image.quality : image.uri;
+                imageDict[key] = image;
+            });
             this.images.dictionary = imageDict;
         }
         if (data.articles) {
@@ -97,10 +107,14 @@ export default class CVMeta extends Component
             this.audio.dictionary = audioDict;
         }
         if (data.actions) {
+            let count = 0;
             const actionDict = {};
             data.actions.forEach(action => {
+                action.name ??= "Action" + count++;
                 action.animation ??= "";
                 action.audioId ??= "";
+                action.speed ??= 1;
+                action.enabled ??= true;
                 actionDict[action.id] = action;
             });
             this.actions.dictionary = actionDict;
@@ -149,6 +163,9 @@ export default class CVMeta extends Component
                 action.animation?.length < 1 ? delete action.animation : null;
                 action.audioId?.length < 1 ? delete action.audioId : null;
                 action.annotationId?.length < 1 ? delete action.annotationId : null;
+                action.actionAnnoId?.length < 1 ? delete action.actionAnnoId : null;
+                action.triggerDetail?.length < 1 ? delete action.triggerDetail : null;
+                action.syncWith?.length < 1 ? delete action.syncWith : null;
             });
         }
 

@@ -21,6 +21,7 @@ These attributes configure the initial object load of the component.
 | resourceRoot	   | Valid URL	   | Path to root folder where the Voyager assets are stored (fonts,images,language). Defaults to jsDelivr CDN.			 |
 | bgColor	   | Valid CSS colors  | Sets the color of the component background. Optional second color for gradient styles. Ex: "red" or "red rgb(0,255,0)" |
 | bgStyle	   | Solid, LinearGradient, RadialGradient | Sets the style of the component background. |
+| markerStyle  | Pin, Ring         | Sets the style of measurement tape markers.                                                                         |
 | controls	   | True, False	   | Enables/Disables user-driven camera controls. Defaults to 'True'. Useful if driving navigation from external code.  |
 | prompt	   | True, False	   | Enables/Disables user interaction prompt. Defaults to 'True'. Always false if 'controls' is false. |
 | reader	   | True, False	   | Enables/Disables visibility of reader UI. Defaults to 'True'. Overrides activation triggers like toggleReader()  |
@@ -47,12 +48,17 @@ These methods engage Voyager functionality without the native UI.
 | Name     				 | Parameters       | Description                                                                                         |
 |------------------------|------------------|----------------------------------------------------------------------------------------------------|
 | toggleAnnotations()    | None    			| On/off toggle for visibility of model annotations (if available)  |
+| setAnnotationsEnabled( visible ) | visible: boolean | Sets annotation visibility to the specified state. Disables tools panel if enabling.  |
 | toggleReader()    	 | None    			| On/off toggle for the article reader.  |
+| setReaderEnabled( enabled ) | enabled: boolean | Sets the article reader to the specified state.  |
 | toggleTours()    		 | None    			| On/off toggle for the tour functionality UI.  |
+| setToursEnabled( enabled ) | enabled: boolean | Sets the tour UI to the specified state. Disables reader if enabling. |
 | toggleTools()    		 | None    			| On/off toggle for the extended tools panel at the bottom of the UI  |
+| setToolsEnabled( visible ) | visible: boolean | Sets the tools panel to the specified state. Disables annotations if enabling.  |
 | toggleMeasurement()	 | None				| On/off toggle for visibility of the object measurement tool.  |
+| setMeasurementEnabled( visible ) | visible: boolean | Sets the measurement tool visibility to the specified state.  |
 | enableAR()		     | None    			| Requests an AR session (if available, outcome depends on platform) **\*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe**  |
-| setActiveAnnotation( id )| id: unique id string | Activates the annotation with the provided id. Opens annotation content where style permits.   |
+| setActiveAnnotation( id )| id: unique id string | Activates the annotation with the provided id. Opens annotation content where style permits. Also animates the camera to the annotation's associated view (if available).   |
 | setActiveArticle( id )| id: unique id string | Activates the article with the provided id. Bad/missing id opens article list.   |
 | setTourStep( tourIdx, stepIdx, interpolate[optional] ) | tourIdx, stepIdx: valid integer - interpolate: boolean | Activates the scene state found at the provided tour and step index. Optional 'interpolate' parameter to control if transition is animated. Defaults to true. |
 | setLanguage( id )		 | id: valid [ISO 639-1](https://www.loc.gov/standards/iso639-2/php/code_list.php) code string | Changes the active Voyager language to the supplied id if available in the current scene.  |
@@ -87,3 +93,6 @@ Methods for external control over camera properties and navigation.
 |-------------------------------|------------------------------------------------------------------------|
 | annotation-active		| This event is fired when the active state of an annotation changes. event.detail will contain the ID of the activated annotation, or will be empty if no annotation is active.|
 | model-load			| This event fires every time a model finishes loading. event.detail will contain the quality [(EDerivativeQuality)](https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/schema/model.ts) of the loaded model. This will likely fire multiple times depending on the number of derivatives loaded and unloaded.|
+| model-error			| This event fires when a model gives up on displaying anything: its derivative failed to load, or it has no 3D derivative to load in the first place. event.detail will contain the error message. It is the counterpart of `model-load`, which never fires in those cases. A failed quality upgrade does not fire it, as long as the model still has an earlier derivative on screen.|
+| scene-content-load			| This event fires once every model in the scene has a representation on screen, whatever its quality. Higher quality derivatives or other subresources may still be downloading. Models that will never display anything (their load failed, they have no 3D derivative, or auto-loading is disabled for them) don't hold the event back. Fires again if the scene later gains a model (eg: `reloadDocument()` is called)|
+| scene-load			| This event fires when the initial load completes, that is when every model has finished loading the quality it was asked for. It is emitted at exactly the point where Voyager stops showing the initial loading indicator, reports its `Loading_Time` analytics and enables the interaction prompt. Unlike `scene-content-load` it waits for the requested quality to load.|

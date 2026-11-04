@@ -41,6 +41,7 @@ export default class ModelReader
     protected loading :Record<string, {listeners : {onload: (data:ArrayBuffer)=>any, onerror: (e:Error)=>any, signal:AbortSignal}[], abortController :AbortController}> = {}
 
     protected customDracoPath = null;
+    protected ktx2SupportDetected = false;
 
     set dracoPath(path: string) 
     {
@@ -66,18 +67,14 @@ export default class ModelReader
         this.loadingManager = loadingManager;
 
         const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/draco/");
+        dracoLoader.setDecoderPath(DEFAULT_SYSTEM_ASSET_PATH + "js/draco/");
         this.renderer = renderer;
         this.gltfLoader = new GLTFLoader(loadingManager);
         this.gltfLoader.setDRACOLoader(dracoLoader);
         this.gltfLoader.setMeshoptDecoder(MeshoptDecoder);
         const ktx2Loader = new KTX2Loader(loadingManager);
-        ktx2Loader.setTranscoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/basis/");
+        ktx2Loader.setTranscoderPath(DEFAULT_SYSTEM_ASSET_PATH + "js/basis/");
         this.gltfLoader.setKTX2Loader(ktx2Loader);
-        setTimeout(()=>{
-            //Allow an update to happen. @todo check how robust it is
-            ktx2Loader.detectSupport(this.renderer.views[0].renderer);
-        }, 0);
     }
 
     dispose()
@@ -87,6 +84,19 @@ export default class ModelReader
         this.gltfLoader.setDRACOLoader(null);
         this.gltfLoader.setKTX2Loader(null);
         this.gltfLoader = null;
+    }
+
+    /**
+     * KTX2 transcoding targets depend on the renderer's capabilities.
+     * Detected on first use, as no render view exists yet when the reader is created.
+     */
+    protected detectKTX2Support()
+    {
+        const view = this.renderer.views[0];
+        if (!this.ktx2SupportDetected && view) {
+            ((this.gltfLoader as any).ktx2Loader as KTX2Loader).detectSupport(view.renderer);
+            this.ktx2SupportDetected = true;
+        }
     }
 
     isValid(url: string): boolean
@@ -105,8 +115,42 @@ export default class ModelReader
         this.loadingManager.itemStart(url);
         let resourcePath = LoaderUtils.extractUrlBase( url );
         return this.loadModel(url, {signal})
-        .then(data=>this.gltfLoader.parseAsync(data, resourcePath))
+        .then(data=> {
+            this.detectKTX2Support();
+            return this.gltfLoader.parseAsync(data, resourcePath);
+        })
         .then(gltf=> {
+            // Check for Kintsugi materials and extract them automatically from the glTF
+            gltf.scene.traverse(object => {
+                const material = object["material"] as MeshStandardMaterial
+
+                if (material) {
+                    // Use Kintsugi diffuse instead of the albedo map (which incorporates both diffuse and specular)
+                    const kintsugiDiffuse = material.userData["diffuseTexture"]
+                    if (kintsugiDiffuse) {
+                        const kintsugiDiffuseTex = gltf.parser.loadTexture(kintsugiDiffuse.index)
+                        .then(texture => {
+                            texture.colorSpace = SRGBColorSpace;
+                            material.map = texture;
+                            material.needsUpdate = true;
+                        })
+                    }
+
+                    // Kintsugi specular is loaded as a custom texture map
+                    const kintsugiSpecular = material.userData["specularTexture"]
+                    if (kintsugiSpecular) {
+                        const kintsugiSpecularTex = gltf.parser.loadTexture(kintsugiSpecular.index)
+                        .then(texture => {
+                            texture.colorSpace = SRGBColorSpace;
+                            material.metalness = 0.0;
+                            material.roughness = 1.0;
+                            material.userData.shader.uniforms["specularOverrideMap"].value = texture;
+                            material.defines["USE_KINTSUGI"] = true;
+                            material.needsUpdate = true;
+                        })
+                    }
+                }
+            })
             if(gltf.userData.gltfExtensions) {
                 const variantsExtension = gltf.userData.gltfExtensions[ 'KHR_materials_variants' ];
                 if(variantsExtension) {
@@ -191,7 +235,17 @@ export default class ModelReader
             if (object.type === "Mesh") {
                 const mesh: Mesh = object;
                 mesh.castShadow = true;
-                mesh.animations = gltf.animations;
+                gltf.animations.forEach((anim) => {
+                    if(anim.tracks[0].name.split(".")[0] === mesh.name) {
+                        mesh.animations.push(anim);
+                    }
+                    // handle grouped meshes split by material at import
+                    else if(anim.tracks[0].name.split(".")[0] === mesh.parent.name) {
+                        if(!mesh.parent.animations.includes(anim)) {
+                            mesh.parent.animations.push(anim);
+                        }
+                    }
+                });
 
                 // convert unlit glTFs to MeshStandardMaterial
                 if((mesh.material as MeshStandardMaterial).type === "MeshBasicMaterial") {

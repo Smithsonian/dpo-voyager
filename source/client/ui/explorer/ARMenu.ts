@@ -79,11 +79,14 @@ export default class ARMenu extends DocumentView
         const narrationButtonVisible = setup.audio.outs.narrationEnabled.value;
         const narrationActive = setup.audio.outs.narrationPlaying.value;
 
+        const tagCloudVisible = setup.viewer.ins.annotationsVisible.value && setup.viewer.outs.tagCloud.value;
+
         return outs.isPlaced.value && outs.isPresenting.value ? html`<div class="sv-ar-menu">
-        ${annotationsButtonVisible ? html`<ff-button icon="comment" title="Show/Hide Annotations"
-            ?selected=${annotationsActive} @click=${this.onToggleAnnotations}></ff-button>` : null}
         ${narrationButtonVisible ? html`<ff-button icon="audio" title=${"Play Audio Narration"}
             ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
+        ${annotationsButtonVisible ? html`<ff-button icon="comment" title="Show/Hide Annotations"
+            ?selected=${annotationsActive} @click=${this.onToggleAnnotations}></ff-button>` : null}
+        ${tagCloudVisible ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
         </div>` : null;
     }
 
@@ -106,13 +109,18 @@ export default class ARMenu extends DocumentView
     {
         //const toolIns = this.toolProvider.ins;
         const viewerIns = this.activeDocument.setup.viewer.ins;
+        const viewerOuts = this.activeDocument.setup.viewer.outs;
 
         /*if (toolIns.visible.value) {
             toolIns.visible.setValue(false);
-        }*/
+        }*/    
 
         viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
         this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
+
+        // Adjust width for 
+        (this.getElementsByClassName("sv-ar-menu")[0] as HTMLDivElement).style.width = 
+            viewerIns.annotationsVisible.value && viewerOuts.tagCloud.value ? "90%" : "";
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

@@ -183,9 +183,13 @@ export default class CVSetup extends Component
             delete setupData["tours"];
         }
 
+        // save current snapshots (or remove cached if current is empty)
         const snapshotData = this.snapshots.toData(pathMap);
         if (snapshotData) {
             setupData.snapshots = snapshotData;
+        }
+        else if (setupData.snapshots) {
+            delete setupData.snapshots;
         }
 
         if (setupData) {
@@ -223,16 +227,14 @@ export default class CVSetup extends Component
             }
         }
 
-        this.slicer.ins.enabled.set();  // slicer needs a push to refresh
-        if(this.navigation.ins.autoZoom.value) {
-            this.navigation.ins.zoomExtents.set();
-        }
+        this.slicer.ins.color.set();  
+        this.reader.ins.enabled.set();
+        this.reader.ins.position.set();
     }
 
-    resetViewer() {
-        this.actions.ins.reset.set();
+    resetViewer() {    
         this.audio.ins.reset.set();
-        this.navigation.ins.projection.reset();  // projection not currently included in scene state
         this.ins.restoreState.set();
+        this.actions.ins.reset.set();
     }
 }

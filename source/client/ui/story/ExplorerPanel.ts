@@ -55,7 +55,10 @@ export default class ExplorerPanel extends CustomElement
             const dropZone = new SimpleDropzone(this, fileInput);
 
             this._mediaManager = application.system.getComponent(CVMediaManager);
-            dropZone.on('drop', ({files}: any) => this._mediaManager.ingestFiles(files));
+            dropZone.on('drop', ({files}: any) => {
+                this.classList.remove("sv-drop-zone", "sv-transfer-pulse");
+                this._mediaManager.ingestFiles(files);
+            });
         }
     }
 
@@ -64,6 +67,7 @@ export default class ExplorerPanel extends CustomElement
         this.classList.add("sv-panel", "sv-explorer-panel");
 
         const lockableContainer = this.createElement("div", {position: "relative", flex: "1 1 auto", display: "flex", flexDirection: "row", marginLeft: "auto", marginRight: "auto", width: "100%"});
+        lockableContainer.classList.add("sv-explorer-viewport");
         
         this.appendElement(new ExplorerLockToolbar(lockableContainer));
         this.appendElement(lockableContainer);
@@ -100,6 +104,6 @@ export default class ExplorerPanel extends CustomElement
         }
 
         e.preventDefault();
-        this.classList.remove("sv-drop-zone");
+        this.classList.add("sv-transfer-pulse"); // indicator that file is transferring to browser or unzipping
     }
 }

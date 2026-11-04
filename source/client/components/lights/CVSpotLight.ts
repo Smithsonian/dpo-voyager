@@ -32,6 +32,8 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
     static readonly text: string = "Spot Light";
     static readonly icon: string = "spot";
 
+    private _savedDocumentData;
+
     get settingProperties() {
         return [
             this.ins.name,
@@ -72,14 +74,21 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             throw new Error("light property missing in node");
         }
 
-        const data = document.lights[node.light];
+        this._savedDocumentData = JSON.parse(JSON.stringify(document.lights[node.light]));
+        this._savedDocumentData.name = node.name;
+        this.setFromSavedData();
+        return node.light;
+    }
+    
+    setFromSavedData() {
         const ins = this.ins;
+        const data = this._savedDocumentData;
 
         if (data.type !== CVSpotLight.type) {
             throw new Error("light type mismatch: not a spot light");
         }
 
-        ins.name.setValue(node.name);
+        ins.name.setValue(data.name);
         data.spot = data.spot || {} as any;
 
         ins.copyValues({
@@ -101,8 +110,6 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
         ins.tags.setValue(data.tags || "");
-
-        return node.light;
     }
 
     toDocument(document: IDocument, node: INode): number

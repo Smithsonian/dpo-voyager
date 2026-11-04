@@ -17,7 +17,7 @@
 
 import { Dictionary } from "@ff/core/types";
 import Component from "@ff/graph/Component";
-import CTweenMachine, { EEasingCurve } from "@ff/graph/components/CTweenMachine";
+import CTweenMachine, { EEasingCurve, IDeltaState, ITargetEntry, ITweenState } from "@ff/graph/components/CTweenMachine";
 import CLight from "@ff/scene/components/CLight";
 
 import { IObjectEvent } from "@ff/core/ObjectRegistry";
@@ -26,8 +26,9 @@ import { ISnapshots } from "client/schema/setup";
 
 import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";
-import Property from "@ff/graph/Property";
+import Property, { types } from "@ff/graph/Property";
 import CVTours from "./CVTours";
+import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,6 +39,14 @@ export default class CVSnapshots extends CTweenMachine
     static readonly typeName: string = "CVSnapshots";
 
     targetFeatures: Dictionary<boolean> = {};
+    deltaStates: IDeltaState[] = [];
+
+    protected static readonly snapshotAddIns = {
+        deltaID: types.String("Snapshot.deltaID"),
+        activateDelta: types.Event("Snapshot.activateDelta"),
+    };
+
+    addIns = this.addInputs(CVSnapshots.snapshotAddIns);
 
     create()
     {
@@ -55,6 +64,18 @@ export default class CVSnapshots extends CTweenMachine
         this.initializeTargetFeatures();
 
         this.graph.components.on(CLight, this.onLightComponentEvent, this);
+    }
+
+    update(context): boolean
+    {
+        const addIns = this.addIns;
+
+        if (addIns.activateDelta.changed) {
+            this.activateStateChange();
+        }
+
+        super.update(context);
+        return true;
     }
 
     initializeTargetFeatures()
@@ -86,6 +107,28 @@ export default class CVSnapshots extends CTweenMachine
         models.forEach(model => {
             this.updateComponentTarget(model.transform, !!features["models"]);
             this.updateComponentTarget(model, !!features["models"]);
+
+            // Handle properties getting added to annotation views after initial setup
+            model.getComponent(CVAnnotationView).getAnnotations().forEach(anno => {
+                if(anno.data.viewId) {
+                    const props = this.getTargetProperties();
+                    const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
+                    const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
+
+                    // set non camera properties to null to skip them
+                    const values = this.states[anno.data.viewId]?.values;
+                    if(values) {
+                        values.forEach((v, idx) => {
+                            if(idx != orbitIdx && idx != offsetIdx) {
+                                values[idx] = null;
+                            }
+                        });
+                    }
+                    else {
+                        console.warn("Unknown view state for anno: " + anno.title);
+                    }
+                }
+            });
         });
 
         const lights = this.getGraphComponents(CLight);
@@ -101,6 +144,33 @@ export default class CVSnapshots extends CTweenMachine
                 index, component.displayName, target.property.path);
         });
          */
+    }
+
+    protected activateStateChange()
+    {
+        // don't process an active delta state change if one is already in progress
+        if(this.outs.tweening.value) {
+            return;
+        }
+        
+        const id = this.addIns.deltaID.value;
+        const state = this.getState(id) as IDeltaState;
+        const targetCache : ITargetEntry[] = [];
+        this.targets.forEach(target => { targetCache.push(target);});
+        this.targets.length = 0;
+        state.paths.forEach(path => {
+            const pathTokens = path.split('/');
+            const property = this.getProperty(pathTokens[0], pathTokens[1]);
+            
+            const isNumber = property.type === "number" && !property.schema.options;
+            const isArray = property.isArray();
+            this.targets.push({ property, isNumber, isArray });
+        });
+        
+        this.ins.id.setValue(id);
+        this.ins.tween.set();
+
+        this.outs.end.once("value", () => {this.targets.length = 0; this.targets.push(...targetCache);}, this);
     }
 
     protected onLightComponentEvent = (event: IObjectEvent<CLight>) => {
@@ -119,14 +189,14 @@ export default class CVSnapshots extends CTweenMachine
 
     protected updateComponentTarget(component: Component, include: boolean)
     {
-        const snapshotProperties = component["snapshotProperties"] as Property[];
+        const snapshotProperties = component?.["snapshotProperties"] as Property[];
         if (!snapshotProperties) {
             return;
         }
 
         snapshotProperties.forEach(property => {
-            const schema = property.schema;
-            if (!schema.event && property.type !== "object") {
+            const isSerializable = (property.type !== "object" && !property.schema.event) || property.schema.semantic === "datetime";
+            if (isSerializable) {
                 const isIncluded = this.hasTargetProperty(property);
                 if (include && !isIncluded) {
                     this.addTargetProperty(property);
@@ -180,13 +250,44 @@ export default class CVSnapshots extends CTweenMachine
                     threshold: state.threshold !== undefined ? state.threshold : 0.5,
                     values: state.values.filter((value, index) => !missingTargets.has(index)),
                 });
+
+                if("paths" in state) {
+                    const delta = this.getState(state.id) as IDeltaState;
+                    delta.title = state.title;
+                    delta.paths = state.paths.map(path => {
+                        const idx = path.lastIndexOf("/");
+                        const parts = [path.slice(0, idx), path.slice(idx+1)];
+                        const component = pathMap.get(parts[0]);
+                        if(!component) {
+                            throw new Error(`registered state change component not found for path: '${parts[0]}'`);
+                        }
+                        return component.id + "/" + parts[1];
+                    });
+                    this.deltaStates.push(delta);
+                }
             }
         });
+    }
+
+    /** Ids of the states tour steps and annotation views use. */
+    protected getUsedStateIds(): Set<string>
+    {
+        const ids = new Set<string>();
+        this.getComponent(CVTours).tours.forEach(tour => tour.steps.forEach(step => ids.add(step.id)));
+        this.getGraphComponents(CVAnnotationView).forEach(view => view.getAnnotations().forEach(annotation => {
+            if (annotation.data.viewId) {
+                ids.add(annotation.data.viewId);
+            }
+        }));
+        // the scene's state changes, which actions may play
+        this.deltaStates.forEach(state => ids.add(state.id));
+        return ids;
     }
 
     toData(pathMap: Map<Component, string>): ISnapshots | null
     {
         const features = this.targetFeatures;
+        const usedIds = this.getUsedStateIds();
 
         const data: ISnapshots = {
             features: Object.keys(features).filter(key => features[key]),
@@ -201,7 +302,8 @@ export default class CVSnapshots extends CTweenMachine
                 }
                 return componentPath + "/" + key;
             }),
-            states: Object.keys(this.states).map(key => {
+            // only the states tour steps, annotation views and state changes use: not those left behind, nor the scene kept during a tour
+            states: Object.keys(this.states).filter(key => usedIds.has(key)).map(key => {
                 const state = this.states[key];
                 const data: any = { id: state.id, values: state.values };
                 if (state.curve !== EEasingCurve.EaseQuad) {
@@ -212,6 +314,21 @@ export default class CVSnapshots extends CTweenMachine
                 }
                 if (state.threshold !== 0.5) {
                     data.threshold = state.threshold;
+                }
+                if ("paths" in state) {
+                    const delta = state as IDeltaState;
+                    if(delta.paths.length > 0) {
+                        data.paths = delta.paths.map(path => {
+                            const parts = path.split('/');
+                            const component = this.getComponentById(parts[0]);
+                            const compPath = pathMap.get(component);
+                            if (!compPath) {
+                                throw new Error(`snapshot path not registered for state change '${component.displayName}'`);
+                            }
+                            return compPath + "/" + parts[1];
+                        });
+                        data.title = delta.title;
+                    }
                 }
                 return data;
             }),

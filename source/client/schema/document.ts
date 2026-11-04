@@ -163,7 +163,8 @@ export interface IHemisphereLightProps {
 }
 
 export interface ISunLightProps {
-    datetime?: Date;
+    datetime?: string;
+    timezone?: string;
     latitude?: number;
     longitude?: number;
     intensityFactor?: number;

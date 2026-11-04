@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Matrix4, Quaternion, Euler, MathUtils, EulerOrder } from "three";
+import { Vector3, Matrix4, Quaternion, Euler, MathUtils, EulerOrder, Box3 } from "three";
 
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 
@@ -28,6 +28,9 @@ const _vec3b = new Vector3();
 const _mat4 = new Matrix4();
 const _quat = new Quaternion();
 const _euler = new Euler();
+const defaultPosition = new Vector3(0,0,0);
+const defaultRotation = new Quaternion(0,0,0,1);
+const defaultScale = new Vector3(1,1,1);
 
 export default class CVNode extends CTransform
 {
@@ -35,6 +38,8 @@ export default class CVNode extends CTransform
 
     static readonly text: string = "Transform";
     static readonly icon: string = "";
+
+    private _savedDocumentData: any = {};
 
     get settingProperties() {
         return [
@@ -52,9 +57,33 @@ export default class CVNode extends CTransform
         ];
     }
 
+    update(context)
+    {
+        // handle potential zero-scale matrix collapse
+        // by converting to very small number
+        if(this.ins.scale.changed) {
+            const scale = this.ins.scale.value;
+            for(let i=0; i<3; i++) {
+                if(scale[i] === 0.0) {
+                    scale[i] = 1e-10;
+                }
+            }
+        }
+
+        super.update(context);
+
+        return true;
+    }
+
     fromData(data: INode)
     {
+        this._savedDocumentData = JSON.parse(JSON.stringify(data));
+        this.setFromSavedData();
+    }
+
+    setFromSavedData(){
         const { position, rotation, order, scale } = this.ins;
+        const data = this._savedDocumentData;
 
         const orderTag = ERotationOrder[order.getValidatedValue()] as EulerOrder;
         if(data.name) this.object3D.name = data.name;
@@ -72,19 +101,16 @@ export default class CVNode extends CTransform
             scale.set();
         }
         else {
-            if (data.translation) {
-                position.setValue(data.translation.slice());
-            }
+            position.setValue(data.translation ? data.translation.slice() : defaultPosition.toArray());
             if (data.rotation) {
                 _quat.fromArray(data.rotation);
                 _euler.setFromQuaternion(_quat, orderTag);
                 _vec3a.setFromEuler(_euler).multiplyScalar(MathUtils.RAD2DEG).toArray(rotation.value);
                 rotation.set();
+            } else {
+                rotation.setValue(defaultRotation.toArray());
             }
-            if (data.scale) {
-                scale.setValue(data.scale.slice());
-            }
-
+            scale.setValue(data.scale? data.scale.slice():defaultScale.toArray());
             // this updates the matrix from the PRS properties
             this.transform.changed = true;
         }
@@ -96,13 +122,13 @@ export default class CVNode extends CTransform
 
         const data: Partial<INode> = {};
 
-        if (_vec3a.x !== 0 || _vec3a.y !== 0 || _vec3a.z !== 0) {
+        if (!_vec3a.equals(defaultPosition)) {
             data.translation = _vec3a.toArray();
         }
-        if (_quat.x !== 0 || _quat.y !== 0 || _quat.z !== 0 || _quat.w !== 1) {
+        if (!_quat.equals(defaultRotation)) {
             data.rotation = _quat.toArray();
         }
-        if (_vec3b.x !== 1 || _vec3b.y !== 1 || _vec3b.z !== 1) {
+        if (!_vec3b.equals(defaultScale)) {
             data.scale = _vec3b.toArray();
         }
 

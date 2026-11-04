@@ -77,7 +77,6 @@ export default class FontReader
             }
         }).then(result => {
             if (!result.ok) {
-                this._loadingManager.itemError(url);
                 throw new Error(`failed to load bitmap font descriptor: '${descriptorUrl}', status: ${result.status} ${result.statusText}`);
             }
 
@@ -94,15 +93,21 @@ export default class FontReader
             });
         });
 
-        return Promise.all([ loadDescriptor, loadBitmap ])
-            .then(result => {
-                const font: IBitmapFont = {
-                    descriptor: result[0] as object,
-                    texture: result[1] as Texture,
-                };
-                this._cache[url] = font;  // TODO: Revisit caching - this doesn't do much for us
-                this._loadingManager.itemEnd(url);
-                return font;
-            });
+        try {
+            const result = await Promise.all([ loadDescriptor, loadBitmap ]);
+            const font: IBitmapFont = {
+                descriptor: result[0] as object,
+                texture: result[1] as Texture,
+            };
+            this._cache[url] = font;  // TODO: Revisit caching - this doesn't do much for us
+            return font;
+        }
+        catch (error) {
+            this._loadingManager.itemError(url);
+            throw error;
+        }
+        finally {
+            this._loadingManager.itemEnd(url);
+        }
     }
 }

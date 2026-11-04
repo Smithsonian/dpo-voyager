@@ -180,7 +180,7 @@ export default class ReaderView extends DocumentView
 
     protected setFocus() {
         const reader = this.reader;
-        const container = reader.activeArticle ? this.getElementsByClassName("sv-nav-button").item(1) : this.getElementsByClassName("sv-entry").item(0);
+        const container = reader.activeArticle ? this.getElementsByClassName("sv-nav-button").item(this.tours.ins.enabled.value ? 0 : 1) : this.getElementsByClassName("sv-entry").item(0);
         (container  as HTMLElement).focus();
     }
 }

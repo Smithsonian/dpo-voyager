@@ -17,6 +17,7 @@
 
 import "../ui/properties/PropertyBoolean";
 import "../ui/properties/PropertyString";
+import "../ui/properties/PropertyOptions";
 
 import CVDocument from "./CVDocument";
 import { ETapeState } from "./CVTape";

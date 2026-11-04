@@ -85,6 +85,7 @@ import CVAmbientLight from "client/components/lights/CVAmbientLight";
 import CVHemisphereLight from "client/components/lights/CVHemisphereLight";
 import CVRectLight from "client/components/lights/CVRectLight";
 import CVDerivativesController from "client/components/CVDerivativesController";
+import CVImagePlane from "client/components/CVImagePlane";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,6 +131,7 @@ const types = [
     CVStaticAnnotationView,
     CVCamera,
     ...lightTypes,
+    CVImagePlane,
 
     CVInterface,
     CVViewer,

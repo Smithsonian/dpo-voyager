@@ -359,7 +359,13 @@ export default class CameraController implements IManip
 
         if (this.offsetEnabled) {
             if(this.controllerMode == EControllerMode.Orbit) {
-                const factor = offset.z = dScale * offset.z;
+                offset.z = dScale * offset.z;
+
+                // Convert pixel deltas to world units at the target plane.
+                // ortho: offset.z is the camera's vertical size, so the ratio is already world/pixel.
+                const factor = camera.isOrthographicCamera
+                    ? offset.z
+                    : offset.z * 2 * Math.tan(camera.fov * math.DEG2RAD * 0.5);
 
                 offset.x += dX * factor * inverse / this.viewportHeight;
                 offset.y -= dY * factor * inverse / this.viewportHeight;

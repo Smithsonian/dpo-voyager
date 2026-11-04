@@ -245,6 +245,12 @@
         "renderOrder": {
             "type": "number"
         },
+        "shader": {
+            "type": "number"
+        },
+        "variant": {
+            "type": "number"
+        },
         "overlayMap": {
             "type": "number"
         },
@@ -276,6 +282,9 @@
         },
         "material": {
             "$ref": "#/definitions/material"
+        },
+        "slicerEnabled": {
+            "type": "boolean"
         },
         "annotations": {
             "description": "List of annotations to be displayed with the model",

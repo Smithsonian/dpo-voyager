@@ -132,13 +132,7 @@ export default class MainMenu extends DocumentView
 
         const language = setup.language;
 
-        // TODO - push to ARManager?
-        const models = scene.getGraphComponents(CVModel2);
-        let hasARderivatives = false;
-        models.forEach(model => {
-            hasARderivatives = model.derivatives.getByQuality(EDerivativeQuality.AR).length > 0 ? true : hasARderivatives;
-        });
-        const arButtonVisible = (this.arManager.outs.available.value || this.arManager.arCodeImage ) && hasARderivatives && models.length >= 1;
+        const arButtonVisible = (this.arManager.outs.available.value || this.arManager.arCodeImage ) && this.arManager.hasPlatformSpecificAR();
 
 
         return html`
@@ -165,8 +159,7 @@ export default class MainMenu extends DocumentView
         const reader = this.activeDocument.setup.reader;
         const readerIns = reader.ins;
         readerIns.enabled.setValue(!readerIns.enabled.value);
-        readerIns.focus.setValue(readerIns.enabled.value);
-
+        
         if(readerIns.enabled.value) {
             readerIns.articleId.setValue(reader.articles.length === 1 ? reader.articles[0].article.id : "");
         }

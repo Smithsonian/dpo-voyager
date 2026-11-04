@@ -31,6 +31,8 @@ export default class CVRectLight extends CRectLight implements ICVLight
     static readonly text: string = "Rectangular Light";
     static readonly icon: string = "area";
 
+    private _savedDocumentData;
+
     get settingProperties() {
         return [
             this.ins.name,
@@ -59,14 +61,21 @@ export default class CVRectLight extends CRectLight implements ICVLight
             throw new Error("light property missing in node");
         }
 
-        const data = document.lights[node.light];
+        this._savedDocumentData = JSON.parse(JSON.stringify(document.lights[node.light]));
+        this._savedDocumentData.name = node.name;
+        this.setFromSavedData();
+        return node.light;
+    }
+    
+    setFromSavedData() {
         const ins = this.ins;
+        const data = this._savedDocumentData;
 
         if (data.type !== CVRectLight.type) {
             throw new Error(`light type mismatch: not a directional light (${data.type})`);
         }
 
-        ins.name.setValue(node.name);
+        ins.name.setValue(data.name);
 
         ins.copyValues({
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
@@ -77,8 +86,6 @@ export default class CVRectLight extends CRectLight implements ICVLight
             target: ins.target.schema.preset,
         });
         ins.tags.setValue(data.tags || "");
-
-        return node.light;
     }
 
     toDocument(document: IDocument, node: INode): number

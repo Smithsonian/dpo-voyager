@@ -208,13 +208,13 @@ export class TaskView<T extends CVTask = CVTask> extends NodeView
         super.connected();
         this.activeDocument.setup.language.outs.uiLanguage.on("value", this.onUpdate, this);
     }
-    
+
     protected disconnected()
     {
         this.activeDocument.setup.language.outs.uiLanguage.off("value", this.onUpdate, this);
         super.disconnected();
     }
-    
+
     protected firstConnected()
     {
         this.classList.add("sv-task-view");

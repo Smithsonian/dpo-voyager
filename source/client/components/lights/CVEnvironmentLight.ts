@@ -33,7 +33,9 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
 
     static readonly text: string = "Environment Light";
     static readonly icon: string = "globe";
-    
+
+    private _savedDocumentData;
+ 
     canDelete: boolean = false;
 
     get settingProperties() {
@@ -85,9 +87,21 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
             throw new Error("light property missing in node");
         }
 
-        const data = document.lights[node.light];
+        this._savedDocumentData = JSON.parse(JSON.stringify(document.lights[node.light]));
+        this.setFromSavedData();
+        return node.light;
+    }
+    
+    setFromSavedData() {
         const ins = this.ins;
-
+        const data = this._savedDocumentData;
+        if (!data) {
+            ins.copyValues({
+                enabled: false,
+                intensity: ins.intensity.schema.preset,
+            });
+            return;
+        }
         if (data.type !== CVEnvironmentLight.type) {
             throw new Error("light type mismatch: not an environment light");
         }
@@ -99,8 +113,6 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
         });
         ins.tags.setValue(data.tags || "");
-
-        return node.light;
     }
 
     toDocument(document: IDocument, node: INode): number
