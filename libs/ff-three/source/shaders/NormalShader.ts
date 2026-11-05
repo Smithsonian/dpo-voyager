@@ -20,13 +20,17 @@ export default class NormalShader extends ShaderMaterial
     };
 
     vertexShader = [
+        "  #include <skinning_pars_vertex>",
         "varying vec3 vLocalNormal;",
 
         "void main() {",
+        "  #include <skinbase_vertex>",
         "  #include <beginnormal_vertex>",
+        "  #include <skinnormal_vertex>",
         "  #include <begin_vertex>",
+        "  #include <skinning_vertex>",
         "  #include <project_vertex>",
-        "  vLocalNormal = vec3(normal);",
+        "  vLocalNormal = objectNormal;",
         "}",
     ].join("\n");
 

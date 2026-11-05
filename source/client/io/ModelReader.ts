@@ -231,21 +231,27 @@ export default class ModelReader
         if(signal.aborted) throw new DOMException(signal.reason, "AbortError");
         const scene = gltf.scene;
 
+        
         scene.traverse((object: any) => {
-            if (object.type === "Mesh") {
-                const mesh: Mesh = object;
-                mesh.castShadow = true;
+
+            if (object.type === "Bone" || object.isMesh) {
                 gltf.animations.forEach((anim) => {
-                    if(anim.tracks[0].name.split(".")[0] === mesh.name) {
-                        mesh.animations.push(anim);
+                    if(anim.tracks[0].name.split(".")[0] === object.name) {
+                        object.animations.push(anim);
                     }
                     // handle grouped meshes split by material at import
-                    else if(anim.tracks[0].name.split(".")[0] === mesh.parent.name) {
-                        if(!mesh.parent.animations.includes(anim)) {
-                            mesh.parent.animations.push(anim);
+                    else if(anim.tracks[0].name.split(".")[0] === object.parent.name) {
+                        if(!object.parent.animations.includes(anim)) {
+                            object.parent.animations.push(anim);
                         }
                     }
                 });
+            }
+
+            if (object.isMesh) {
+
+                const mesh: Mesh = object;
+                mesh.castShadow = true;
 
                 // convert unlit glTFs to MeshStandardMaterial
                 if((mesh.material as MeshStandardMaterial).type === "MeshBasicMaterial") {

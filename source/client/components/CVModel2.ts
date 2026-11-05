@@ -1067,7 +1067,7 @@ export default class CVModel2 extends CObject3D
     {
         this.object3D.add(object);
         this.object3D.traverse(node => {
-            if (node.type === "Mesh") {
+            if (node.type === "Mesh" || node.type === "SkinnedMesh") {
                 this.registerPickableObject3D(node, true);
             }
         });

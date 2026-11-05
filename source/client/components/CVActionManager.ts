@@ -52,7 +52,7 @@ export default class CVActionManager extends Component
 
     private _clock: Timer = new Timer();
     private _mixer: AnimationMixer = null;
-    private _activeClips: {id: string, clip: AnimationAction}[] = [];
+    private _activeClips: {id: string, clip: AnimationAction, mesh: Object3D, annotations: Object3D}[] = [];
     private _direction: Dictionary<number> = {};
     private _initialOffset: Dictionary<Matrix4> = {};
     private _animMap: Dictionary<Object3D> = {};
@@ -222,6 +222,24 @@ export default class CVActionManager extends Component
 
         if(this._activeClips.length > 0) {
             this._mixer.update(delta);
+
+            for (const clip of this._activeClips) {
+                
+                if(clip.mesh.type !== "Bone"){
+                    continue;
+                }
+
+                const annotations = clip.annotations;
+                const parent = annotations.parent;
+                
+                const position = clip.mesh.getWorldPosition(new Vector3());
+                position.y=0;
+                parent.updateMatrixWorld(true);
+                
+                parent.worldToLocal(position);
+                annotations.position.copy(position);
+                annotations.updateMatrix();
+            }
             return true;
         }
 
@@ -504,10 +522,14 @@ export default class CVActionManager extends Component
         {
             // insert new annotation offset nodes
             if(!this._initialOffset[mesh.id]) {
-                annotations.parent.add(new Object3D().add(new Object3D().add(annotations)));
+                
+                if(mesh.type !== "Bone"){
+                    annotations.parent.add(new Object3D().add(new Object3D().add(annotations)));
+                }
+
                 annotations.parent.name = mesh.name;
                 annotations.parent.parent.matrixAutoUpdate = false;
-
+                
                 // initialize as we can't assume that all channels are animated
                 annotations.parent.position.copy(mesh.position);
                 annotations.parent.rotation.copy(mesh.rotation);
@@ -535,7 +557,7 @@ export default class CVActionManager extends Component
         }
         
         const clip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), this._animGroups[groupId]);
-
+        
         if(clip && !clip.isRunning()) {
             clip.reset();
             // handle ping-pong directions
@@ -561,7 +583,7 @@ export default class CVActionManager extends Component
 
             isLooping ? clip.setLoop(LoopRepeat, Infinity) : clip.setLoop(LoopOnce, 1);
             clip.play();
-            this._activeClips.some((element) => element.id === action.id) ? null : this._activeClips.push({id: action.id, clip: clip});
+            this._activeClips.some((element) => element.id === action.id) ? null : this._activeClips.push({id: action.id, clip: clip, mesh: mesh, annotations: annotations});
         }
     }
 
