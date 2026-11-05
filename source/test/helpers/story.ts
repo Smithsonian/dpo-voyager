@@ -30,10 +30,7 @@ import { TypeOf } from "@ff/core/types";
 
 import documentTemplate from "client/templates/default.svx.json";
 
-// happy-dom has no Web Audio API, which CVAudioManager creates a context of
-if (!globalThis.AudioContext) {
-    globalThis.AudioContext = class { close() {} decodeAudioData() {} } as any;
-}
+import { createViewerRoot } from "./stubs";
 
 export interface IStory
 {
@@ -64,11 +61,7 @@ export function createStory(data: IDocument): IStory
 
     const document = system.getMainComponent(CVDocumentProvider).createDocument(data);
 
-    // Explorer's shadow DOM elements some components look up
-    const root = window.document.createElement("div");
-    root.attachShadow({ mode: "open" }).innerHTML =
-        `<div id="sceneview-sr"></div><div class="sv-tag-buttons"></div><div class="ff-viewport-overlay"></div>`;
-    document.setup.viewer.rootElement = root;
+    document.setup.viewer.rootElement = createViewerRoot();
 
     // generating an environment map needs a WebGL renderer
     document.setup.environment.ins.enabled.setValue(false);

@@ -123,6 +123,9 @@ Version: ${ENV_VERSION}
     readonly props: IExplorerApplicationProps;
     readonly system: System;
 
+    /** Aborts the document load in progress once another one supersedes it. */
+    private _documentLoad: AbortController = null;
+
     protected get assetManager() {
         return this.system.getMainComponent(CVAssetManager);
     }
@@ -212,6 +215,8 @@ Version: ${ENV_VERSION}
 
     dispose()
     {
+        this.abortDocumentLoad("The application was disposed");
+
         // Clean up assuming a component disconnect means it won't be reconnected
         // TODO: More complete clean up that doesn't interfere with component disconnect
         this.assetReader.dispose();
@@ -229,13 +234,20 @@ Version: ${ENV_VERSION}
         this.assetManager.baseUrl = url; 
     }
 
+    /**
+     * Loads a document into the active one. Its viewer dispatches either "scene-load" or "scene-error"
+     * once this load is over. Supersedes the document load in progress, if any: it rejects with an AbortError.
+     */
     loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
     {
         const dq = EDerivativeQuality[quality];
-        this.assetManager.ins.initialLoad.setValue(true);
+        this.abortDocumentLoad(`Superseded by the load of '${documentPath}'`);
+        const { signal } = this._documentLoad = new AbortController();
 
-        return this.assetReader.getJSON(documentPath)
+        const loading = this.assetReader.getJSON(documentPath, { signal })
             .then(data => {
+                // don't apply a document that was superseded while it was being parsed
+                signal.throwIfAborted();
                 merge = merge === undefined ? !data.lights && !data.cameras : merge;
                 return this.documentProvider.amendDocument(data, documentPath, merge);
             })
@@ -245,7 +257,11 @@ Version: ${ENV_VERSION}
                 }
 
                 return document;
-            })
+            });
+
+        this.documentProvider.activeComponent.setup.viewer.trackSceneLoad(signal, loading);
+
+        return loading
             .finally(() => {
                 // Make sure load-dependent properties initialized
                 const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
@@ -255,10 +271,18 @@ Version: ${ENV_VERSION}
 
     reloadDocument()
     {
+        this.abortDocumentLoad("The document was reloaded");
+
         const oldDocument = this.documentProvider.activeComponent;
         this.documentProvider.createDocument(documentTemplate as any);
         this.evaluateProps();
         oldDocument?.dispose();
+    }
+
+    protected abortDocumentLoad(message: string)
+    {
+        this._documentLoad?.abort(new DOMException(message, "AbortError"));
+        this._documentLoad = null;
     }
 
     loadModel(modelPath: string, quality: string)
@@ -339,7 +363,12 @@ Version: ${ENV_VERSION}
             props.document = manager.getAssetName(props.document);
             this.loadDocument(props.document, undefined, props.quality)
             .then(() => this.postLoadHandler(props))
-            .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
+            .catch(error => {
+                // superseded, by a reload for instance: not a failure
+                if (error.name !== "AbortError") {
+                    Notification.show(`Failed to load document: ${error.message}`, "error");
+                }
+            });
         }
         else if (props.model) {
             // second loading priority: model
