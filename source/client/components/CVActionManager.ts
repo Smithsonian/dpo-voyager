@@ -226,19 +226,19 @@ export default class CVActionManager extends Component
             for (const clip of this._activeClips) {
                 
                 if(clip.mesh.type !== "Bone"){
-                    continue
+                    continue;
                 }
 
                 const annotations = clip.annotations;
-                const parent = annotations.parent
+                const parent = annotations.parent;
                 
-                const position = clip.mesh.getWorldPosition(new Vector3())
+                const position = clip.mesh.getWorldPosition(new Vector3());
                 position.y=0;
-                parent.updateMatrixWorld(true)
+                parent.updateMatrixWorld(true);
                 
-                parent.worldToLocal(position)
-                annotations.position.copy(position)
-                annotations.updateMatrix()
+                parent.worldToLocal(position);
+                annotations.position.copy(position);
+                annotations.updateMatrix();
             }
             return true;
         }

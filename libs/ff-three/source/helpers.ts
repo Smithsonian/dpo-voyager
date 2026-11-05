@@ -137,21 +137,21 @@ export function computeLocalBoundingBox(object: Object3D, box: Box3, root?: Obje
             const attribute = geometry.attributes.position;
             if (attribute !== undefined) {
                 
-                let skinnedMesh = null
+                let skinnedMesh = null;
                 if(object.type === "SkinnedMesh") {
-                    skinnedMesh = object as SkinnedMesh
+                    skinnedMesh = object as SkinnedMesh;
                 }
 
                 for (let i = 0, n = attribute.count; i < n; ++i) {
                     
-                    _vec3.fromBufferAttribute(attribute, i)
+                    _vec3.fromBufferAttribute(attribute, i);
                     
                     if (skinnedMesh) {
-                        skinnedMesh.applyBoneTransform(i, _vec3)
-                        skinnedMesh.localToWorld(_vec3)
+                        skinnedMesh.applyBoneTransform(i, _vec3);
+                        skinnedMesh.localToWorld(_vec3);
                     }
                     else{
-                        _vec3.applyMatrix4(_mat4)
+                        _vec3.applyMatrix4(_mat4);
                     }
 
                     box.expandByPoint(_vec3);

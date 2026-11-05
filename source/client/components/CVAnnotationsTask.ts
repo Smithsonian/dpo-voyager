@@ -235,7 +235,7 @@ export default class CVAnnotationsTask extends CVTask
             const meshTransform = getMeshTransform(model.object3D, event.object3D);
             const invMeshTransform = meshTransform.clone().invert();
             // Get local bounding box
-            let bounds = null
+            let bounds = null;
             
             if (event.object3D.type === "SkinnedMesh") {
                 bounds = (event.object3D as SkinnedMesh).boundingBox.clone();
