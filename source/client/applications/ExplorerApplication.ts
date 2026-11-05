@@ -679,21 +679,12 @@ Version: ${ENV_VERSION}
     // Activate a specific tour step
     setTourStep(tourIdx: string, stepIdx: string, interpolate: boolean)
     {
-        const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
-        const tourOuts = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.outs;
+        const tours = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours;
         let tour = parseInt(tourIdx);
         let step = parseInt(stepIdx);
   
         if (!isNaN(tour) && !isNaN(step) && tour >= 0 && step >= 0) {
-            tourIns.tourIndex.setValue(tour);
-
-            if(interpolate) {
-                tourOuts.stepIndex.setValue(step-1);
-                tourIns.next.set();
-            }
-            else {
-                tourIns.stepIndex.setValue(step);
-            }
+            tours.goToStep(tour, step, interpolate);
         }
         else {
             console.error("Error: setTourStep param ["+tour+" "+step+"] is not a valid number.");

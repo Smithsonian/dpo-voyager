@@ -130,7 +130,6 @@ export default class ChromeView extends DocumentView
         const toolsVisible = !readerVisible && this.toolProvider.ins.visible.value;
 
         const showTourEndMsg = this.activeDocument.setup.tours.outs.ending.value;
-        this.activeDocument.setup.tours.outs.ending.setValue(false);
 
         const introText = this.activeDocument.outs.intro.value;
         if(introText) { // TODO: Stop intro pop-up from spawning when setting property in Story
@@ -259,6 +258,7 @@ export default class ChromeView extends DocumentView
                 setup.reader.ins.enabled,
                 setup.tours.ins.enabled,
                 setup.tours.outs.tourIndex,
+                setup.tours.outs.ending,
             );
         }
 

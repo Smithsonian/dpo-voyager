@@ -135,7 +135,6 @@ export default class CVArticlesTask extends CVTask
             this.createEditArticle(article);
             
             meta.articles.append(article);
-            this.reader.outs.count.setValue(meta.articles.length);
             languageManager.ins.activeLanguage.setValue(languageManager.ins.primarySceneLanguage.value);
         }
         else if(activeArticle && ins.version.changed) {
@@ -171,7 +170,6 @@ export default class CVArticlesTask extends CVTask
                 }
                 if (ins.delete.changed) {
                     this.deleteArticle(activeArticle);
-                    this.reader.outs.count.setValue(meta.articles.length);
                 }
                 if (ins.title.changed) {
                     activeArticle.title = ins.title.value;
