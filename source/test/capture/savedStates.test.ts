@@ -9,6 +9,7 @@ import CVNodeProvider from "client/components/CVNodeProvider";
 import CVSnapshots, { EEasingCurve } from "client/components/CVSnapshots";
 import CVTours from "client/components/CVTours";
 import Annotation from "client/models/Annotation";
+import type NVNode from "client/nodes/NVNode";
 
 import { activateTask, createDocumentData, createStory, IStory } from "../helpers/story";
 
@@ -61,7 +62,7 @@ describe("Saved states", function() {
             settle();
 
             // the model is selected, as the task needs to edit its annotations
-            story.system.getMainComponent(CVNodeProvider).activeNode = model.node;
+            story.system.getMainComponent(CVNodeProvider).activeNode = model.node as NVNode;
             task = activateTask(story, CVAnnotationsTask);
             expect(task.activeAnnotations).to.equal(view);
             // views only play with annotations shown

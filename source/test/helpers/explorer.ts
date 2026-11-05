@@ -20,13 +20,10 @@ import { IDocument } from "client/schema/document";
 
 import documentTemplate from "client/templates/default.svx.json";
 
+import { createViewerRoot } from "./stubs";
+
 // image planes compile their shader on their first render, which needs WebGL
 Object.assign(CVImagePlane.prototype, { updateShader() {}, updateOverlayMaterial() {} });
-
-// happy-dom has no Web Audio API, which CVAudioManager creates a context of
-if (!globalThis.AudioContext) {
-    globalThis.AudioContext = class { close() {} decodeAudioData() {} } as any;
-}
 
 /** A response under the test's control. Rejects with the request's abort reason once aborted. */
 export class Deferred<T>
@@ -126,10 +123,7 @@ export function createExplorer(): IExplorer
 
     // Attaches each document's viewer to its own element, as MainView does for the active one
     const attach = (document: CVDocument) => {
-        const root = window.document.createElement("div");
-        // Explorer's shadow DOM elements some components look up
-        root.attachShadow({ mode: "open" }).innerHTML =
-            `<div id="sceneview-sr"></div><div class="sv-tag-buttons"></div><div class="ff-viewport-overlay"></div>`;
+        const root = createViewerRoot();
         _observed.forEach(type => root.addEventListener(type, (event: CustomEvent) =>
             events.push({ type, detail: event.detail, document })));
         document.setup.viewer.rootElement = root;
