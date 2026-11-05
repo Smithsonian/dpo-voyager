@@ -24,12 +24,15 @@ export default class PositionShader extends ShaderMaterial
     };
 
     vertexShader = [
+        "  #include <skinning_pars_vertex>",
         "varying vec3 vLocalPosition;",
 
         "void main() {",
+        "  #include <skinbase_vertex>",
         "  #include <begin_vertex>",
+        "  #include <skinning_vertex>",
         "  #include <project_vertex>",
-        "  vLocalPosition = vec3(position);",
+        "  vLocalPosition = transformed;",
         "}",
     ].join("\n");
 
