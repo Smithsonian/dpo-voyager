@@ -205,7 +205,7 @@ export default class CVActionManager extends Component
             
             const meta = event.component.node.getComponent(CVMeta, true);
             if(meta) { 
-                const clickActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger);
+                const clickActions = meta.actions.items.filter(item => (item.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger && item.enabled));
                 if(clickActions.length > 0) {
                     clickActions.forEach((action) => {
                         this.playAction(event.component as CVModel2, action);

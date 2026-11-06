@@ -41,6 +41,10 @@ import CVAssetReader from "client/components/CVAssetReader";
 import Document from "@ff/core/Document";
 import CVSetup from "client/components/CVSetup";
 import { Dictionary } from "@ff/core/types";
+import { IDeltaState } from "@ff/graph/components/CTweenMachine";
+import uniqueId from "@ff/core/uniqueId";
+import { EActionPlayStyle, EActionTrigger, EActionType, IAction, TActionPlayStyle, TActionTrigger, TActionType } from "client/schema/meta";
+import CVMeta from "client/components/CVMeta";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,6 +55,14 @@ const _vec3b = new Vector3();
 const _euler = new Euler();
 const _color = new Color();
 const _upVector = new Vector3(0,1,0);
+
+const lightTypes = [
+    "ambientlight",
+    "directionallight",
+    "pointlight",
+    "spotlight",
+    "imagebasedlight"
+] as const;
 
 export default class IIIFManifestReader {
     application: ExplorerApplication = null;
@@ -65,6 +77,9 @@ export default class IIIFManifestReader {
         const app = this.application;
         const models: CVModel2[] = [];
         const annotations: Dictionary<VAnnotation> = {};
+        const lightList: Dictionary<CLight> = {};
+        const modelList: Dictionary<CVModel2> = {};
+        const actionList: Dictionary<IAction> = {};
         console.log("LOADING IIIF MANIFEST");
         const docProvider = app.system.getMainComponent(CVDocumentProvider);
         const assetReader = app.system.getMainComponent(CVAssetReader);
@@ -185,6 +200,8 @@ console.log(annos);
                 newModel.ins.name.setValue(newModel.node.name);
 
                 newModel.setFromMatrix(this.getIIIFBodyTransform(model,annotation));
+                
+                modelList[annotation.id] = newModel;
             });
 
             // handle lights
@@ -251,10 +268,16 @@ console.log(annos);
                             //const profile = lightBody.getProfile();
                             //const format = lightBody.getEnvMapFormat();
                         }
+
+                        if(light.getProperty("behavior")?.includes("hidden")) {
+                            newLight.ins.enabled.setValue(false);
+                        }
                     }
                     else {
                         console.warn("Unhandled IIIF light type: "+lightBody.getType());
                     }
+
+                    lightList[light.id] = newLight;
                 });
             }
 
@@ -569,29 +592,128 @@ console.log(annos);
                 }
             });
 
+            const enableActions = [];
+            let defaultCount = 0;
             iiifActivations.forEach((activation) => {
-                const body = activation.getBody()[0];
-                const actions = body.getAction();
-                const subject = scene.getAnnotationById(body.getSource().id);
-                const target = annos.find((anno) => {return anno.id === activation.getTarget().id});
-  
-                actions.forEach((action) => {
-                    switch(action) {
-                        case "select":
-                            const subjectType = subject.getBody()[0].getType();
-                            // Handle activating annotation views
-                            if(subjectType.includes("camera") && target.getProperty("motivation").includes("commenting")) {
-                                this.addAnnotationView(subject, annotations[target.id], scene, setup);
-                            }    
-                            break;
-                        case "show":
-                            break;
-                        case "enable":
-                            break;
-                        default:
-                            console.log("Unsupported IIIF activation action: "+ action);
-                    }
+                const bodies = activation.getBody();
+                let prevActionId = null;
+                bodies.forEach((body, idx) => {
+                    const actions = body.getAction();
+                    const subject = scene.getAnnotationById(body.getSource().id);
+                    const target = annos.find((anno) => {return anno.id === activation.getTarget().id});
+                    const actvationTargetType = target.Body[0].getType().toString();
+                    
+                    actions.forEach((action) => {
+                        const actionTarget = annos.find((anno) => {return anno.id === body.getSource().id});
+                        const actionTargetType = actionTarget.Body[0].getType().toString();
+                        switch(action) {
+                            case "select":
+                                const subjectType = subject.getBody()[0].getType();
+                                // Handle activating annotation views
+                                if(subjectType.includes("camera") && target.getProperty("motivation").includes("commenting")) {
+                                    this.addAnnotationView(subject, annotations[target.id], scene, setup);
+                                }    
+                                break;
+                            case "hide":
+                            case "show":
+                                const newStateId = uniqueId(6);
+                                if(lightTypes.includes(actionTargetType as any)) {
+                                    const lightTarget = lightList[actionTarget.id];
+                                    const deltaPaths : string[] = [];
+                                    deltaPaths.push(lightTarget.ins.enabled.group.linkable.id + "/" + lightTarget.ins.enabled.key);
+
+                                    const newState: IDeltaState = {
+                                        id: newStateId,
+                                        values: [action === "show"],
+                                        curve: EEasingCurve.EaseOutQuad,
+                                        duration: 0,
+                                        threshold: 0.5,
+                                        title: "State"+(setup.snapshots.deltaStates.length + 1),
+                                        paths: deltaPaths
+                                    };
+                        
+                                    setup.snapshots.setState(newState);
+                                    setup.snapshots.deltaStates.push(newState);
+                                }
+
+                                if(actvationTargetType === "model") {
+                                    const newAction: IAction = { 
+                                        id: Document.generateId(), 
+                                        name: "Action"  + defaultCount++,
+                                        type: EActionType[EActionType.StateChange] as TActionType,
+                                        trigger: (EActionTrigger[idx === 0 ? EActionTrigger.OnClick : EActionTrigger.OnActionBegin]) as TActionTrigger,
+                                        stateId: newStateId,
+                                        enabled: true
+                                    };
+                                    if(idx > 0) {
+                                        newAction.triggerDetail = prevActionId;
+                                    }
+
+                                    let meta = modelList[target.id].getComponent(CVMeta, true);
+                                    meta.actions.items = [newAction];
+                                    actionList[activation.id] ??= newAction;
+                                    prevActionId = newAction.id;
+                                }
+                                break;
+                            case "enable":
+                            case "disable":
+                                if(iiifActivations.some(anno => anno.id === actionTarget.id)) {
+                                    const newAction: IAction = { 
+                                        id: Document.generateId(), 
+                                        name: "Action" + defaultCount++,
+                                        type: (EActionType[action === "enable" ? EActionType.EnableAction : EActionType.DisableAction]) as TActionType,
+                                        trigger: (EActionTrigger[idx === 0 ? EActionTrigger.OnClick : EActionTrigger.OnActionBegin]) as TActionTrigger,
+                                        enabled: true
+                                    };
+                                    if(idx > 0) {
+                                        newAction.triggerDetail = prevActionId;
+                                    }
+
+                                    let meta = modelList[target.id].getComponent(CVMeta, true);
+                                    meta.actions.items = [newAction];
+                                    actionList[activation.id] ??= newAction;
+                                    enableActions.push({action: newAction, target: actionTarget.id});
+                                    prevActionId = newAction.id;
+                                }
+                                break;
+                            case "start":
+                                if(actionTargetType === "model") {
+                                    const anim = (body as SpecificResource).__jsonld.selector[0].value;
+                                    const speed = (body as SpecificResource).__jsonld.selector[0].speed;
+                                    const newAction: IAction = { 
+                                        id: Document.generateId(), 
+                                        name: "Action" + defaultCount++,
+                                        type: EActionType[EActionType.PlayAnimation] as TActionType,
+                                        trigger: (EActionTrigger[idx === 0 ? EActionTrigger.OnClick : EActionTrigger.OnActionBegin]) as TActionTrigger,
+                                        animation: anim,
+                                        style: EActionPlayStyle[EActionPlayStyle.Single] as TActionPlayStyle,
+                                        speed: speed,
+                                        clamp: true,
+                                        enabled: true
+                                    };
+                                    if(idx > 0) {
+                                        newAction.triggerDetail = prevActionId;
+                                    }
+
+                                    let meta = modelList[target.id].getComponent(CVMeta, true);
+                                    meta.actions.items = [newAction];
+                                    actionList[activation.id] ??= newAction;
+                                    prevActionId = newAction.id;
+                                }
+                                break;
+                            default:
+                                console.log("Unsupported IIIF activation action: "+ action);
+                        }
+                    });
                 });
+
+                if(activation.getProperty("behavior")?.includes("disabled")) {
+                    actionList[activation.id].enabled = false;
+                }
+            });
+            // Configure enable/disable actions
+            enableActions.forEach((action) => {
+                action.action.actionTargetId = actionList[action.target].id;
             });
         });
       });
