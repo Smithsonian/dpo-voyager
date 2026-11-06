@@ -23,6 +23,12 @@ import Property, { IPropertyDisposeEvent } from "../Property";
 import CPulse, { IPulseContext } from "./CPulse";
 import uniqueId from "@ff/core/uniqueId";
 
+import * as dayjs from "dayjs";
+import * as timezone from "dayjs/plugin/timezone";
+import * as utc from "dayjs/plugin/utc";
+type TDayjsFactory = ((date?: dayjs.ConfigType) => dayjs.Dayjs) & { tz: typeof dayjs.tz };
+const createDayjs = ((dayjs as unknown as { default?: TDayjsFactory }).default || dayjs as unknown as TDayjsFactory);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 export { EEasingCurve };
@@ -444,7 +450,8 @@ export default class CTweenMachine extends Component
                 let value = valuesB && valuesB[i] !== null ? valuesB[i] : valuesA[i];
 
                 if (property.schema.semantic === "datetime" && typeof value === "string") {
-                    value = new Date(value);                    
+                    //value = new Date(value); 
+                    value = createDayjs(value);                  
                 }
 
                 if (target.isArray) {
