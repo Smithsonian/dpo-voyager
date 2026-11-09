@@ -20,7 +20,7 @@ import { getEasingFunction, EEasingCurve } from "@ff/core/easing";
 
 import Component, { types } from "../Component";
 import Property, { IPropertyDisposeEvent } from "../Property";
-import { createDayjs } from "../propertyTypes";
+import { createDayjsUtc } from "../propertyTypes";
 import CPulse, { IPulseContext } from "./CPulse";
 import uniqueId from "@ff/core/uniqueId";
 
@@ -282,10 +282,10 @@ export default class CTweenMachine extends Component
         const states = this.states;
         const keys = Object.keys(states);
         for (let i = 0, n = keys.length; i < n; ++i) {
-            states[keys[i]].values.push(property.cloneValue());
+            states[keys[i]].values.push(this.cloneTargetValue(property));
         }
         if (this._currentValues) {
-            this._currentValues.push(property.cloneValue());
+            this._currentValues.push(this.cloneTargetValue(property));
         }
     }
 
@@ -445,7 +445,7 @@ export default class CTweenMachine extends Component
                 let value = valuesB && valuesB[i] !== null ? valuesB[i] : valuesA[i];
 
                 if (property.schema.semantic === "datetime" && (typeof value === "string" || value instanceof Date)) {
-                    value = createDayjs(value);
+                    value = createDayjsUtc(value);
                 }
 
                 if (target.isArray) {
@@ -470,9 +470,20 @@ export default class CTweenMachine extends Component
         const values = [];
         const targets = this.targets;
         for (let i = 0, n = targets.length; i < n; ++i) {
-            values.push(targets[i].property.cloneValue());
+            values.push(this.cloneTargetValue(targets[i].property));
         }
 
         return values;
+    }
+
+    protected cloneTargetValue(property: Property): any
+    {
+        const value = property.value;
+        if (property.schema.semantic === "datetime" && typeof value?.format === "function") {
+            // store the wall-clock string so JSON round-trips preserve the displayed time:
+            return value.format("YYYY-MM-DDTHH:mm:ss");
+        }
+
+        return property.cloneValue();
     }
 }

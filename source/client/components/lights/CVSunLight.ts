@@ -8,6 +8,7 @@
 
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
 import CSunLight from "@ff/scene/components/CSunLight";
+import { createDayjsUtc } from "@ff/graph/propertyTypes";
 import dayjs from "dayjs";
 import { ColorRGB, IDocument, ILight, INode, TLightType } from "../../schema/document";
 import { ICVLight } from "./CVLight";
@@ -107,11 +108,16 @@ export default class CVSunLight extends CSunLight implements ICVLight {
 
         ins.name.setValue(data.name);
 
+        const zone = (data.sun?.timezone ?? "").trim() || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const datetime = data.sun?.datetime !== undefined
+            ? createDayjsUtc(dayjs(data.sun.datetime).tz(zone).format("YYYY-MM-DDTHH:mm:ss"))
+            : ins.datetime.schema.preset;
+
         ins.copyValues({
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-            datetime: data.sun?.datetime !== undefined ? dayjs(data.sun.datetime).tz(data.sun.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone) : ins.datetime.schema.preset,
+            datetime,
             timezone: data.sun?.timezone !== undefined ? data.sun.timezone : ins.timezone.schema.preset,
             latitude: data.sun?.latitude !== undefined ? data.sun.latitude : ins.latitude.schema.preset,
             longitude: data.sun?.longitude !== undefined ? data.sun.longitude : ins.longitude.schema.preset,

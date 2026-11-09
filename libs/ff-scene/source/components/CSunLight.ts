@@ -7,6 +7,7 @@
 */
 
 import { IUpdateContext, Node, types } from "@ff/graph/Component";
+import { createDayjsUtc } from "@ff/graph/propertyTypes";
 import Notification from "@ff/ui/Notification";
 import * as dayjs from "dayjs";
 import * as timezone from "dayjs/plugin/timezone";
@@ -38,7 +39,7 @@ export default class CSunLight extends CLight {
             min: 0,
         }),
         datetime: types.DateTime("Light.DateTime", {
-            preset: createDayjs()
+            preset: createDayjsUtc()
         }),
         timezone: types.String("Light.TimeZone", {
             preset: createDayjs.tz.guess()
