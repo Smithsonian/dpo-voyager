@@ -20,6 +20,7 @@ import { getEasingFunction, EEasingCurve } from "@ff/core/easing";
 
 import Component, { types } from "../Component";
 import Property, { IPropertyDisposeEvent } from "../Property";
+import { createDayjs } from "../propertyTypes";
 import CPulse, { IPulseContext } from "./CPulse";
 import uniqueId from "@ff/core/uniqueId";
 
@@ -443,8 +444,8 @@ export default class CTweenMachine extends Component
             else if (!valuesB || doSwitch) {
                 let value = valuesB && valuesB[i] !== null ? valuesB[i] : valuesA[i];
 
-                if (property.schema.semantic === "datetime" && typeof value === "string") {
-                    value = new Date(value);                    
+                if (property.schema.semantic === "datetime" && (typeof value === "string" || value instanceof Date)) {
+                    value = createDayjs(value);
                 }
 
                 if (target.isArray) {

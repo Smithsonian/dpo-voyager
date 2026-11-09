@@ -10,7 +10,7 @@ import * as dayjs from 'dayjs';
 
 // enable dayjs() call (->'now') in Javascript:
 type TDayjsFactory = (date?: dayjs.ConfigType) => dayjs.Dayjs;
-const createDayjs = ((dayjs as unknown as { default?: TDayjsFactory }).default || dayjs as unknown as TDayjsFactory);
+export const createDayjs = ((dayjs as unknown as { default?: TDayjsFactory }).default || dayjs as unknown as TDayjsFactory);
 
 ////////////////////////////////////////////////////////////////////////////////
 
