@@ -312,7 +312,7 @@ export default class CVActionManager extends Component
         }
 
         this.getGraphComponents(CVMeta).forEach((meta) => {
-            const actions = meta.actions.items.filter(item => {return id.length > 0 && item.annotationId == id});
+            const actions = meta.actions.items.filter(item => {return id.length > 0 && item.annotationId == id  && item.enabled});
             if(actions.length > 0) {
                 actions.forEach((action) => {
                     if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {

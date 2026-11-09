@@ -597,6 +597,7 @@ console.log(annos);
             iiifActivations.forEach((activation) => {
                 const bodies = activation.getBody();
                 let prevActionId = null;
+                let meta = cvScene.getComponent(CVMeta, true);
                 bodies.forEach((body, idx) => {
                     const actions = body.getAction();
                     const subject = scene.getAnnotationById(body.getSource().id);
@@ -606,6 +607,14 @@ console.log(annos);
                     actions.forEach((action) => {
                         const actionTarget = annos.find((anno) => {return anno.id === body.getSource().id});
                         const actionTargetType = actionTarget.Body[0].getType().toString();
+                        // create base action
+                        const newAction: IAction = { 
+                            id: Document.generateId(), 
+                            name: "Action"  + defaultCount++,
+                            type: null,
+                            trigger: (EActionTrigger[EActionTrigger.OnActionBegin]) as TActionTrigger,
+                            enabled: true
+                        };
                         switch(action) {
                             case "select":
                                 const subjectType = subject.getBody()[0].getType();
@@ -636,73 +645,53 @@ console.log(annos);
                                     setup.snapshots.deltaStates.push(newState);
                                 }
 
-                                if(actvationTargetType === "model") {
-                                    const newAction: IAction = { 
-                                        id: Document.generateId(), 
-                                        name: "Action"  + defaultCount++,
-                                        type: EActionType[EActionType.StateChange] as TActionType,
-                                        trigger: (EActionTrigger[idx === 0 ? EActionTrigger.OnClick : EActionTrigger.OnActionBegin]) as TActionTrigger,
-                                        stateId: newStateId,
-                                        enabled: true
-                                    };
-                                    if(idx > 0) {
-                                        newAction.triggerDetail = prevActionId;
-                                    }
+                                newAction.type = EActionType[EActionType.StateChange] as TActionType;
+                                newAction.stateId =  newStateId;
 
-                                    let meta = modelList[target.id].getComponent(CVMeta, true);
-                                    meta.actions.items = [newAction];
-                                    actionList[activation.id] ??= newAction;
-                                    prevActionId = newAction.id;
-                                }
                                 break;
                             case "enable":
                             case "disable":
                                 if(iiifActivations.some(anno => anno.id === actionTarget.id)) {
-                                    const newAction: IAction = { 
-                                        id: Document.generateId(), 
-                                        name: "Action" + defaultCount++,
-                                        type: (EActionType[action === "enable" ? EActionType.EnableAction : EActionType.DisableAction]) as TActionType,
-                                        trigger: (EActionTrigger[idx === 0 ? EActionTrigger.OnClick : EActionTrigger.OnActionBegin]) as TActionTrigger,
-                                        enabled: true
-                                    };
-                                    if(idx > 0) {
-                                        newAction.triggerDetail = prevActionId;
-                                    }
-
-                                    let meta = modelList[target.id].getComponent(CVMeta, true);
-                                    meta.actions.items = [newAction];
-                                    actionList[activation.id] ??= newAction;
+                                    newAction.type = (EActionType[action === "enable" ? EActionType.EnableAction : EActionType.DisableAction]) as TActionType;
                                     enableActions.push({action: newAction, target: actionTarget.id});
-                                    prevActionId = newAction.id;
                                 }
                                 break;
                             case "start":
                                 if(actionTargetType === "model") {
                                     const anim = (body as SpecificResource).__jsonld.selector[0].value;
                                     const speed = (body as SpecificResource).__jsonld.selector[0].speed;
-                                    const newAction: IAction = { 
-                                        id: Document.generateId(), 
-                                        name: "Action" + defaultCount++,
-                                        type: EActionType[EActionType.PlayAnimation] as TActionType,
-                                        trigger: (EActionTrigger[idx === 0 ? EActionTrigger.OnClick : EActionTrigger.OnActionBegin]) as TActionTrigger,
-                                        animation: anim,
-                                        style: EActionPlayStyle[EActionPlayStyle.Single] as TActionPlayStyle,
-                                        speed: speed,
-                                        clamp: true,
-                                        enabled: true
-                                    };
-                                    if(idx > 0) {
-                                        newAction.triggerDetail = prevActionId;
-                                    }
 
-                                    let meta = modelList[target.id].getComponent(CVMeta, true);
-                                    meta.actions.items = [newAction];
-                                    actionList[activation.id] ??= newAction;
-                                    prevActionId = newAction.id;
+                                    newAction.type = EActionType[EActionType.PlayAnimation] as TActionType;
+                                    newAction.animation = anim;
+                                    newAction.style = EActionPlayStyle[EActionPlayStyle.Single] as TActionPlayStyle;
+                                    newAction.speed = speed;
+                                    newAction.clamp = true;
                                 }
                                 break;
                             default:
                                 console.log("Unsupported IIIF activation action: "+ action);
+                        }
+
+                        if(newAction.type) {
+                            // Configure trigger
+                            if(idx === 0) {
+                                if(actvationTargetType === "model") {
+                                    newAction.trigger = EActionTrigger[EActionTrigger.OnClick] as TActionTrigger;
+                                    meta = modelList[target.id].getComponent(CVMeta, true);
+                                }
+                                else if(target.getProperty("motivation").includes("commenting")) {
+                                    newAction.trigger = EActionTrigger[EActionTrigger.OnAnnotation] as TActionTrigger;
+                                    newAction.annotationId = annotations[target.id].id;
+                                    meta = cvScene.getGraphComponents(CVAnnotationView).find((view) => view.getAnnotationById(annotations[target.id].id)).getComponent(CVModel2).getComponent(CVMeta, true);
+                                }
+                            }
+                            else {
+                                newAction.triggerDetail = prevActionId;
+                            }
+
+                            meta.actions.items = [newAction];
+                            actionList[activation.id] ??= newAction;
+                            prevActionId = newAction.id;
                         }
                     });
                 });
