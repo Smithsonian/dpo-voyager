@@ -76,7 +76,7 @@ export default class ReaderView extends DocumentView
         }
 
         return html`<div class="sv-left"></div><div class="sv-article" @keydown=${e =>this.onKeyDown(e, reader.activeArticle.id)} >
-                <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
+                <ff-button class="sv-nav-button" inline id="article-reader-exit" title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
                 ${menuButton}
                 <div role="region" aria-live="polite" aria-atomic="true" title="article" class="sv-container"></div>
             </div><div class="sv-right"></div>`;
@@ -180,7 +180,7 @@ export default class ReaderView extends DocumentView
 
     protected setFocus() {
         const reader = this.reader;
-        const container = reader.activeArticle ? this.getElementsByClassName("sv-nav-button").item(this.tours.ins.enabled.value ? 0 : 1) : this.getElementsByClassName("sv-entry").item(0);
+        const container = reader.activeArticle ? this.querySelector("#article-reader-exit") : this.getElementsByClassName("sv-entry").item(0);
         (container  as HTMLElement).focus();
     }
 }

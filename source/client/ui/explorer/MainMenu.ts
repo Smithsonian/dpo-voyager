@@ -269,7 +269,8 @@ export default class MainMenu extends DocumentView
     }
     protected setReaderFocus()
     {
-        this.setElementFocus("reader-btn");
+        const tours = this.activeDocument.setup.tours;
+        tours.ins.enabled.value ? tours.ins.focus.setValue(true) : this.setElementFocus("reader-btn");
     }
     protected setToolsFocus()
     {

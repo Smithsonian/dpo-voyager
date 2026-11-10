@@ -42,6 +42,7 @@ export default class CVTours extends Component
         next: types.Event("Step.Next"),
         previous: types.Event("Step.Previous"),
         first: types.Event("Step.First"),
+        focus: types.Boolean("Reader.Focus"),
     };
 
     protected static readonly outs = {
@@ -204,6 +205,7 @@ export default class CVTours extends Component
                 };
                 machine.setState(state);
                 ins.first.set();
+                ins.focus.setValue(true);
             }
             else {
                 outs.tourIndex.set();

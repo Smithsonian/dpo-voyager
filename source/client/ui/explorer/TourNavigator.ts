@@ -46,8 +46,6 @@ export default class TourNavigator extends DocumentView
         this.classList.add("sv-bottom-bar-container", "sv-tour-navigator"/*, "sv-transition"*/); // Chrome bug causing issues with transition
         //setTimeout(() => this.classList.remove("sv-transition"), 1);
         //this.addEventListener("transitionend", this.focusActive, { once: true });
-
-        this.needsFocus = true;
     }
 
     protected render()
@@ -92,10 +90,10 @@ export default class TourNavigator extends DocumentView
     protected updated(changedProperties) {
         super.updated(changedProperties);
 
-        if(this.needsFocus) {
+        if(this.tours.ins.focus.value) {
             const container = this.getElementsByClassName("sv-section-trail").item(2) as HTMLElement;
             container.focus();
-            this.needsFocus = false;
+            this.tours.ins.focus.setValue(false, true);
         }
 
         // Hack so that initial nav title display is detected by screen readers.
@@ -164,6 +162,7 @@ export default class TourNavigator extends DocumentView
         if (previous) {
             this.tours.outs.tourIndex.off("value", this.onUpdate, this);
             this.tours.outs.stepIndex.off("value", this.onUpdate, this);
+            this.tours.ins.focus.off("value", this.onUpdate, this);
             this.language.outs.activeLanguage.off("value", this.onUpdate, this);
         }
         if (next) {
@@ -172,6 +171,7 @@ export default class TourNavigator extends DocumentView
             this.interface = next.setup.interface;
             this.tours.outs.tourIndex.on("value", this.onUpdate, this);
             this.tours.outs.stepIndex.on("value", this.onUpdate, this);
+            this.tours.ins.focus.on("value", this.onUpdate, this);
             this.language.outs.activeLanguage.on("value", this.onUpdate, this);
         }
 
