@@ -1,0 +1,143 @@
+// Voyager design tokens. Generated from the design file's variables; edit the design file, then regenerate.
+// Desktop values are the default, and tablets use them too. Mobile values apply below 48em (768px at the default
+// 16px text size). The spec describes every component the same way: desktop first, then what changes on mobile.
+//
+// Units (spec section 2.1): type sizes, text gaps, icon sizes and text-holding panel widths are rem, so they grow
+// when the reader or the display raises the base text size. Padding, radii, shadows and the slide-out width are px,
+// because they are meant to stay the same size. At a 16px root every value renders exactly as designed.
+
+// The viewer is an embed, so the breakpoint measures the viewer (.vgr-viewer), not the browser window.
+// See _breakpoints.scss and _viewer.scss.
+@use "breakpoints" as *;
+
+:root {
+  --vgr-color-primary-yellow: #FFCD00;
+  --vgr-color-primary-blue: #009CDE;
+  --vgr-color-primary-black: #101820;
+  --vgr-color-secondary-navy: #002554;
+  --vgr-color-secondary-muted-blue: #165C7D;
+  --vgr-color-secondary-sky-blue: #74D1EA;
+  --vgr-color-secondary-orange: #E87722;
+  --vgr-color-secondary-mustard: #F0B323;
+  --vgr-color-secondary-white: #FFFFFF;
+  --vgr-color-tertiary-gray-800: #333F48;
+  --vgr-color-tertiary-medium-600: #75787B;
+  --vgr-color-tertiary-gray-500: #D0D7DE;
+  --vgr-color-tertiary-gray-400: #E2E8EC;
+  --vgr-color-tertiary-gray-200: #EFEFEF;
+  --vgr-color-tertiary-coral: #F0515A;
+  --vgr-color-type-headings: #101820;
+  --vgr-color-type-body: #101820;
+  --vgr-color-type-muted: #545E69;
+  /* Text colors inside dark chrome: use the --dark variants */
+  --vgr-color-type-headings-dark: #FFFFFF;
+  --vgr-color-type-body-dark: #FFFFFF;
+  --vgr-color-type-muted-dark: #D8DEE5;
+  --vgr-font-headings: Georgia, Gelasio, "Times New Roman", serif;
+  --vgr-font-body: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --vgr-font-size-headings-h1: 2rem;
+  --vgr-font-size-body-xl: 1.25rem;
+  --vgr-font-size-ui-iconlabels: 0.875rem;
+  --vgr-font-size-body-lg: 1.125rem;
+  --vgr-font-size-headings-h2: 1.5rem;
+  --vgr-font-size-body-default: 1rem;
+  --vgr-font-size-body-sm: 0.875rem;
+  --vgr-font-size-body-xs: 0.75rem;
+  --vgr-font-size-headings-h3: 1.25rem;
+  --vgr-font-size-headings-h4: 1.125rem;
+  --vgr-font-size-headings-h5: 1rem;
+  --vgr-spacing-textgap-lg: 1.5rem;
+  --vgr-spacing-textgap-default: 1rem;
+  --vgr-spacing-textgap-sm: 0.5rem;
+  --vgr-spacing-textgap-xs: 0.25rem;
+  --vgr-spacing-relationship-section: 1.5rem;
+  --vgr-spacing-relationship-group: 1rem;
+  --vgr-spacing-relationship-element: 0.5rem;
+  --vgr-spacing-relationship-subelement: 0.25rem;
+  --vgr-spacing-innerpadding-lg: 40px;
+  --vgr-spacing-innerpadding-default: 32px;
+  --vgr-spacing-innerpadding-sm: 24px;
+  --vgr-spacing-innerpadding-xs: 16px;
+  --vgr-spacing-innerpadding-xxs: 12px;
+  --vgr-spacing-innerpadding-xxxs: 8px;
+  --vgr-space-xxxl: 64px;
+  --vgr-space-xxl: 56px;
+  --vgr-space-xl: 48px;
+  --vgr-space-lg: 40px;
+  --vgr-space-md: 32px;
+  --vgr-space-sm: 24px;
+  --vgr-space-xs: 16px;
+  --vgr-space-xxs: 8px;
+  --vgr-space-xxxs: 4px;
+  --vgr-radius-1: 1px;
+  --vgr-radius-4: 4px;
+  --vgr-radius-8: 8px;
+  --vgr-radius-10: 10px;
+  --vgr-radius-12: 12px;
+  --vgr-radius-full: 9999px;
+  --vgr-space-2: 2px;
+  --vgr-space-6: 6px;
+  --vgr-space-10: 10px;
+  --vgr-space-12: 12px;
+  /* Base scale as gaps: rem twins of --vgr-space-*, so gaps between items grow with text */
+  --vgr-gap-xxxl: 4rem;
+  --vgr-gap-xxl: 3.5rem;
+  --vgr-gap-xl: 3rem;
+  --vgr-gap-lg: 2.5rem;
+  --vgr-gap-md: 2rem;
+  --vgr-gap-sm: 1.5rem;
+  --vgr-gap-xs: 1rem;
+  --vgr-gap-xxs: 0.5rem;
+  --vgr-gap-xxxs: 0.25rem;
+  --vgr-gap-2: 0.125rem;
+  --vgr-gap-6: 0.375rem;
+  --vgr-gap-10: 0.625rem;
+  --vgr-gap-12: 0.75rem;
+  --vgr-size-bottom-menu-width: 58.125rem;
+  --vgr-size-drawer-width: 640px;
+  --vgr-size-audio-player-width: 37.1875rem;
+  --vgr-shadow-button: 0 3px 4px 0 rgba(0,0,0,.25);
+  --vgr-shadow-icon-contrast: 0 1px 4px 0 rgba(0,0,0,.91);
+  --vgr-shadow-card-small: 0 4px 10px 0 rgba(0,0,0,.16);
+  --vgr-shadow-card: 0 2px 8px 0 rgba(0,0,0,.15);
+  --vgr-shadow-popover: 0 4px 15px 0 rgba(0,0,0,.20);
+  --vgr-shadow-panel: 0 4px 25px 0 rgba(0,0,0,.25);
+  --vgr-shadow-subtle: 3px 3px 8px 0 rgba(0,0,0,.08);
+  /* Text shadow: the same shadow without a spread value, for white text over the 3D model */
+  --vgr-text-shadow-icon-contrast: 0 1px 4px rgba(0,0,0,.91);
+  --vgr-duration: 300ms;
+  --vgr-duration-slow: 500ms;
+  --vgr-ease: cubic-bezier(0, 0, .2, 1);
+  --vgr-focus-color: var(--vgr-color-primary-blue);
+}
+
+// Mobile: only the tokens whose value changes. Custom properties inherit, so setting them on the
+// viewer's children reaches every component inside it, including shadow roots.
+@container #{$vgr-container} (max-width: #{$vgr-breakpoint-mobile-max}) {
+  .vgr-viewer > * {
+      --vgr-font-size-headings-h1: 1.5rem;
+      --vgr-font-size-body-xl: 1.125rem;
+      --vgr-font-size-ui-iconlabels: 0.75rem;
+      --vgr-font-size-body-lg: 1rem;
+      --vgr-font-size-headings-h2: 1.125rem;
+      --vgr-font-size-body-default: 0.875rem;
+      --vgr-font-size-body-sm: 0.8125rem;
+      --vgr-font-size-body-xs: 0.6875rem;
+      --vgr-font-size-headings-h3: 1rem;
+      --vgr-font-size-headings-h4: 0.875rem;
+      --vgr-font-size-headings-h5: 0.75rem;
+      --vgr-spacing-innerpadding-lg: 32px;
+      --vgr-spacing-innerpadding-default: 24px;
+      --vgr-spacing-innerpadding-sm: 16px;
+      --vgr-spacing-innerpadding-xs: 12px;
+      --vgr-spacing-innerpadding-xxs: 8px;
+      --vgr-spacing-innerpadding-xxxs: 6px;
+      --vgr-size-bottom-menu-width: 25rem;
+      --vgr-size-drawer-width: 340px;
+      --vgr-size-audio-player-width: 14.375rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --vgr-duration: 0ms; --vgr-duration-slow: 0ms; }
+}

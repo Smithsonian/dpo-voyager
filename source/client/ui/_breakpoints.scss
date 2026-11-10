@@ -1,0 +1,8 @@
+// Breakpoint settings. This file outputs no CSS, so any partial can @use it.
+// The viewer is embedded in other pages, so the layout switches on the viewer's own width (a container query on
+// .vgr-viewer), not the browser window. A 400px embed on a desktop page gets the mobile layout.
+// em in a container query resolves against the viewer's font size, so a viewer set to larger text switches
+// to the mobile layout sooner, which suits the space the larger text leaves.
+$vgr-container: vgr-viewer !default;
+$vgr-breakpoint-desktop: 48em !default;     // desktop and tablet from here up (768px at a 16px font size)
+$vgr-breakpoint-mobile-max: 47.99em !default; // mobile up to here

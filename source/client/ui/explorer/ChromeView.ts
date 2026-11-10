@@ -61,7 +61,7 @@ export default class ChromeView extends DocumentView
         this.style.pointerEvents = "none";
         this.setAttribute("pointer-events", "none");
 
-        this.classList.add("sv-chrome-view");
+        this.classList.add("sv-chrome-view", "vgr-viewer");
     }
 
     protected connected()
@@ -162,15 +162,28 @@ export default class ChromeView extends DocumentView
 
         titleElement.innerHTML = title;
 
-        return html`${showTourEndMsg ? html`<div class="sr-only" role="alert" id="screen-reader-msg">Tour Ending...</div>` : null}
-            ${audioVisible ? html`<div class="sv-narrate-player" id="global-audio">${setup.audio.getPlayerById(setup.audio.activeId)}</div>` : null}
-            <div class="sv-chrome-header">
+        /*
+        <div class="sv-chrome-header">
                 <div class="sv-main-menu-wrapper">
                     ${menuVisible ? html`<sv-main-menu role="region" aria-label="Main toolbar" .system=${this.system}></sv-main-menu>` : null}
                 </div>
                 <div class="sv-top-bar">
                     ${titleVisible ? html`<div role="heading" class="ff-ellipsis sv-main-title">${titleElement}<span class="ff-ellipsis"> </span></div>` : null}
                     ${logoVisible ? html`<sv-logo .assetPath=${this.assetPath}></sv-logo>` : null}
+                </div>
+            </div>
+        */
+
+        return html`${showTourEndMsg ? html`<div class="sr-only" role="alert" id="screen-reader-msg">Tour Ending...</div>` : null}
+            ${audioVisible ? html`<div class="sv-narrate-player" id="global-audio">${setup.audio.getPlayerById(setup.audio.activeId)}</div>` : null}
+            
+            <div class="vgr-header">
+                ${logoVisible ? html`<sv-logo .assetPath=${this.assetPath}></sv-logo>` : null}
+                ${titleVisible ? html`<span class="vgr-header__title" title=${titleElement}>${titleElement}</span>` : null}
+                <div class="vgr-header__actions">
+                    <button class="vgr-header__help-button vgr-help-button" type="button" aria-label="Help and tutorial" aria-expanded="false">
+                    <span class="vgr-help-button__icon" aria-hidden="true"><!-- icons/info.svg --></span>
+                    </button>
                 </div>
             </div>
             <div class="ff-flex-spacer"></div>

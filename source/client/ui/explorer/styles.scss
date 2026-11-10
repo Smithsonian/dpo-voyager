@@ -19,6 +19,8 @@
 // COLOR
 
 @use "sass:color";
+@use "../mixins" as *;
+@use "../tokens" as *;
 
 $color-primary: #0089bf; // Smithsonian primary blue
  // Smithsonian secondary yellow
@@ -618,7 +620,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-chrome-view {
   @include common.font-ui-normal;
-  font-size: 0.85em;
+  //font-size: 0.85em;
   line-height: 1.35;
   color: common.$color-text;
   @include common.fullsize;
@@ -1628,4 +1630,96 @@ $tour-entry-indent: 12px;
   right: 0;
   z-index: 4;
   padding-top: 6px;
+}
+
+.vgr-viewer {
+  container: vgr-viewer / inline-size;
+  //position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);  // one column that never grows past the viewer
+  grid-template-rows: auto 1fr auto;
+}
+
+.vgr-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--vgr-space-10) 15px;
+  min-height: 3.25rem;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: inset 0 -1px 0 0 color-mix(in srgb, var(--vgr-color-secondary-white) 40%, transparent);
+}
+
+.vgr-header__logo {
+  width: 10.9375rem;
+  flex-shrink: 0;
+  height: 1.3687rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.vgr-header__logo-full, .vgr-header__logo-mark { width: 100%; height: 100%; }
+.vgr-header__logo svg { display: block; width: 100%; height: 100%; }
+.vgr-header__logo-mark { display: none; }
+
+.vgr-header__title {
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: var(--vgr-text-shadow-icon-contrast);
+  font-family: var(--vgr-font-body);
+  font-weight: 700;
+  font-size: var(--vgr-font-size-body-lg);
+  line-height: 1.3;
+  color: var(--vgr-color-secondary-white);
+  margin: 0;
+}
+
+.vgr-header__actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  min-width: 10.9375rem;
+  flex-shrink: 0;
+}
+
+// Child component (Header / Help Button): this rule only places it; its own styles are in its own partial
+.vgr-header__help-button {
+  display: flex;
+  width: 2rem;
+  flex-shrink: 0;
+  height: 2rem;
+}
+
+// Long titles: when the title doesn't fit beside the full logo, swap the logo for the sunburst
+// (logos/smithsonian-sunburst.svg) and add this modifier. If it still doesn't fit, it ends in an ellipsis.
+// Detect it in script: a ResizeObserver on the header that checks title.scrollWidth > title.clientWidth
+// with the full logo showing. Remove the modifier when the viewer grows wide enough again.
+// The title attribute shows the whole title on hover; screen readers always get the whole text.
+// The gap keeps a truncated title off the logo and the Help button.
+.vgr-header { gap: var(--vgr-gap-xxs); }
+.vgr-header--compact {
+  .vgr-header__logo { width: 1.875rem; height: 1.9375rem; }
+  .vgr-header__logo-full { display: none; }
+  .vgr-header__logo-mark { display: block; }
+  .vgr-header__actions { min-width: 1.875rem; }
+}
+
+// Mobile (below 48em): what changes from the desktop baseline.
+// The logo becomes the sunburst alone, the title moves left beside it and drops to 12px Semi Bold,
+// and the Help button stays at the right edge. Height (52px) and the bottom border don't change.
+@include mobile {
+  .vgr-header { justify-content: flex-start; }
+  .vgr-header__logo { width: 1.875rem; height: 1.9375rem; }
+  .vgr-header__logo-full { display: none; }
+  .vgr-header__logo-mark { display: block; }
+  .vgr-header__title { flex: 1 1 auto; font-weight: 600; font-size: var(--vgr-font-size-headings-h5); }
+  .vgr-header__actions { min-width: 0; }
 }
