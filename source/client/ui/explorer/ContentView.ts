@@ -49,6 +49,7 @@ export default class ContentView extends DocumentView
     protected documentProps = new Subscriber("value", this.onUpdate, this);
     protected isMobile: boolean = null;
     protected assetPath: string = "";
+    protected needsBlur: boolean = false;
 
     private _layoutHandler = () => this.onUpdate();
 
@@ -163,13 +164,14 @@ export default class ContentView extends DocumentView
 
         const blurContent =
             ((readerVisible && readerPosition === EReaderPosition.Overlay) || tourMenuVisible) && this.sceneView.getView().layout == EQuadViewLayout.Single;
+        this.needsBlur = blurContent;
 
         if (!blurContent) {
             sceneView.classList.remove("sv-blur");
         }
         else {
             if(!sceneView.classList.contains("sv-blur")) {
-                setTimeout(() => {sceneView.classList.add("sv-blur"); this.renderer.views[0].render()}, 1);  // TODO: Extra for an apparent Android Firefox bug - remove when fixed
+                setTimeout(() => {if(this.needsBlur){sceneView.classList.add("sv-blur"); this.renderer.views[0].render()}}, 1);  // TODO: Extra for an apparent Android Firefox bug - remove when fixed
             }
         }
 

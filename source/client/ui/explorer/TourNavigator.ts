@@ -24,6 +24,7 @@ import DocumentView, { customElement, html } from "./DocumentView";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 import CVInterface, { EUIElements } from "client/components/CVInterface";
+import CVReader from "client/components/CVReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +34,7 @@ export default class TourNavigator extends DocumentView
     protected tours: CVTours;
     protected language: CVLanguageManager;
     protected interface: CVInterface;
+    protected reader: CVReader;
 
     protected needsFocus: boolean = false;
     protected firstRender: boolean = true;
@@ -91,8 +93,7 @@ export default class TourNavigator extends DocumentView
         super.updated(changedProperties);
 
         if(this.tours.ins.focus.value) {
-            const container = this.getElementsByClassName("sv-section-trail").item(2) as HTMLElement;
-            container.focus();
+            this.setFocus();
             this.tours.ins.focus.setValue(false, true);
         }
 
@@ -163,15 +164,18 @@ export default class TourNavigator extends DocumentView
             this.tours.outs.tourIndex.off("value", this.onUpdate, this);
             this.tours.outs.stepIndex.off("value", this.onUpdate, this);
             this.tours.ins.focus.off("value", this.onUpdate, this);
+            this.reader.ins.closed.off("value", this.setFocus, this);
             this.language.outs.activeLanguage.off("value", this.onUpdate, this);
         }
         if (next) {
             this.tours = next.setup.tours;
             this.language = next.setup.language;
             this.interface = next.setup.interface;
+            this.reader = next.setup.reader;
             this.tours.outs.tourIndex.on("value", this.onUpdate, this);
             this.tours.outs.stepIndex.on("value", this.onUpdate, this);
             this.tours.ins.focus.on("value", this.onUpdate, this);
+            this.reader.ins.closed.on("value", this.setFocus, this);
             this.language.outs.activeLanguage.on("value", this.onUpdate, this);
         }
 
@@ -218,5 +222,10 @@ export default class TourNavigator extends DocumentView
                 titleArea.style.setProperty("pointer-events", "auto");
             });
         }
+    }
+
+    protected setFocus() {
+        const container = this.getElementsByClassName("sv-section-trail").item(2) as HTMLElement;
+        container.focus();
     }
 }
