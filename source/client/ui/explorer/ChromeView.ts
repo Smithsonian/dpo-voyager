@@ -37,6 +37,7 @@ import LanguageMenu from "./LanguageMenu";
 import { EUIElements } from "client/components/CVInterface";
 import CVAssetReader from "client/components/CVAssetReader";
 import SplashScreen from "./SplashScreen";
+import Icon from "@ff/ui/Icon";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -182,7 +183,7 @@ export default class ChromeView extends DocumentView
                 ${titleVisible ? html`<span class="vgr-header__title" title=${titleElement}>${titleElement}</span>` : null}
                 <div class="vgr-header__actions">
                     <button class="vgr-header__help-button vgr-help-button" type="button" aria-label="Help and tutorial" aria-expanded="false">
-                    <span class="vgr-help-button__icon" aria-hidden="true"><!-- icons/info.svg --></span>
+                    <ff-icon class="vgr-help-button__icon" aria-hidden="true" name="info2"></ff-icon>
                     </button>
                 </div>
             </div>

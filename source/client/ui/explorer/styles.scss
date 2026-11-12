@@ -1723,3 +1723,34 @@ $tour-entry-indent: 12px;
   .vgr-header__title { flex: 1 1 auto; font-weight: 600; font-size: var(--vgr-font-size-headings-h5); }
   .vgr-header__actions { min-width: 0; }
 }
+
+.vgr-help-button {
+  @include button-reset;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  box-sizing: border-box;
+  background-color: var(--vgr-color-secondary-white);
+  border-radius: var(--vgr-radius-full);
+
+  &:focus-visible { @include focus-ring-on-viewport; }
+}
+
+.vgr-help-button__icon {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 0.9062rem;
+  flex-shrink: 0;
+  height: 1.775rem;
+  border-radius: var(--vgr-radius-full);
+  fill: var(--vgr-color-primary-black);
+}
+.vgr-help-button__icon svg { display: block; flex-shrink: 0; width: 0.625rem; height: 1.188rem; }
+
+// 44px touch targets (spec section 7.11)
+.vgr-help-button { position: relative; @include hit-area; }
