@@ -53,6 +53,8 @@ export default class CVTimeManager extends Component
     }
 
     protected onLatLongChanged(light: CVSunLight) {
-        light.ins.timezone.setValue(tzlookup(light.ins.latitude.value, light.ins.longitude.value), true);
+        if (!light.isUpdatingTimezoneCoordinates) {
+            light.ins.timezone.setValue(tzlookup(light.ins.latitude.value, light.ins.longitude.value), true);
+        }
     }
 }

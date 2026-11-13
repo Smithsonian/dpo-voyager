@@ -14,6 +14,7 @@ import * as utc from "dayjs/plugin/utc";
 import * as SunCalc from 'suncalc';
 import { DirectionalLight } from "three";
 import CLight from "./CLight";
+import { getTimezoneCoordinates } from "./timezoneCoordinates";
 
 const utcPlugin = (utc as unknown as { default?: dayjs.PluginFunc<unknown> }).default || utc as unknown as dayjs.PluginFunc<unknown>;
 const timezonePlugin = (timezone as unknown as { default?: dayjs.PluginFunc<unknown> }).default || timezone as unknown as dayjs.PluginFunc<unknown>;
@@ -25,10 +26,14 @@ const createDayjs = ((dayjs as unknown as { default?: TDayjsFactory }).default |
 dayjs.extend(utcPlugin);
 dayjs.extend(timezonePlugin);
 
+const defaultTimezone = createDayjs.tz.guess();
+const [defaultLatitude, defaultLongitude] = getTimezoneCoordinates(defaultTimezone, createDayjs().utcOffset());
+
 export default class CSunLight extends CLight {
     static readonly typeName: string = "CSunLight";
 
     protected previousTimezone: string = "UTC";
+    private updatingTimezoneCoordinates = false;
 
     protected static readonly sunLightIns = {
         position: types.Vector3("Light.Position"),
@@ -41,10 +46,10 @@ export default class CSunLight extends CLight {
             preset: createDayjs()
         }),
         timezone: types.String("Light.TimeZone", {
-            preset: createDayjs.tz.guess()
+            preset: defaultTimezone
         }),
-        latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90, step: 0.01 }),
-        longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180, step: 0.01 }),
+        latitude: types.Number("Light.Latitude", { preset: defaultLatitude, min: -90, max: 90, step: 0.01 }),
+        longitude: types.Number("Light.Longitude", { preset: defaultLongitude, min: -180, max: 180, step: 0.01 }),
         intensityFactor: types.Number("Light.IntensityFactor", { preset: 5, min: 0 }),
     };
 
@@ -64,6 +69,40 @@ export default class CSunLight extends CLight {
 
     get light(): DirectionalLight {
         return this.object3D as DirectionalLight;
+    }
+
+    get isUpdatingTimezoneCoordinates(): boolean {
+        return this.updatingTimezoneCoordinates;
+    }
+
+    updateCoordinatesFromTimezone(): void {
+        const zone = (this.ins.timezone.value || "").trim();
+        let coordinates: [number, number];
+        try {
+            if (!zone) {
+                throw new RangeError("Empty timezone");
+            }
+            const offset = createDayjs().tz(zone).utcOffset();
+            coordinates = getTimezoneCoordinates(zone, offset);
+        }
+        catch (error) {
+            if (!(error instanceof RangeError)) {
+                throw error;
+            }
+            Notification.show(`Invalid timezone: '${zone}'. Reverting to previous timezone '${this.previousTimezone}'`, "error");
+            this.ins.timezone.setValue(this.previousTimezone, true);
+            return;
+        }
+
+        this.previousTimezone = zone;
+        this.updatingTimezoneCoordinates = true;
+        try {
+            this.ins.latitude.setValue(coordinates[0]);
+            this.ins.longitude.setValue(coordinates[1]);
+        }
+        finally {
+            this.updatingTimezoneCoordinates = false;
+        }
     }
 
     protected calculateColor(degrees: number): [number, number, number] {
