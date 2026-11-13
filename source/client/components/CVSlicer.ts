@@ -53,10 +53,10 @@ export default class CVSlicer extends Component
     static readonly icon: string = "";
 
     protected static ins = {
-        enabled: types.Boolean("Slice.Enabled"),
+        enabled: types.Boolean("Slice.Enabled", false),
         axis: types.Enum("Slice.Axis", ESliceAxis),
         position: types.Number("Slice.Position", { min: 0, max: 1, preset: 0.5 }),
-        inverted: types.Boolean("Slice.Inverted"),
+        inverted: types.Boolean("Slice.Inverted", false),
         color: types.ColorRGB("Slice.Color", [ 0, 0.61, 0.87 ]), // SI blue
         boundingBox: types.Object("Scene.BoundingBox", Box3),
     };
@@ -66,7 +66,10 @@ export default class CVSlicer extends Component
     get settingProperties() {
         return [
             this.ins.enabled,
-            this.ins.color
+            this.ins.color, 
+            this.ins.position,
+            this.ins.inverted,
+            this.ins.axis,
         ];
     }
 
@@ -141,17 +144,24 @@ export default class CVSlicer extends Component
         localPlane.set(_vec3, this.plane[3]);
 
         // set the slicing plane in the Uber materials of each scene model
+        let needsClipping = false;
         models.forEach(model => {
-            if(model.ins.slicerEnabled.value) {
-                const object = model.object3D;
-                object.traverse((mesh: Mesh) => {
-                    if (mesh.isMesh) {
-                        const material = mesh.material as Material;
-                        this.updateMaterial(model, material);
+            const object = model.object3D;
+            object.traverse((mesh: Mesh) => {
+                if (mesh.isMesh) {
+                    const material = mesh.material as Material;
+                    this.updateMaterial(model, material);
+                    if(material && material.clippingPlanes) {
+                        needsClipping = true;
                     }
-                });
-            }
+                }
+            });
         });
+        
+        const renderer = this.getMainComponent(CRenderer);
+        if (renderer.ins.localClippingEnabled.value !== needsClipping){
+            renderer.ins.localClippingEnabled.setValue(needsClipping);
+        }
 
         return true;
     }
@@ -161,11 +171,11 @@ export default class CVSlicer extends Component
         data = data || {} as ISlicer;
 
         this.ins.setValues({
-            enabled: data.enabled || false,
-            axis: ESliceAxis[data.axis] || ESliceAxis.X,
-            position: data.position || 0,
-            inverted: data.inverted || false,
-            color: data.color || [ 0, 0.61, 0.87 ]
+            enabled: data.enabled ?? this.ins.enabled.schema.preset,
+            axis: ESliceAxis[data.axis] ?? this.ins.axis.schema.preset,
+            position: data.position ?? this.ins.position.schema.preset,
+            inverted: data.inverted ?? this.ins.inverted.schema.preset,
+            color: data.color ?? this.ins.color.schema.preset
         });
     }
 
@@ -186,17 +196,16 @@ export default class CVSlicer extends Component
     {
         const ins = this.ins;
 
-        if (ins.enabled.changed) {
-            const enabled = ins.enabled.value;
-            const renderer = this.getMainComponent(CRenderer);
-            renderer.views.forEach(view => view.renderer.localClippingEnabled = ins.enabled.value);
+        if (ins.enabled.changed && material.defines) {
+            const enabled = ins.enabled.value && model.ins.slicerEnabled.value;
 
             // configure material
             material.defines["CUT_PLANE"] = enabled;
             enabled || material.userData["sideCache"] == undefined ? material.userData["sideCache"] = material.side : null;
             material.side = enabled ? DoubleSide : material.userData["sideCache"];
 
-            enabled ? material.clippingPlanes = [localPlane] : null;
+            material.clippingPlanes = enabled ? [localPlane] : null;
+
         }
 
         const shader = material.userData.shader;
@@ -209,10 +218,14 @@ export default class CVSlicer extends Component
 
         if (event.add) {
             component.outs.variant.on("value", this.refreshMaterial, this);
+            component.outs.materialUpdated.on("value", this.refreshMaterial, this);
+            component.ins.slicerEnabled.on("value", this.refreshMaterial, this);
             component.on<IModelLoadEvent>("model-load", this.refreshMaterial, this);
         }
         else if (event.remove) {
             component.off<IModelLoadEvent>("model-load", this.refreshMaterial, this);
+            component.ins.slicerEnabled.off("value", this.refreshMaterial, this);
+            component.outs.materialUpdated.off("value", this.refreshMaterial, this);
             component.outs.variant.off("value", this.refreshMaterial, this);
         }
     }

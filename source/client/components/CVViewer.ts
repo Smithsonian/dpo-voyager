@@ -17,7 +17,7 @@
 
 import { NeutralToneMapping, NoToneMapping, Mesh } from "three";
 
-import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import Component, { IComponentEvent, ITypedEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
 
 import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
@@ -46,6 +46,12 @@ export interface IViewerEventDetail
     "model-error": string;
     "scene-content-load": void;
     "scene-load": void;
+}
+
+
+// Internal typed event to indicate a user interactively changed the active annotation
+export interface IViewerUpdateEvent extends ITypedEvent<"annotation-activate">
+{
 }
 
 /** Forces a detail argument on the events that carry one, and forbids it on the others. */
@@ -186,7 +192,7 @@ export default class CVViewer extends Component
             this.getGraphComponents(CVModel2).forEach(model => {
                 model.ins.variant.setOption(variant);
             });
-            ins.shader.setValue(0);
+            ins.shader.setValue(EShaderMode.Default);
         }
         if (ins.shader.changed) {
             const shader = ins.shader.getValidatedValue();
@@ -301,6 +307,10 @@ export default class CVViewer extends Component
             sortedTags: data.sortedTags || "",
             radioTags: data.radioTags !== undefined ? !!data.radioTags : ins.radioTags.schema.preset,
         });
+
+        if (data.shader && EShaderMode[data.shader]){
+            ins.shader.setValue(EShaderMode[data.shader] || EShaderMode.Default);
+        }
     }
 
     toData(): IViewer
@@ -425,6 +435,7 @@ export default class CVViewer extends Component
         const id = event.annotation ? event.annotation.id : "";
         this.ins.activeAnnotation.setValue(id);
 
+        this.emit<IViewerUpdateEvent>({type: "annotation-activate"});
         this.dispatch('annotation-active', id);
     }
 
@@ -494,7 +505,7 @@ export default class CVViewer extends Component
 
         // update variant list
         const variantSet = new Set(this.ins.variant.schema.options);
-        const models = this.getGraphComponents(CVModel2);
+        const models = this.getGraphComponents(CVModel2).filter(component => component.typeName != "CVImagePlane");
         models.forEach(model => {
             model.ins.variant.schema.options.forEach(variantSet.add, variantSet);
         });

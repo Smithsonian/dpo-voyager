@@ -27,7 +27,7 @@ import { EActionTrigger, EActionType, EActionPlayStyle, TActionTrigger, TActionT
 import CVMeta from "./CVMeta";
 import NVNode from "client/nodes/NVNode";
 import CVModel2 from "./CVModel2";
-import CVAnnotationView from "./CVAnnotationView";
+import CVAnnotationView, { Annotation } from "./CVAnnotationView";
 import { ELanguageType } from "client/schema/common";
 import CVTours from "./CVTours";
 
@@ -55,12 +55,15 @@ export default class CVActionsTask extends CVTask
         audio: types.Option("Action.Audio", ["None"], 0),
         animation: types.Option("Action.Animation", ["None"], 0),
         annotation: types.Option("Action.AnnotationT", ["None"], 0),
-        actionAnnotation: types.Option("Action.Annotation", ["None"], 0),
+        actionAnnotation: types.Tags("Action.Annotation"),
+        state: types.Option("Action.State", ["None"], 0),
         tour: types.Option("Action.Tour", ["None"], 0),
         tourStep: types.Option("Action.TourStep", ["None"], 0),
         syncWith: types.Option("Action.SyncWith", ["None"], 0),
         action: types.Option("Action.Action", ["None"], 0),
+        actionTarget: types.Option("Action.ActionTarget", ["None"], 0),
         clamp: types.Boolean("Action.ClampOnEnd", false),
+        enabled: types.Boolean("Action.Enabled", true),
     };
 
     protected static readonly outs = {
@@ -87,12 +90,10 @@ export default class CVActionsTask extends CVTask
     create()
     {
         super.create();
-        this.startObserving();
     }
 
     dispose()
-    {
-        this.stopObserving();
+    {      
         super.dispose();
     }
 
@@ -104,13 +105,12 @@ export default class CVActionsTask extends CVTask
     activateTask()
     {   
         super.activateTask();
-        this.meta ? this.synchAnnotationOptions(this.meta.getComponent(CVModel2)) : null;
-        this.synchTourOptions();
-        this.synchActionOptions();
+        this.startObserving();
     }
 
     deactivateTask()
     {
+        this.stopObserving();
         super.deactivateTask();
     }
 
@@ -136,7 +136,8 @@ export default class CVActionsTask extends CVTask
                     style: EActionPlayStyle[EActionPlayStyle.Single] as TActionPlayStyle,
                     speed: 1.0,
                     audioId: "",
-                    animation: ""
+                    animation: "",
+                    enabled: true
                 };
                 meta.actions.items = [action];
                 ins.activeId.setValue(action.id);
@@ -177,21 +178,31 @@ export default class CVActionsTask extends CVTask
                 action.annotationId = id;
             }
             if(ins.actionAnnotation.changed) {
-                const id = ins.actionAnnotation.value > 0 ? meta.getComponent(CVAnnotationView).getAnnotations()[ins.actionAnnotation.value - 1].id : undefined;
-                action.actionAnnoId = id;
+                action.actionAnnoId = ins.actionAnnotation.value.split("\x1F").map(title => this.meta.getComponent(CVAnnotationView).getAnnotations().find(anno => anno.title === title)?.id).join("\x1F");
+            }
+            if(ins.state.changed) {
+                const id = ins.state.value > 0 ? this.activeDocument.setup.snapshots.deltaStates[ins.state.value - 1].id : undefined;
+                action.stateId = id;
             }
             if(ins.name.changed) {
                 action.name = ins.name.value;
                 this.synchActionOptions();
             }
+            if(ins.enabled.changed) {
+                action.enabled = ins.enabled.value;
+            }
             if(ins.tour.changed || ins.tourStep.changed) {
                 if(ins.tour.changed) {
                     this.synchTourStepOptions();
+                    this.ins.tourStep.setValue(0);
                 }
                 action.triggerDetail = this.ins.tour.value > 0 ? this.tours.tours[this.ins.tour.value-1].steps[this.ins.tourStep.value].id : "";
             }
             if(ins.action.changed) {
                 action.triggerDetail = ins.action.value > 0 ? this._actionIds[ins.action.value] : undefined;
+            }
+            if(ins.actionTarget.changed) {
+                action.actionTargetId = ins.actionTarget.value > 0 ? this._actionIds[ins.actionTarget.value] : undefined;
             }
             // handle action types UI update
             if(ins.type.changed) {
@@ -224,13 +235,17 @@ export default class CVActionsTask extends CVTask
             ins.animation.setValue(action.animation ? ins.animation.schema.options.indexOf(action.animation) : 0);
             ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : 0);
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
-            ins.actionAnnotation.setValue(action.actionAnnoId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.actionAnnoId) + 1 : null);
+            ins.actionAnnotation.setValue(action.actionAnnoId ? action.actionAnnoId.split("\x1F").map(id => this.meta.getComponent(CVAnnotationView).getAnnotations().find(anno => anno.id == id).title).join("\x1F") : null);
+            ins.state.setValue(action.stateId ? this.activeDocument.setup.snapshots.deltaStates.findIndex(state => state.id == action.stateId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
             ins.speed.setValue(action.speed);
             ins.clamp.setValue(action.clamp);
+            ins.enabled.setValue(action.enabled);
             ins.syncWith.setValue(action.syncWith ? ins.syncWith.schema.options.indexOf(action.syncWith) : 0);
             ins.action.setValue(ins.trigger.value === EActionTrigger.OnActionEnd || ins.trigger.value === EActionTrigger.OnActionBegin ? 
                 this._actionIds.indexOf(action.triggerDetail) : 0);
+            ins.actionTarget.setValue(ins.type.value === EActionType.EnableAction || ins.type.value === EActionType.DisableAction ? 
+                this._actionIds.indexOf(action.actionTargetId) : 0);
 
             const isTour = ins.trigger.value === EActionTrigger.OnTourStep;
             if(action.triggerDetail?.includes("\x1F")) {
@@ -242,10 +257,11 @@ export default class CVActionsTask extends CVTask
                 action.triggerDetail = this.ins.tour.value > 0 ? this.tours.tours[this.ins.tour.value-1].steps[this.ins.tourStep.value].id : "";
             }
             else {
-                const tour = this.tours.tours.find((entry) => entry.steps.some(step => step.id === action.triggerDetail));
-                ins.tour.setValue(isTour ? ins.tour.schema.options.indexOf(tour.titles[ELanguageType[this.activeDocument.setup.language.outs.uiLanguage.value]] || tour.title) : 0);
+                const tourIndex = this.tours.tours.findIndex((entry) => entry.steps.some(step => step.id === action.triggerDetail));
+                const tour = this.tours.tours[tourIndex];
+                ins.tour.setValue(isTour && tour ? tourIndex + 1 : 0);
                 this.synchTourStepOptions();
-                ins.tourStep.setValue(isTour ? tour.steps.findIndex(step => step.id === action.triggerDetail) : 0);
+                ins.tourStep.setValue(isTour && tour ? tour.steps.findIndex(step => step.id === action.triggerDetail) : 0);
             }
         }
     }
@@ -286,13 +302,25 @@ export default class CVActionsTask extends CVTask
         super.onActiveDocument(previous, next);
 
         if (previous) {
+            previous.setup.actions.outs.fired.off("value", this.updateUI, this);
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
+            previous.setup.snapshots.outs.update.off("value", this.synchStateOptions, this);
             this.actionManager = null;
         }
         if (next) {
             this.actionManager = next.setup.actions;
+            next.setup.snapshots.outs.update.on("value", this.synchStateOptions, this);
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
+            next.setup.actions.outs.fired.on("value", this.updateUI, this);
+
+            this.synchTourOptions();
+            this.synchActionOptions();
+            this.synchStateOptions();
         }
+    }
+
+    protected updateUI() {
+        this.emit("update");
     }
 
     // Update audio options
@@ -306,27 +334,30 @@ export default class CVActionsTask extends CVTask
     // Update annotation options
     protected synchAnnotationOptions(model: CVModel2) {
         const annoOptions = ["None"];
+        const actionAnnoOptions = [];
         model.getComponent(CVAnnotationView).getAnnotations().forEach((anno) => {
             annoOptions.push(anno.title);
+            actionAnnoOptions.push(anno.title);
         });
         this.ins.annotation.setOptions(annoOptions);
-        this.ins.actionAnnotation.setOptions(annoOptions);
+        this.ins.actionAnnotation.setOptions(actionAnnoOptions);
     }
 
     // Update tour options
     protected synchTourOptions() {
         const tours = this.activeDocument.setup.tours;
+        const language = this.activeDocument.setup.language.outs;
         const tourOptions = ["None"];
-        tourOptions.push(...tours.tours.map(tour => 
-            tour.titles[ELanguageType[this.activeDocument.setup.language.outs.uiLanguage.value]] || tour.title));
+        // tours may only be titled in the scene's languages
+        tourOptions.push(...tours.tours.map((tour, index) => tour.titles[ELanguageType[language.uiLanguage.value]]
+            || tour.titles[ELanguageType[language.activeLanguage.value]] || tour.title
+            || Object.values(tour.titles).find(title => !!title) || `Tour ${index + 1}`));
         this.ins.tour.setOptions(tourOptions);
     }
 
     // Update tour step options
     protected synchTourStepOptions() {
-        const tours = this.activeDocument.setup.tours.tours;
-        const tour = tours.find((tour) => (tour.titles[ELanguageType[this.activeDocument.setup.language.outs.uiLanguage.value]] || tour.title)
-            === this.ins.tour.getOptionText() );
+        const tour = this.activeDocument.setup.tours.tours[this.ins.tour.value - 1];
 
         const stepOptions = ["None"];
         if(tour) {
@@ -346,5 +377,14 @@ export default class CVActionsTask extends CVTask
             this._actionIds.push(...meta.actions.items.map(action => action.id));
         });
         this.ins.action.setOptions(actionOptions);
+        this.ins.actionTarget.setOptions(actionOptions);
+    }
+
+    // Update state options
+    protected synchStateOptions() {
+        const states = this.activeDocument.setup.snapshots.deltaStates;
+        const stateOptions = ["None"];
+        stateOptions.push(...states.map(state => state.title));
+        this.ins.state.setOptions(stateOptions);
     }
 }

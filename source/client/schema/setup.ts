@@ -86,6 +86,7 @@ export interface IReader
 
 export interface INavigation
 {
+    autoRotationSpeed: any;
     type: TNavigationType;
     enabled: boolean;
     autoZoom: boolean;
@@ -135,6 +136,7 @@ export interface IGrid
 {
     visible: boolean;
     color: number[];
+    opacity: number 
 }
 
 export interface IEnvironment
@@ -185,6 +187,8 @@ export interface ISnapshots
         duration: number;
         threshold: number;
         values: any[];
+        title?: string;
+        paths?: string[];
     }[];
 }
 

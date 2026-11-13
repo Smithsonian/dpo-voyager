@@ -46,10 +46,10 @@ export default class TextureReader
         return TextureReader.mimeTypes.indexOf(mimeType) >= 0;
     }
 
-    get(url: string): Promise<Texture>
+    get(url: string, assetPath: string): Promise<Texture>
     {
         return new Promise((resolve, reject) => {
-            if(url.endsWith(".hdr")) {
+            if(assetPath.endsWith(".hdr")) {
                 this.hdriLoader.load(url, texture => {
                     resolve(texture);
                 }, null, errorEvent => {

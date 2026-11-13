@@ -126,7 +126,7 @@ class NodeTree extends Tree<NVNode>
         if (node.camera) {
             icons.push(html`<ff-icon class="sv-icon-camera" name=${node.camera.icon}></ff-icon>`);
         }
-        if (node.meta) {
+        if (node.meta && node.meta.hasContent()) {
             icons.push(html`<ff-icon class="sv-icon-meta" name=${node.meta.icon}></ff-icon>`);
         }
 

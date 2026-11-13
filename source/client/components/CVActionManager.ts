@@ -28,7 +28,8 @@ import CVSnapshots from "./CVSnapshots";
 import CVSetup from "./CVSetup";
 import CVScene from "./CVScene";
 import CVTours from "./CVTours";
-import { IPulseContext } from "@ff/graph/components/CPulse";
+import CPulse, { IPulseContext } from "@ff/graph/components/CPulse";
+import { IViewerUpdateEvent } from "./CVViewer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,16 +57,24 @@ export default class CVActionManager extends Component
     private _initialOffset: Dictionary<Matrix4> = {};
     private _animMap: Dictionary<Object3D> = {};
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
+    private _animCache: Dictionary<Matrix4> = {};
+    private _animatedNodes: Object3D[] = [];
     private _actions: {model: CVModel2, action: IAction}[] = [];
-    private _visibilityCache: {annotation: Annotation, visibility: boolean}[] = [];
+    private _enableLoadCache: Dictionary<boolean> = {};
+    private _visibilityLoadCache: {annotation: Annotation, visibility: boolean}[] = [];
+    private _visibilityStateCache: {annotation: Annotation, visibility: boolean}[] = [];
 
-    private _animQueue = [];
+    private _actionQueue = [];
 
     protected static readonly ins = {
         reset: types.Event("Actions.Reset")
     };
+    protected static readonly outs = {
+        fired: types.Event("Actions.Fired")
+    };
 
     ins = this.addInputs(CVActionManager.ins);
+    outs = this.addInputs(CVActionManager.outs);
 
     protected get setup() {
         return this.getGraphComponent(CVSetup);
@@ -98,24 +107,24 @@ export default class CVActionManager extends Component
             }
 
             // fire onEnd triggers
-            const onEndTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionEnd] as TActionTrigger
-                && element.action.triggerDetail === finishedId);
-            onEndTriggers.forEach(trigger => this.playAction(trigger.model, trigger.action));
+            this.fireOnEndTriggers(finishedId);
         });
 
         this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.graph.components.on(CVSnapshots, this.onSnapshotsComponent, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
-        this.viewer.ins.activeAnnotation.on("value", this.onAnnotationActivate, this);
+        this.viewer.on<IViewerUpdateEvent>("annotation-activate", this.onAnnotationActivate, this);
         this.viewer.outs.sceneLoaded.on("value", this.onSceneLoad, this);
         this.tours.outs.stepIndex.on("value", this.onTourStep, this);
+        this.tours.ins.enabled.on("value", this.onTourEnabled, this);
     }
 
     dispose()
     {
+        this.tours.ins.enabled.off("value", this.onTourEnabled, this);
         this.tours.outs.stepIndex.off("value", this.onTourStep, this);
         this.viewer.outs.sceneLoaded.off("value", this.onSceneLoad, this);
-        this.viewer.ins.activeAnnotation.off("value", this.onAnnotationActivate, this);
+        this.viewer.off<IViewerUpdateEvent>("annotation-activate", this.onAnnotationActivate, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.graph.components.off(CVSnapshots, this.onSnapshotsComponent, this);
         this.graph.components.off(CVModel2, this.onModelComponent, this);
@@ -123,7 +132,12 @@ export default class CVActionManager extends Component
         this._clock = null;
         this._mixer = null;
         this._actions.length = 0;
-        this._visibilityCache.length = 0;
+        this._visibilityLoadCache.length = 0;
+        this._visibilityStateCache.length = 0;
+        this._animatedNodes.length = 0;
+        
+        Object.keys(this._animMap).forEach(( key ) => this._animMap[key] = null);
+        Object.keys(this._animCache).forEach(( key ) => this._animCache[key] = null);
         
         super.dispose();
     }
@@ -134,11 +148,15 @@ export default class CVActionManager extends Component
 
         if (ins.reset.changed) {
             this._mixer.stopAllAction();
+            this.restoreAnimationState(true);
             Object.keys(this._direction).forEach(key => delete this._direction[key]);
             this._activeClips.length = 0;
 
             // reset visibilities
-            this._visibilityCache.forEach(anno => anno.annotation.set("visible", anno.visibility));
+            this._visibilityLoadCache.forEach(anno => anno.annotation.set("visible", anno.visibility));
+
+            // reset action enabled states
+            this._actions.forEach((entry) => entry.action.enabled = this._enableLoadCache[entry.action.id])
 
             // retrigger scene load actions
             this.onSceneLoad();
@@ -228,8 +246,10 @@ export default class CVActionManager extends Component
 
         if (event.add) {
             component.outs.end.on("value", this.onTransitionEnd, this);
+            component.ins.recall.on("value", this.onTransitionEnd, this);
         }
         else if (event.remove) {
+            component.ins.recall.off("value", this.onTransitionEnd, this);
             component.outs.end.off("value", this.onTransitionEnd, this);
         }
     }
@@ -249,7 +269,7 @@ export default class CVActionManager extends Component
 
     protected onSceneLoad() 
     {
-        this._visibilityCache.length = 0;
+        this._visibilityLoadCache.length = 0;
         this.getGraphComponents(CVModel2).forEach((model) => {
             
             const meta = model.node.getComponent(CVMeta, true);
@@ -264,16 +284,18 @@ export default class CVActionManager extends Component
                     });
                 }
 
-                // Cache annotation visibility
+                // Cache annotation visibility and action enabled state
                 meta.actions.items.forEach((action) => {
                     if(action.type == EActionType[EActionType.ShowAnnotation] as TActionType
                         || action.type == EActionType[EActionType.HideAnnotation] as TActionType
                         || action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
                         const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
-                        if(annotation) {
-                            this._visibilityCache.push({annotation: annotation, visibility: annotation.data.visible});
+                        if(annotation && !this._visibilityLoadCache.some(entry => entry.annotation.id === annotation.id)) {
+                            this._visibilityLoadCache.push({annotation: annotation, visibility: annotation.data.visible});
                         }
                     }
+
+                    this._enableLoadCache[action.id] = action.enabled;
                 });
             }
         });
@@ -301,7 +323,7 @@ export default class CVActionManager extends Component
                         const annotation = model.getComponent(CVAnnotationView).getAnnotationById(id);
                         if(annotation.data.viewId) {
                             // Queue up animations for annos that have views so we can chain the transitions
-                            this._animQueue.push({model: model, action: action});
+                            this._actionQueue.push({model: model, action: action});
                         }
                         else {
                             this.playAction(model, action);
@@ -316,13 +338,17 @@ export default class CVActionManager extends Component
     {
         if(this.tours.activeTour) {
             // Set any currently active or queued animations to their finish state
-            while(this._animQueue.length > 0) {
-                const action = this._animQueue.pop();
+            while(this._actionQueue.length > 0) {
+                const action = this._actionQueue.pop();
                 this.playAction(action.model, action.action);
             }
             this._activeClips.forEach(item => {
                 item.clip.time = item.clip.timeScale > 0 ? item.clip.getClip().duration : 0;
             });
+            const machine = this.setup.snapshots;
+            if(machine.deltaStates.some(state => state.id === machine.ins.id.value)) {
+                machine.endTween();
+            }
 
             const tour = this.tours.title;                  // DEPRECATED SUPPORT - REMOVE IN v0.64
             const step = this.tours.outs.stepIndex.value;   // DEPRECATED SUPPORT - REMOVE IN v0.64
@@ -338,7 +364,7 @@ export default class CVActionManager extends Component
                     actions.forEach((action) => {
                         if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
                             const model = meta.node.getComponent(CVModel2);
-                            this._animQueue.push({model: model, action: action});
+                            this._actionQueue.push({model: model, action: action}); // queue actions to play when tour transition ends
                         }
                         /*else if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
                             this.setup.audio.play(action.audioId, true);
@@ -349,17 +375,51 @@ export default class CVActionManager extends Component
         }
     }
 
+    protected onTourEnabled()
+    {
+        Object.keys(this._direction).forEach(key => delete this._direction[key]);
+        this._actionQueue.length = 0;
+
+        const toursEnabled = this.tours.ins.enabled.value;
+        if(toursEnabled) {
+            this.cacheAnimationState();
+            this._mixer.stopAllAction();
+            this.restoreAnimationState(true);
+
+            // cache visibilities
+            this.getGraphComponents(CVAnnotationView).forEach(view => {         
+                view.getAnnotations().forEach(annotation => {
+                    this._visibilityStateCache.push({annotation: annotation, visibility: annotation.data.visible});
+                });
+            });           
+        }
+        else {
+            this._activeClips.length = 0;
+            this._mixer.stopAllAction();
+            this.restoreAnimationState();
+
+            // reset visibilities
+            this._visibilityStateCache.forEach(anno => anno.annotation.set("visible", anno.visibility));
+            this._visibilityStateCache.length = 0;
+        }
+    }
+
     protected onTransitionEnd() 
     {
         // Handle playing animations queued up during snapshot tweens
-        while(this._animQueue.length > 0) {
-            const action = this._animQueue.pop();
+        while(this._actionQueue.length > 0) {
+            const action = this._actionQueue.pop();
             this.playAction(action.model, action.action);
         }
     }
 
     protected playAction(model: CVModel2, action: IAction)
     {
+        // Don't play disabled actions
+        if(!action.enabled) {
+            return;
+        }
+
         // Don't allow user-facing triggers during a tour
         if(this.setup.tours.ins.enabled.value &&
             (action.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger ||
@@ -384,6 +444,40 @@ export default class CVActionManager extends Component
             action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
             this.setAnnotationVisibility(model, action);
         }
+        else if(action.type == EActionType[EActionType.StateChange] as TActionType) {
+            const machine = this.setup.snapshots;
+            if(machine.outs.tweening.value) {
+                // If this state change is already in progress, don't retrigger
+                if(machine.ins.id.value === action.stateId) {
+                    return;
+                }
+                // If a different state change is in progress, push it to the end before triggering the new one
+                else if(machine.deltaStates.some(state => state.id === machine.ins.id.value)) {
+                    machine.endTween();
+                }
+                else {
+                    // Queue up action if tour state tweening
+                    this._actionQueue.push({model: model, action: action});
+                    return;
+                }
+            }
+
+            machine.addIns.deltaID.setValue(action.stateId);
+            machine.addIns.activateDelta.set();
+            machine.outs.end.once("value", () => this.fireOnEndTriggers(action.id));
+        }
+        else if(action.type == EActionType[EActionType.EnableAction] as TActionType ||
+            action.type == EActionType[EActionType.DisableAction] as TActionType) {
+            const targetAction = this._actions.find(element => element.action.id === action.actionTargetId)?.action;
+            if(targetAction) {
+                targetAction.enabled = action.type == EActionType[EActionType.EnableAction] as TActionType;
+            }
+            else {
+                console.warn("Specified action not found.");
+            }
+        }
+
+        this.outs.fired.set();
 
         // fire onBegin triggers
         const onBeginTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionBegin] as TActionTrigger
@@ -422,6 +516,9 @@ export default class CVActionManager extends Component
             }
             if(!this._animGroups[groupId]) {
                 this._animGroups[groupId] = new AnimationObjectGroup(mesh, annotations.parent);
+                if(!this.tours.ins.enabled.value && !this._animatedNodes.includes(mesh)) {
+                    this._animatedNodes.push(...[mesh, annotations.parent]);
+                }
             }
             mesh.matrixAutoUpdate = true;
 
@@ -443,7 +540,7 @@ export default class CVActionManager extends Component
             clip.reset();
             // handle ping-pong directions
             if(action.style == EActionPlayStyle[EActionPlayStyle.PingPong] as TActionPlayStyle) {
-                const clipName = clip.getClip().name;
+                const clipName = clip.getClip().name+action.id;
                 clip.clampWhenFinished = true;
                 if(Object.keys(this._direction).includes(clipName)) {
                     this._direction[clipName] *= -1;
@@ -470,13 +567,64 @@ export default class CVActionManager extends Component
 
     protected setAnnotationVisibility(model: CVModel2, action: IAction)
     {
-        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
+        const view = model.getComponent(CVAnnotationView);
+        const annotations = action.actionAnnoId?.length ? action.actionAnnoId.split("\x1F").map(id => view.getAnnotationById(id)) : [];
 
-        if(annotation) {
+        annotations.forEach(annotation => {
             const isVisible = action.type == EActionType[EActionType.ToggleAnnotation] as TActionType ?
                 !annotation.data.visible : action.type == EActionType[EActionType.ShowAnnotation] as TActionType;
             annotation?.set("visible", isVisible);
-        }
+            view.updateAnnotation(annotation, true);
+        });
+    }
+
+    protected fireOnEndTriggers(actionID: string) {
+        const onEndTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionEnd] as TActionTrigger
+            && element.action.triggerDetail === actionID);
+        onEndTriggers.forEach(trigger => this.playAction(trigger.model, trigger.action));
+    }
+
+    protected cacheAnimationState() {
+        // push active clips to their end before caching
+        this._activeClips.forEach(item => {
+            item.clip.time = item.clip.timeScale > 0 ? item.clip.getClip().duration : 0;
+        });
+        this._activeClips.length = 0;
+        this.getMainComponent(CPulse).pulse(Date.now());
+
+        this._animatedNodes.forEach((node) => {
+            this._animCache[node.id] ??= new Matrix4();
+            this._animCache[node.id].copy(node.matrix);
+        })
+    }
+
+    protected restoreAnimationState(isDefault: boolean = false) {
+        this._animatedNodes.forEach((node, idx) => {
+            const cache = !isDefault ? this._animCache : this._initialOffset
+            const cachedMatrix = cache[node.id] ?? cache[this._animatedNodes[idx-1].id];  // when restoring defaults, annotation offset equals the mesh offset
+            node.matrix.copy(cachedMatrix);
+            node.setRotationFromMatrix(node.matrix);
+            node.position.setFromMatrixPosition(node.matrix);
+            node.scale.setFromMatrixScale(node.matrix);
+            node.matrixWorldNeedsUpdate = true;
+            
+            if(!this._initialOffset[node.id]) {
+                if(isDefault) {
+                    this._animatedNodes[idx-1].parent.parent.matrix.decompose(_vec3a, _quat, _vec3b);
+                    _vec3a.multiplyScalar(1/_vec3b.x);
+                    _vec3b.setScalar(1);
+                    node.children[0].matrix.compose(_vec3a, _quat, _vec3b).invert();
+                    node.children[0].matrix.premultiply(_mat4.copy(cachedMatrix).invert()) // include potential base mesh offset
+                    node.children[0].matrix.multiplyScalar(1/_vec3b.x);
+
+                    node.children[0].setRotationFromMatrix(node.children[0].matrix);
+                    node.children[0].position.setFromMatrixPosition(node.children[0].matrix);
+                }
+
+                isDefault ? node.parent.matrix.identity() : node.parent.matrix.copy(this._animatedNodes[idx-1].parent.parent.matrix);
+                node.parent.updateMatrixWorld(true);
+            }
+        })
     }
 
     // To save/load future configuration options

@@ -23,6 +23,7 @@ import CVLanguageManager from "client/components/CVLanguageManager";
 import { EDerivativeQuality, TDerivativeQuality } from "client/schema/model";
 import CVModel2 from "client/components/CVModel2";
 import Notification from "@ff/ui/Notification";
+import CVImagePlane from "client/components/CVImagePlane";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -54,7 +55,7 @@ export default class ImportMenu extends Popup
 
         this.language = language;
         this.filename = filename;
-        this.modelOptions = this.modelOptions.concat(language.getGraphComponents(CVModel2).map(model => ({name: model.node.name, id: model.id})));
+        this.modelOptions = this.modelOptions.concat(language.getGraphComponents(CVModel2).filter(model => !model.is(CVImagePlane)).map(model => ({name: model.node.name, id: model.id})));
         this.position = "center";
         this.modal = true;
         this.parentSelection = this.modelOptions.length > 0 ? this.modelOptions[0] : {name: "Model"+this.modelOptions.length.toString(), id: "-1"};

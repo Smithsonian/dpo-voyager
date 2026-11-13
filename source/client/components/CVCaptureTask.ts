@@ -34,7 +34,7 @@ import CVAssetManager from "./CVAssetManager";
 import CVTask from "./CVTask";
 
 import CaptureTaskView from "../ui/story/CaptureTaskView";
-import { TImageQuality } from "client/schema/meta";
+import { TImageQuality, TImageUsage } from "client/schema/meta";
 import CVNodeProvider from "./CVNodeProvider";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
 import CVDocument from "./CVDocument";
@@ -296,6 +296,7 @@ export default class CVCaptureTask extends CVTask
                 byteSize,
                 width,
                 height,
+                usage: "Render" as TImageUsage
             }, qualityName);
         }
 
@@ -348,7 +349,8 @@ export default class CVCaptureTask extends CVTask
 
         if (images) {
             _qualityLevels.forEach(quality => {
-                const imageMeta = images.get(EDerivativeQuality[quality]);
+                const imageMeta = images.items.find(image => image.quality === EDerivativeQuality[quality] && image.usage === "Render");
+                //const imageMeta = images.get(EDerivativeQuality[quality]);
                 if (imageMeta) {
                     const imageElement = document.createElement("img");
                     imageElement.src = this.assetManager.getAssetUrl(imageMeta.uri);

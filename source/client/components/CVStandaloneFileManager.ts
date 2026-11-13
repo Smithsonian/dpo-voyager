@@ -148,6 +148,13 @@ export default class CVStandaloneFileManager extends Component
         delete this.fileMap[uri];
     }
 
+    moveFile(uri: string, newUri: string)
+    {
+        const file = this.fileMap[uri];
+        this.addFile(newUri, [file]);
+        delete this.fileMap[uri];
+    }
+
     getFileInfos() : IFileInfo[]
     {
         return Object.keys(this.fileMap).map(key => this.createFileInfo(key, this.fileMap[key]));

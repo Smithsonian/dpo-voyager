@@ -63,6 +63,11 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
             (ins.trigger.value === EActionTrigger.OnTourStep || ins.trigger.value === EActionTrigger.OnLoad) ?
             html`<div class="sv-placeholder" style="color: red">Trigger/Action combination not supported for accessibility.</div>` : null;
 
+        const stateChangeWarning = ins.type.value === EActionType.StateChange && 
+            ins.trigger.value === EActionTrigger.OnTourStep ?
+            html`<div class="sv-placeholder" style="color: red">CAUTION: We recommend using traditional tour steps for tour-based state changes. 
+                State Editor based changes may have unintended consequences.</div>` : null;
+
         const actionElement = actionList.find((action) => action.id === ins.activeId.value);
 
         const audioActionView = ins.type.value === EActionType.PlayAudio ? html`
@@ -81,9 +86,12 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         const annoView = ins.trigger.value === EActionTrigger.OnAnnotation ? html`
             <sv-property-view .property=${ins.annotation}></sv-property-view>
         ` : null;
+        const stateView = ins.type.value === EActionType.StateChange ? html`
+            <sv-property-view .property=${ins.state}></sv-property-view>
+        ` : null;
         const annoActionView = ins.type.value === EActionType.ShowAnnotation || ins.type.value === EActionType.HideAnnotation 
             || ins.type.value === EActionType.ToggleAnnotation ? html`
-            <sv-property-view .property=${ins.actionAnnotation}></sv-property-view>
+            <sv-property-tags .fixed=${true} .delimiter=${"\x1F"} .property=${ins.actionAnnotation}></sv-property-tags>
         ` : null;
         const tourView = ins.trigger.value === EActionTrigger.OnTourStep ? html`
             <sv-property-view .property=${ins.tour}></sv-property-view>
@@ -92,8 +100,12 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         const actionEventView = ins.trigger.value === EActionTrigger.OnActionEnd || ins.trigger.value === EActionTrigger.OnActionBegin ? html`
             <sv-property-view .property=${ins.action}></sv-property-view>
         ` : null;
+        const actionTargetView = ins.type.value === EActionType.DisableAction || ins.type.value === EActionType.EnableAction ? html`
+            <sv-property-view .property=${ins.actionTarget}></sv-property-view>
+        ` : null;
 
         const detailView = actionElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+            ${stateChangeWarning}
             ${accessibilityNotice}
             <sv-property-view .property=${ins.name}></sv-property-view>
             <sv-property-view .property=${ins.trigger}></sv-property-view>
@@ -104,6 +116,9 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
             ${audioActionView}
             ${animActionView}
             ${annoActionView}
+            ${stateView}
+            ${actionTargetView}
+            <sv-property-view .property=${ins.enabled}></sv-property-view>
         </div>` : null;
 
         return html`<div class="sv-commands">
@@ -168,7 +183,7 @@ export class ActionList extends List<IAction>
 
     protected renderItem(item: IAction)
     {
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.name}</div><div class="sv-task-item sv-item-border-l">${item.type}/${item.trigger}</div></div>`;
+        return html`<div class="ff-flex-row ff-group ${item.enabled ? "" : "sv-disabled"}"><div class="sv-task-item">${item.name}</div><div class="sv-task-item sv-item-border-l">${item.type}/${item.trigger}</div></div>`;
     }
 
     protected isItemSelected(item: IAction)

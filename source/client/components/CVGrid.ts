@@ -240,6 +240,7 @@ export default class CVGrid extends CObject3D
         this.ins.copyValues({
             visible: !!data.visible,
             color: data.color || [ 0.5, 0.7, 0.8 ],
+            opacity: data.opacity ?? this.ins.opacity.schema.preset,
         });
     }
 
@@ -250,6 +251,7 @@ export default class CVGrid extends CObject3D
         return {
             visible: ins.visible.cloneValue(),
             color: ins.color.cloneValue(),
+            opacity: ins.opacity.cloneValue(),
         };
     }
 }

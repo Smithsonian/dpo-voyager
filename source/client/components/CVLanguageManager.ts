@@ -112,8 +112,9 @@ export default class CVLanguageManager extends Component
             this.addLanguage(outs.activeLanguage.value);
             //return;
         }
-        
-        if (ins.activeLanguage.changed && ins.activeLanguage.value != outs.activeLanguage.value) {
+
+        if (ins.activeLanguage.changed && ((ins.activeLanguage.value != outs.activeLanguage.value) 
+            || (Object.keys(this._activeSeneLanguageTranslations).length === 0))) {
             const newLanguage = ins.activeLanguage.value;
             this.addLanguage(newLanguage);
             this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.activeLanguage.value].toLowerCase() + ".json").then( json => {

@@ -24,6 +24,8 @@ export default class CVSunLight extends CSunLight implements ICVLight {
     static readonly icon: string = "sun";
     static readonly isGraphSingleton = true;
 
+    private _savedDocumentData;
+
     get settingProperties() {
         return [
             this.ins.enabled,
@@ -89,15 +91,21 @@ export default class CVSunLight extends CSunLight implements ICVLight {
         if (!isFinite(node.light)) {
             throw new Error("light property missing in node");
         }
-
-        const data = document.lights[node.light];
+        this._savedDocumentData = JSON.parse(JSON.stringify(document.lights[node.light]));
+        this._savedDocumentData.name = node.name;
+        this.setFromSavedData();
+        return node.light;
+    }
+    
+    setFromSavedData() {
         const ins = this.ins;
+        const data = this._savedDocumentData;
 
         if (data.type !== "sun") {
             throw new Error("light type mismatch: not a sun light");
         }
 
-        ins.name.setValue(node.name);
+        ins.name.setValue(data.name);
 
         ins.copyValues({
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
@@ -118,8 +126,6 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
             shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
-
-        return node.light;
     }
 
     toDocument(document: IDocument, node: INode): number {

@@ -193,10 +193,16 @@ export default class CVAnnotationView extends CObject3D
         if (annotation?.data.viewId.length && !this.arManager.outs.isPresenting.value
             && this.ins.visible.value) {
 
-            // only activate annotation view if annotations are visible
+            const viewState = this.snapshots.getState(annotation.data.viewId);
+            if(!viewState) {
+                console.warn("View state not found for annotation: "+annotation.title);
+                return;
+            }
+
+            // only activate annotation view if annotations are visible nad not tweening
             const visibleIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.key == "annotationsVisible");
             const annotationsOn = visibleIdx >= 0 ? this.snapshots.getCurrentValues()[visibleIdx] : this.ins.visible.value;
-            if(annotationsOn) {
+            if(annotationsOn && !this.snapshots.outs.tweening.value) {
                 // need to lock truncation checking during a tween
                 if(this._activeView) {
                     this._truncateLock = true;
@@ -215,7 +221,6 @@ export default class CVAnnotationView extends CObject3D
                 // If activeAnnotation is being tracked, make sure it is set
                 const activeIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "ActiveId");
                 if (activeIdx >= 0) {
-                    const viewState = this.snapshots.getState(annotation.data.viewId);
                     viewState.values[activeIdx] = annotation.data.id;
                 }
 
@@ -647,6 +652,7 @@ export default class CVAnnotationView extends CObject3D
     protected normalizeViewOrbit(viewId: string) {
         const orbitIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Orbit");
         const viewState = this.snapshots.getState(viewId);
+
         const currentOrbit = this.snapshots.getCurrentValues()[orbitIdx];
         let angleOffset = 0;
         currentOrbit.forEach((n, i) => {

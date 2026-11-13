@@ -38,6 +38,11 @@ export default class CaptionView extends DocumentView
     protected render()
     {
         const audio = this.audioManager;
+
+        if(!audio) {
+            return;
+        }
+
         const text = audio.ins.activeCaption.value;
         const isShowing = audio.ins.captionsEnabled.value;
 
@@ -47,6 +52,7 @@ export default class CaptionView extends DocumentView
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
+            this.audioManager = null;
             this.documentProps.off();
         }
         if (next) {

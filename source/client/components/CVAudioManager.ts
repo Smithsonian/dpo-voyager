@@ -115,8 +115,9 @@ export default class CVAudioManager extends Component
 
     dispose()
     {
-        // Clean up cached audio files
+        // Clean up cached audio
         Object.keys(this._audioMap).forEach(( key ) => URL.revokeObjectURL( this._audioMap[key] ));
+        Object.keys(this.audioViews).forEach(( key ) => this.audioViews[key] = null);
 
         this.language.outs.activeLanguage.off("value", this.onLanguageChange, this);
         this.graph.components.off(CVMeta, this.onMetaComponent, this);

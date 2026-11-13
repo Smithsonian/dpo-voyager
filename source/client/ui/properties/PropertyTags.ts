@@ -29,10 +29,14 @@ export default class PropertyTags extends PropertyBase
 {
     type = "string";
 
-    private _missingContent = false;
-
     @property({ attribute: false })
     protected inputValue = "";
+
+    @property({type: Boolean})
+    fixed :boolean = false;
+
+    @property({type: String})
+    delimiter :string = ",";
 
     protected firstConnected()
     {
@@ -53,12 +57,15 @@ export default class PropertyTags extends PropertyBase
                 this.property.on("change", this.onUpdate, this);
             }
         }
+        else if(changedProperties.size === 0) {
+            this.inputValue = "";
+        }
 
         super.update(changedProperties);
     }
 
     protected get selectedTags(): string[] {
-        return this.property?.value?.split(",")
+        return this.property?.value?.split(this.delimiter)
             .map((t: string) => t.trim()).filter(Boolean) || [];
     }
 
@@ -80,14 +87,14 @@ export default class PropertyTags extends PropertyBase
         }
         
         const newTags = [...this.selectedTags, trimmedTag];
-        this.property.setValue(newTags.join(", "));
+        this.property.setValue(newTags.join(this.delimiter));
         this.inputValue = "";
         this.requestUpdate();
     }
 
     protected onRemoveTag(tag: string) {
         const newTags = this.selectedTags.filter(t => t !== tag);
-        this.property.setValue(newTags.join(", "));
+        this.property.setValue(newTags.join(this.delimiter));
     }
 
     protected onInputKeyDown = (e: KeyboardEvent) => {
@@ -123,6 +130,9 @@ export default class PropertyTags extends PropertyBase
         const language = this.language;
         const missing = selectedTags.includes("Missing content");
 
+        const input = this.fixed ? null : html`<input type="text" placeholder=${language ? language.getLocalizedString("Add a tag...") : "Add a tag..."} 
+            class="sv-property-field" .value=${this.inputValue} @input=${this.onInput} @keydown=${this.onInputKeyDown} ?disabled=${this.ariaDisabled === "true"}>`;
+
         const tagDisplay = html`<div class="sv-tags-selected">
                     ${selectedTags.map(tag => html`<div class="sv-tag-chip">
                         <span class="sv-tag-chip-label">${tag}</span>
@@ -139,7 +149,7 @@ export default class PropertyTags extends PropertyBase
                     <option value="" disabled selected>${language ? language.getLocalizedString("Select...") : "Select..."}</option>
                     ${availableTags.map(tag => html`<option value=${tag}>${tag}</option>`)}
                 </select>
-                <input type="text" placeholder=${language ? language.getLocalizedString("Add a tag...") : "Add a tag..."} class="sv-property-field" .value=${this.inputValue} @input=${this.onInput} @keydown=${this.onInputKeyDown} ?disabled=${this.ariaDisabled === "true"}>
+                ${input}
             </div>`;
     }
 }
