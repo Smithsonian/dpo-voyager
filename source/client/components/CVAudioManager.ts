@@ -26,11 +26,22 @@ import { TLanguageType, ELanguageType } from "client/schema/common";
 import Notification from "@ff/ui/Notification";
 import CustomElement, { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 import CVAnalytics from "./CVAnalytics";
-import CVAssetReader from "./CVAssetReader";
 import CVAnnotationView from "./CVAnnotationView";
 import CVActionManager from "./CVActionManager";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+interface IAudioDurationLoad {
+    uri: string;
+    /** In seconds, NaN while unknown. */
+    duration: number;
+    /** Why the request failed. Play retries it. */
+    error: Error;
+    controller: AbortController;
+    /** Reads the file's metadata, while the request is pending. */
+    element: HTMLAudioElement;
+    cleanup: () => void;
+}
 
 /**
  * Component that manages audio settings and functions.
@@ -46,15 +57,17 @@ export default class CVAudioManager extends Component
 
     private _narrationId: string = null;
     private _activeId: string = null;
-    private _audioMap: Dictionary<string> = {};
+    private _playerUri: string = null;
+    private _playRequest = 0;
+    private _useDefaultPlayer = false;
+    private _pendingSeek: () => void = null;
+    private _durationLoads = new Map<IAudioClip, Map<string, IAudioDurationLoad>>();
 
     protected audioClips: Dictionary<IAudioClip> = {};
     protected audioPlayer: HTMLAudioElement = null;
     protected audioView: AudioView = null;
     protected audioViews: Dictionary<AudioView> = {};
     protected isPlaying: Boolean = false;
-
-    protected audioContext = null;
 
     protected static readonly ins = {
         playNarration: types.Event("Audio.PlayNarration"),
@@ -76,9 +89,6 @@ export default class CVAudioManager extends Component
 
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
-    }
-    protected get assetReader() {
-        return this.getMainComponent(CVAssetReader);
     }
     protected get actions() {
         return this.getGraphComponent(CVActionManager);
@@ -110,20 +120,18 @@ export default class CVAudioManager extends Component
         this.graph.components.on(CVMeta, this.onMetaComponent, this);
 
         this.language.outs.activeLanguage.on("value", this.onLanguageChange, this);
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
 
     dispose()
     {
-        // Clean up cached audio
-        Object.keys(this._audioMap).forEach(( key ) => URL.revokeObjectURL( this._audioMap[key] ));
-        Object.keys(this.audioViews).forEach(( key ) => this.audioViews[key] = null);
+        // Nothing pending is left to act on: playback requests are superseded, duration requests
+        // aborted, and releasing the player drops the events it had queued.
+        this.releasePlayer();
+        this._durationLoads.forEach(loads => loads.forEach(entry => entry.controller.abort()));
+        this._durationLoads.clear();
 
         this.language.outs.activeLanguage.off("value", this.onLanguageChange, this);
         this.graph.components.off(CVMeta, this.onMetaComponent, this);
-
-        this.audioContext.close();
-        this.audioContext = null;
 
         super.dispose();
     }
@@ -161,6 +169,7 @@ export default class CVAudioManager extends Component
             view.requestUpdate();
         }
 
+        this.loadDuration(id);
         return this.audioViews[id];
     }
 
@@ -183,39 +192,100 @@ export default class CVAudioManager extends Component
         return clip ? clip.captionUris[ELanguageType[this.language.outs.activeLanguage.value]] : null;
     }
 
-    getDuration(id: string) {
-        const clip = this.audioClips[id];
-        const activeLanguage = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType;
-        const cachedDuration = clip.durations[activeLanguage];
-        if(cachedDuration) {
-            return cachedDuration;
+    /** The clip's duration in seconds, NaN while unknown, as for media elements. Starts no request. */
+    getDuration(id: string): number {
+        if (!this.node) {
+            return NaN; // views can still render once their manager is disposed
         }
-        else {
-            const clip = this.audioClips[id];
-            Object.keys(clip.uris).forEach(language => {
-                const uri = clip.uris[language];
-                if(uri) {
-                    const absUri = this.assetManager.getAssetUrl(uri);
-                    clip.durations[language] = "pending";
+        return this.durationLoad(id)?.duration ?? NaN;
+    }
 
-                    this.assetReader.getAudio(uri).then((arrayBuffer) => {
-                        if(!Object.keys(this._audioMap).includes(uri)) {
-                            const blob = new Blob([arrayBuffer], { type: "audio/mpeg" });
-                            const url = window.URL.createObjectURL(blob);
-                            this._audioMap[uri] = url;
-                        }
-                        this.audioContext.decodeAudioData(arrayBuffer,
-                            (buffer) => {
-                                let duration = buffer.duration;
-                                clip.durations[language] = duration.toString();
-                                language === activeLanguage ? this.getPlayerById(id).requestUpdate() : null;                                         
-                            }
-                        )                                         
-                    });
-                }
-            });
+    /** The duration request for the clip's file in the active language, if any. */
+    private durationLoad(id: string): IAudioDurationLoad {
+        const clip = this.audioClips[id];
+        const language = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()];
+        const entry = this._durationLoads.get(clip)?.get(language);
+        return entry && entry.uri === clip.uris[language] ? entry : null;
+    }
 
-            return "pending";
+    /** Requests metadata for a displayed player, without downloading and decoding the whole file. */
+    loadDuration(id: string, { retry = false }: { retry?: boolean } = {}) {
+        const clip = this.audioClips[id];
+        const language = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()];
+        const uri = clip?.uris[language];
+        if (!uri) {
+            return;
+        }
+
+        let entries = this._durationLoads.get(clip);
+        if (!entries) {
+            this._durationLoads.set(clip, entries = new Map());
+        }
+        const previous = entries.get(language);
+        if (previous?.uri === uri && (!previous.error || !retry)) {
+            return;
+        }
+        previous?.controller.abort(new DOMException("Superseded by another audio file", "AbortError"));
+
+        const element = document.createElement("audio");
+        element.preload = "metadata";
+        element.crossOrigin = "anonymous";
+        const entry: IAudioDurationLoad = { uri, duration: NaN, error: null, controller: null, element, cleanup: null };
+        entries.set(language, entry);
+        const { signal } = entry.controller = new AbortController();
+        const current = () => !signal.aborted && this.audioClips[id] === clip
+            && clip.uris[language] === uri && entries.get(language) === entry;
+        const metadata = () => {
+            if (current()) {
+                this.finishDuration(id, entry, element.duration);
+            }
+        };
+        const failed = () => {
+            if (current()) {
+                this.finishDuration(id, entry, NaN, this.mediaError(uri, element.error));
+            }
+        };
+        const cleanup = entry.cleanup = () => {
+            element.removeEventListener("loadedmetadata", metadata);
+            element.removeEventListener("error", failed);
+            signal.removeEventListener("abort", cleanup);
+            element.removeAttribute("src");
+            element.load();
+            entry.element = null;
+            entry.cleanup = () => {};
+        };
+        signal.addEventListener("abort", cleanup, { once: true });
+        element.addEventListener("loadedmetadata", metadata);
+        element.addEventListener("error", failed);
+        element.src = this.assetManager.getAssetUrl(uri);
+    }
+
+    private mediaError(uri: string, error: MediaError): Error {
+        const names = { 1: "AbortError", 2: "NetworkError", 3: "EncodingError", 4: "NotSupportedError" };
+        return new DOMException(`Failed to load audio at '${uri}': ${error?.message
+            || "media error " + error?.code}`, names[error?.code] || "MediaError");
+    }
+
+    private finishDuration(id: string, entry: IAudioDurationLoad, duration: number, error: Error = null) {
+        entry.duration = Number.isFinite(duration) && duration >= 0 ? duration : NaN;
+        entry.error = error;
+        entry.cleanup();
+        if (error) {
+            console.error(error);
+        }
+        this.audioViews[id]?.requestUpdate();
+        this.updateGlobalPlayer();
+    }
+
+    /** Playback can provide metadata even when the browser declines preloading it. */
+    protected onPlaybackDuration = () => {
+        const id = this.audioView?.audioId;
+        const entry = this.durationLoad(id);
+        const player = this.audioPlayer;
+        if (entry && this._playerUri === this.assetManager.getAssetUrl(entry.uri)
+            && (!player.currentSrc || player.currentSrc === player.src)
+            && Number.isFinite(player.duration) && player.duration >= 0) {
+            this.finishDuration(id, entry, player.duration);
         }
     }
 
@@ -229,9 +299,21 @@ export default class CVAudioManager extends Component
     }
 
     setTimeElapsed(time: number) {
+        if (!Number.isFinite(time) || time < 0) {
+            return;
+        }
         if(this.audioPlayer && this.audioView) { 
+            this.clearPendingSeek();
             if(this.audioPlayer.seekable.length === 0) {
-                this.audioPlayer.addEventListener("canplay",() => this.setTimeElapsed(time), {once: true});
+                const uri = this._playerUri;
+                const view = this.audioView;
+                this._pendingSeek = () => {
+                    this._pendingSeek = null;
+                    if (this._playerUri === uri && this.audioView === view) {
+                        this.setTimeElapsed(time);
+                    }
+                };
+                this.audioPlayer.addEventListener("canplay", this._pendingSeek, { once: true });
             }      
             else {
                 this.audioPlayer.currentTime = time;
@@ -239,6 +321,25 @@ export default class CVAudioManager extends Component
                 this.audioView.requestUpdate();
             }
         }
+    }
+
+    private clearPendingSeek() {
+        if (this._pendingSeek) {
+            this.audioPlayer?.removeEventListener("canplay", this._pendingSeek);
+            this._pendingSeek = null;
+        }
+    }
+
+    /** Stops playback and lets the browser release the file. */
+    private releasePlayer() {
+        if (!this.audioPlayer) {
+            return;
+        }
+        this.stop();
+        this.clearPendingSeek();
+        this.audioPlayer.removeAttribute("src");
+        this.audioPlayer.load();
+        this._playerUri = null;
     }
 
     addAudioClip(clip: IAudioClip)
@@ -249,9 +350,15 @@ export default class CVAudioManager extends Component
 
     removeAudioClip(id: string)
     {
-        if(this.isPlaying && id == this.activeId) {
-            this.stop();
+        if(id === this.activeId || this.audioView?.audioId === id) {
+            this.releasePlayer();
+            this.activeId = null;
+            this.audioView = null;
         }
+        const clip = this.audioClips[id];
+        this._durationLoads.get(clip)?.forEach(entry => entry.controller.abort());
+        this._durationLoads.delete(clip);
+        delete this.audioViews[id];
 
         // check for audio ids in annotations
         const views = this.system.getComponents(CVAnnotationView); 
@@ -272,8 +379,19 @@ export default class CVAudioManager extends Component
 
     updateAudioClip(id: string)
     {
-        this.audioClips[id].durations = {};
-        this.getDuration(id);
+        const clip = this.audioClips[id];
+        this._durationLoads.get(clip)?.forEach((entry, language, entries) => {
+            if (entry.uri !== clip.uris[language]) {
+                entry.controller.abort(new DOMException("Audio file changed", "AbortError"));
+                entries.delete(language);
+            }
+        });
+        if (this.audioViews[id]) {
+            if (this.audioViews[id].isConnected) {
+                this.loadDuration(id);
+            }
+            this.audioViews[id].requestUpdate();
+        }
         this.outs.updated.set();
     }
 
@@ -323,18 +441,23 @@ export default class CVAudioManager extends Component
     {
         const { outs } = this;
         const uri = this.getAudioClipUri(id);
-        this.audioView = this.audioViews[id];
 
         if(!uri) {
             Notification.show("Failed to play audio clip - no uri", "warning");
             return;
         }
 
+        const request = ++this._playRequest;
+        const retry = !!this.durationLoad(id)?.error;
+        this.audioView = this.getPlayerById(id);
+        this.loadDuration(id, { retry: true });
+
         // handle currently playing track
         if(outs.isPlaying.value) {
             this.audioPlayer.pause();
         }
 
+        this.initializeClip(id, retry);
         if(this.activeId !== id) {
             this.setTimeElapsed(0);
         }
@@ -346,23 +469,30 @@ export default class CVAudioManager extends Component
             this.audioView.synched = true;
         }
 
-        this.initializeClip(id);
-        
         this.audioPlayer.play()
         .then(() => {
+            if (request !== this._playRequest) {
+                return;
+            }
             this.activeId = id;
             outs.isPlaying.setValue(true);
             this.isPlaying = true;
             outs.narrationPlaying.setValue(id == this.narrationId);
-            outs.globalPlaying.setValue((useDefaultPlayer && +this.getDuration(id) > 2) || outs.narrationPlaying.value);
+            this._useDefaultPlayer = useDefaultPlayer;
+            this.updateGlobalPlayer();
             Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
             this.analytics.sendProperty("Audio_Play", uri);
         })
-        .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));
+        .catch(error => {
+            if (request === this._playRequest) {
+                Notification.show(`Failed to play audio at '${uri}': ${error}`, "warning");
+            }
+        });
     }
 
     pause()
     {
+        ++this._playRequest;
         if(!this.audioPlayer) {
             return;
         } 
@@ -386,14 +516,23 @@ export default class CVAudioManager extends Component
         const { outs } = this;
         
         this.isPlaying = false;
+        this._useDefaultPlayer = false;
         outs.isPlaying.setValue(false);
+        outs.narrationPlaying.setValue(false);
         outs.globalPlaying.setValue(false);
         this.audioView?.requestUpdate();
         this.ins.activeCaption.setValue("");
     }
 
+    protected updateGlobalPlayer() {
+        const duration = this.getDuration(this.activeId);
+        // Unknown duration must not hide the controls of an otherwise playable clip.
+        this.outs.globalPlaying.setValue(this.outs.narrationPlaying.value || (this._useDefaultPlayer
+            && (isNaN(duration) || duration > 2)));
+    }
+
     // Initialize player for a specific audio clip
-    initializeClip(id: string) {
+    initializeClip(id: string, reload = false) {
         if(this.audioPlayer === null) {
             this.setupAudio();
         }
@@ -401,9 +540,17 @@ export default class CVAudioManager extends Component
         const clip = this.audioClips[id];
         if(clip) {
             const uri = clip.uris[ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType];
-            if(this.audioPlayer.src != this._audioMap[uri]) {
-                this.audioPlayer.setAttribute("src", this._audioMap[uri]);
-                //this.audioPlayer.load();
+            if (!uri) {
+                return;
+            }
+            const assetUrl = this.assetManager.getAssetUrl(uri);
+            if(this._playerUri !== assetUrl || reload) {
+                this.clearPendingSeek();
+                this.audioPlayer.setAttribute("src", assetUrl);
+                this._playerUri = assetUrl;
+                if (reload) {
+                    this.audioPlayer.load();
+                }
             }
 
             // Set caption track source
@@ -437,14 +584,22 @@ export default class CVAudioManager extends Component
             const audio = this.audioPlayer = document.createElement('audio');
             audio.onended = this.onEnd;
             audio.setAttribute("controls", "");
-            audio.setAttribute("preload", "auto");
+            audio.setAttribute("preload", "metadata");
             audio.addEventListener("timeupdate", this.onTimeChange);
+            audio.addEventListener("loadedmetadata", this.onPlaybackDuration);
+            audio.addEventListener("durationchange", this.onPlaybackDuration);
             audio.crossOrigin = "anonymous";
 
             audio.onerror = () => {
-                console.error(
-                  `Error ${audio.error.code}; details: ${audio.error.message}`,
-                );
+                const id = this.audioView?.audioId;
+                const entry = this.durationLoad(id);
+                const error = this.mediaError(this._playerUri, audio.error);
+                if (entry?.element) {
+                    this.finishDuration(id, entry, NaN, error);
+                }
+                ++this._playRequest;
+                this.onEnd();
+                Notification.show(error.message, "warning");
             };
         }
     }
@@ -470,12 +625,27 @@ export default class CVAudioManager extends Component
     // Handle audio time elapsed updates
     protected onTimeChange = (event: Event) =>
     {
-        this.audioView.elapsed = this.getTimeElapsed();
-        this.audioView.requestUpdate();
+        if (this.audioView) {
+            this.audioView.elapsed = this.getTimeElapsed();
+            this.audioView.requestUpdate();
+        }
     }
 
     protected onLanguageChange() {
         this.stop();
+        const language = ELanguageType[this.language.outs.activeLanguage.value];
+        this._durationLoads.forEach(entries => entries.forEach((entry, key) => {
+            if (key !== language && entry.element) {
+                entry.controller.abort(new DOMException("Audio language changed", "AbortError"));
+                entries.delete(key);
+            }
+        }));
+        Object.keys(this.audioViews).forEach(id => {
+            if (this.audioViews[id].isConnected) {
+                this.loadDuration(id);
+            }
+            this.audioViews[id].requestUpdate();
+        });
     }
 }
 
@@ -510,6 +680,10 @@ export class AudioView extends CustomElement
         this.classList.add("sv-audio-view");
     }
 
+    protected connected() {
+        this.audio.loadDuration(this.audioId);
+    }
+
     protected update(changedProperties: PropertyValues): void 
     {
         if (changedProperties.has("elapsed")) {
@@ -524,15 +698,15 @@ export class AudioView extends CustomElement
     protected render()
     {
         const isPlaying = this.audio.outs.isPlaying.value && this.audioId == this.audio.activeId;
-        const isGlobal = this.parentElement.id === "global-audio";
+        const isGlobal = this.parentElement?.id === "global-audio";
         const duration = this.audio.getDuration(this.audioId);
-        const disabledSlider = this.synched ? "disabled" : "";
+        const canSeek = duration > 0;
         const elapsedStr = this.formatSeconds(this.elapsed);
-        const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
+        const durationStr = this.formatSeconds(duration);
         const exitBtn = isGlobal ? html`<ff-button title="exit audio" id="exit-btn" icon="close" @pointerdown=${this.stopAudio}></ff-button>` : null;
         return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId, isGlobal)}></ff-button>
             <div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div>
-            <input title="audio slider" ?disabled=${this.synched} id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" step="0.1" max="${duration}" value="${this.elapsed}" class="slider">
+            <input title="audio slider" ?disabled=${this.synched || !canSeek} id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" step="0.1" max="${canSeek ? duration : 0}" value="${this.elapsed}" class="slider">
             ${exitBtn}`;
     }
 
@@ -561,7 +735,7 @@ export class AudioView extends CustomElement
     {
         if (e.code === "Space" || e.code === "Enter") {
             if((e.target as HTMLElement).id == "play-btn") {
-                this.playAudio(null, this.audioId, this.parentElement.id === "global-audio");
+                this.playAudio(null, this.audioId, this.parentElement?.id === "global-audio");
             }
             else if((e.target as HTMLElement).id == "exit-btn") {
                 this.stopAudio();
@@ -576,18 +750,21 @@ export class AudioView extends CustomElement
 
     protected onTimeChange() {
         const isActive = this.audioId == this.audio.activeId;
+        const duration = this.audio.getDuration(this.audioId);
 
-        if(isActive) {
+        if(isActive && !this.synched && duration > 0) {
+            const time = parseFloat((this.querySelector("#time-slider") as HTMLInputElement).value);
             this.audio.initializeClip(this.audioId);
-            this.audio.setTimeElapsed(parseFloat((this.querySelector("#time-slider") as HTMLInputElement).value) | 0);
+            this.audio.setTimeElapsed(Math.max(0, Math.min(duration, time)));
         }
     }
 
     // Format seconds in friendlier datetime-like string
     protected formatSeconds(seconds: number) {
-        var date = new Date(0);
-        date.setSeconds(seconds);
-        var formatString = date.toISOString().substring(14, 19);
-        return formatString;
+        if (!Number.isFinite(seconds) || seconds < 0) {
+            return "--:--";
+        }
+        return Math.floor(seconds / 60).toString().padStart(2, "0") + ":"
+            + Math.floor(seconds % 60).toString().padStart(2, "0");
     }
 }
