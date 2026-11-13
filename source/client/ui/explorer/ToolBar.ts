@@ -19,6 +19,7 @@ import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import CVToolProvider, { IActiveToolEvent } from "../../components/CVToolProvider";
 import CVTool from "../../components/CVTool";
+import CVAnalytics from "../../components/CVAnalytics";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 import CVSetup from "client/components/CVSetup";
 
@@ -39,6 +40,9 @@ export default class ToolBar extends SystemView
     }
     protected get setup() {
         return this.system.getComponent(CVSetup);
+    }
+    protected get analytics() {
+        return this.system.getMainComponent(CVAnalytics);
     }
 
     protected firstConnected()
@@ -69,6 +73,7 @@ export default class ToolBar extends SystemView
         const tools = this.toolProvider.scopedComponents;
         const activeTool = this.toolProvider.activeComponent;
         const language = this.setup.language;
+        const compassActive = this.findChromeView()?.isCompassVisible() || false;
 
         const toolbarWrapper = activeTool ? html`<div>`: null;
 
@@ -76,17 +81,36 @@ export default class ToolBar extends SystemView
             html`<ff-button class="sv-tool-button" transparent text=${language.getLocalizedString(tool.text)} icon=${tool.icon}
                 ?selected=${tool === activeTool} @click=${e => this.onSelectTool(tool)}></ff-button>` : null);
 
+        const compassButton = html`<ff-button class="sv-tool-button" transparent text="Compass" icon="compass"
+            title=${language.getLocalizedString("Show/Hide Compass")} ?selected=${compassActive} @click=${this.onToggleCompass}></ff-button>`;
+
         return html`<div class="sv-blue-bar"><div id="toolmenu" role="region" aria-label=${activeTool ? activeTool.text : null} @close=${this.closeTool} @keydown=${e =>this.onKeyDownTool(e)}>${activeTool ? activeTool.createView() : null}</div>
             <div id="mainmenu" role="region" @keydown=${e =>this.onKeyDownMain(e)} aria-label="Tools and settings" class="sv-section">
                 <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Close Tools")} @click=${this.onClose}></ff-button>
-                <div class="sv-tool-buttons">${toolButtons}</div>
+                <div class="sv-tool-buttons">${toolButtons}${compassButton}</div>
                 <sv-tool-menu-view .system=${this.system}></sv-tool-menu-view>
             </div></div>`;
+    }
+
+    protected findChromeView() {
+        const rootNode = this.getRootNode() as ShadowRoot;
+        return rootNode.querySelector("sv-chrome-view") as any;
     }
 
     protected onSelectTool(tool: CVTool)
     {
         this.toolProvider.activeComponent = tool;
+    }
+
+    protected onToggleCompass()
+    {
+        const chromeView = this.findChromeView();
+
+        if (chromeView) {
+            chromeView.toggleCompass();
+            this.requestUpdate();
+            this.analytics.sendProperty("Compass_Visible", chromeView.isCompassVisible());
+        }
     }
 
     protected onClose(event: MouseEvent)
