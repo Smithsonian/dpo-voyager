@@ -213,10 +213,16 @@ export default class Property<T = any> extends Publisher
         }
     }
 
-    cloneValue(): T
+    cloneValue(): any
     {
         const value = this.value;
-        return Array.isArray(value) ? value.slice() as any : value;
+        if (this.schema.semantic === "datetime" && value != null
+            && (typeof value === "object" || typeof value === "function")
+            && "format" in value && typeof value.format === "function") {
+            return value.format("YYYY-MM-DDTHH:mm:ss");
+        }
+
+        return Array.isArray(value) ? value.slice() : value;
     }
 
     /**
