@@ -7,10 +7,12 @@
 
 import NodeComponent_test from "./NodeComponent.test";
 import Property_test from "./Property.test";
+import TweenMachine_test from "./TweenMachine.test";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 suite("FF Graph", function() {
     NodeComponent_test();
     Property_test();
+    TweenMachine_test();
 });
