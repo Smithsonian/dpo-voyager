@@ -158,7 +158,7 @@ export default class CVTape extends CObject3D
     update(context)
     {
         const lineGeometry = this.line.geometry as BufferGeometry;
-        const { startMarker, endMarker, line, ins } = this;
+        const { line, ins } = this;
 
         if (ins.enabled.changed) {
             ins.visible.setValue(ins.enabled.value);
@@ -170,6 +170,7 @@ export default class CVTape extends CObject3D
         if (ins.markerStyle.changed) {
             this.recreateMarkers();
         }
+        const { startMarker, endMarker } = this;
 
         // determine marker scale based on scene/model bounding box
         if (ins.boundingBox.changed && ins.boundingBox.value) {
