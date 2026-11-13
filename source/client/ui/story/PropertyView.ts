@@ -16,6 +16,7 @@
  */
 
 import Property from "@ff/graph/Property";
+import CSunLight from "@ff/scene/components/CSunLight";
 
 import "@ff/scene/ui/PropertyField";
 import "@ff/ui/ColorButton";
@@ -92,7 +93,7 @@ export default class PropertyView extends CustomElement
         }else if(property.type === "boolean"){
             return html`<sv-property-boolean aria-disabled=${disabled} name=${label} .property=${property}></sv-property-boolean>`;
         }else if(property.type === "string"){
-            return html`<sv-property-string aria-disabled=${disabled} name=${label} .property=${property}></sv-property-string>`
+            return html`<sv-property-string aria-disabled=${disabled} name=${label} .property=${property} @change=${this.onStringChange}></sv-property-string>`
         }else if(property.type === "number"){
             return html`<sv-property-number aria-disabled=${disabled} name=${label} .property=${property}></sv-property-number>`
         }else if(property.type === "object" && schema.semantic === "datetime"){
@@ -105,6 +106,13 @@ export default class PropertyView extends CustomElement
             return html`<div class="sv-property-name">${label}</div><div class="sv-property-group">${property.value} (not editable)</div>`;
         }
 
+    }
+
+    private onStringChange() {
+        const component = this.property.group?.linkable;
+        if (component instanceof CSunLight && this.property === component.ins.timezone) {
+            component.updateCoordinatesFromTimezone();
+        }
     }
 
 }

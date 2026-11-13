@@ -33,6 +33,7 @@ export default class CSunLight extends CLight {
     static readonly typeName: string = "CSunLight";
 
     protected previousTimezone: string = "UTC";
+    private updatingTimezoneCoordinates = false;
 
     protected static readonly sunLightIns = {
         position: types.Vector3("Light.Position"),
@@ -68,6 +69,40 @@ export default class CSunLight extends CLight {
 
     get light(): DirectionalLight {
         return this.object3D as DirectionalLight;
+    }
+
+    get isUpdatingTimezoneCoordinates(): boolean {
+        return this.updatingTimezoneCoordinates;
+    }
+
+    updateCoordinatesFromTimezone(): void {
+        const zone = (this.ins.timezone.value || "").trim();
+        let coordinates: [number, number];
+        try {
+            if (!zone) {
+                throw new RangeError("Empty timezone");
+            }
+            const offset = createDayjs().tz(zone).utcOffset();
+            coordinates = getTimezoneCoordinates(zone, offset);
+        }
+        catch (error) {
+            if (!(error instanceof RangeError)) {
+                throw error;
+            }
+            Notification.show(`Invalid timezone: '${zone}'. Reverting to previous timezone '${this.previousTimezone}'`, "error");
+            this.ins.timezone.setValue(this.previousTimezone, true);
+            return;
+        }
+
+        this.previousTimezone = zone;
+        this.updatingTimezoneCoordinates = true;
+        try {
+            this.ins.latitude.setValue(coordinates[0]);
+            this.ins.longitude.setValue(coordinates[1]);
+        }
+        finally {
+            this.updatingTimezoneCoordinates = false;
+        }
     }
 
     protected calculateColor(degrees: number): [number, number, number] {
