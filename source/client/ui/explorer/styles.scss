@@ -225,7 +225,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   -webkit-user-select: text;
 }
 
+// HTML overlay of the scene view (annotations and their popup): a single layer,
+// above the scene view's splitter, below captions and the chrome view
 .sv-content-overlay {
+  z-index: 1;
+
   .error-msg {
     position: absolute;
     text-align: center;
@@ -481,27 +485,6 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   &.sv-enable-events {
     pointer-events: auto;
     cursor: pointer;
-  }
-}
-
-.sv-annotation-overlay {
-  padding: 7px;
-  pointer-events: auto;
-  background-color: $menu-color-background;
-  max-width: #{"min(80%, 800px)"};
-  min-width: 50%;
-  max-height: 90%;
-  overflow-y: auto;
-  cursor: auto;
-
-  .sv-annotation-body {
-    .ff-button {
-      background: rgba(0, 0, 0, 0.01); // hack to get click events
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
   }
 }
 
@@ -789,6 +772,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     color: inherit;
     background-color: color.adjust(black, $alpha: -0.4);
     pointer-events: auto;
+    cursor: auto; // the scene view sets a "grab" cursor
     outline: none;
 
     &[open] {
@@ -814,6 +798,28 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   padding: 8px;
   background: common.$color-background;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ANNOTATION POPUP
+
+// panel of the annotation popup, also an .sv-annotation for the content's styles
+.sv-annotation-overlay {
+  position: relative; // not absolute like annotations
+  z-index: auto;
+  background-color: $menu-color-background;
+  max-width: #{"min(80%, 800px)"};
+  min-width: 50%;
+
+  .sv-annotation-body {
+    .ff-button {
+      background: rgba(0, 0, 0, 0.01); // hack to get click events
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
