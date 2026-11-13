@@ -169,9 +169,9 @@ export interface ITape
 export interface ISlicer
 {
     enabled: boolean;
-    axis: TSliceAxis;
-    inverted: boolean;
-    position: number;
+    axis?: TSliceAxis;
+    inverted?: boolean;
+    position?: number;
     color: number[];
 }
 
