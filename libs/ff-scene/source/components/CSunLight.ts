@@ -14,6 +14,7 @@ import * as utc from "dayjs/plugin/utc";
 import * as SunCalc from 'suncalc';
 import { DirectionalLight } from "three";
 import CLight from "./CLight";
+import { getTimezoneCoordinates } from "./timezoneCoordinates";
 
 const utcPlugin = (utc as unknown as { default?: dayjs.PluginFunc<unknown> }).default || utc as unknown as dayjs.PluginFunc<unknown>;
 const timezonePlugin = (timezone as unknown as { default?: dayjs.PluginFunc<unknown> }).default || timezone as unknown as dayjs.PluginFunc<unknown>;
@@ -24,6 +25,9 @@ const createDayjs = ((dayjs as unknown as { default?: TDayjsFactory }).default |
 
 dayjs.extend(utcPlugin);
 dayjs.extend(timezonePlugin);
+
+const defaultTimezone = createDayjs.tz.guess();
+const [defaultLatitude, defaultLongitude] = getTimezoneCoordinates(defaultTimezone, createDayjs().utcOffset());
 
 export default class CSunLight extends CLight {
     static readonly typeName: string = "CSunLight";
@@ -41,10 +45,10 @@ export default class CSunLight extends CLight {
             preset: createDayjs()
         }),
         timezone: types.String("Light.TimeZone", {
-            preset: createDayjs.tz.guess()
+            preset: defaultTimezone
         }),
-        latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90, step: 0.01 }),
-        longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180, step: 0.01 }),
+        latitude: types.Number("Light.Latitude", { preset: defaultLatitude, min: -90, max: 90, step: 0.01 }),
+        longitude: types.Number("Light.Longitude", { preset: defaultLongitude, min: -180, max: 180, step: 0.01 }),
         intensityFactor: types.Number("Light.IntensityFactor", { preset: 5, min: 0 }),
     };
 
