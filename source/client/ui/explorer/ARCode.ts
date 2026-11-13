@@ -15,98 +15,27 @@
  * limitations under the License.
  */
 
-import Popup, { customElement, html } from "@ff/ui/Popup";
+import { html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
-import "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
-import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+import { openModal } from "../Modal";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-ar-code")
-export default class ARCode extends Popup
+export function showARCode(parent: HTMLElement, language: CVLanguageManager, imageUri: string): Promise<void>
 {
-    protected url: string;
-    protected language: CVLanguageManager = null;
-    protected imageUri: string = null;
-    protected needsFocus: boolean = false;
+    const windowName = language.getLocalizedString("AR Experience");
 
-    static show(parent: HTMLElement, language: CVLanguageManager, imageUri: string): Promise<void>
-    {
-        const menu = new ARCode(parent, language, imageUri);
-        parent.appendChild(menu);
-
-        return new Promise((resolve, reject) => {
-            menu.on("close", () => resolve());
-        });
-    }
-
-    constructor( parent: HTMLElement, language: CVLanguageManager, imageUri: string )
-    {
-        super();
-
-        this.language = language;
-        this.imageUri = imageUri;
-        this.position = "center";
-        this.portal = parent;
-        this.modal = true;
-
-        this.url = window.location.href;
-    }
-
-    close()
-    {
-        this.dispatchEvent(new CustomEvent("close"));
-        this.remove();
-    }
-
-    protected firstConnected()
-    {
-        super.firstConnected();
-        this.classList.add("sv-ar-code");
-        this.needsFocus = true;
-    }
-
-    protected render()
-    {
-        const language = this.language;
-
-        const windowName = language.getLocalizedString("AR Experience"); 
-
-        return html`
-        <div role="region" aria-label=${windowName} @keydown=${e =>this.onKeyDown(e)}>
-            <div class="ff-flex-row">
-                <div id="arCodeTitle" class="ff-flex-spacer ff-title">${windowName}</div>
-                <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
-            </div>
-            <div class="ff-title" id="embedTitle">${language.getLocalizedString("1. Scan the code with your mobile device to return here.")}</div>
-            <div class="ff-flex-row">
-                <img src=${this.imageUri}></img>
-            </div>
-            <div class="ff-title">${language.getLocalizedString("2. Tap ")}<ff-icon name="ar"></ff-icon>${language.getLocalizedString(" to launch an AR experience! ")}</div>
+    return openModal(parent, ({ close }) => html`
+        <div class="ff-flex-row">
+            <div id="arCodeTitle" class="ff-flex-spacer ff-title">${windowName}</div>
+            <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${() => close()} autofocus></ff-button>
         </div>
-        `;
-    }
-
-    protected update(changedProperties) {
-        super.update(changedProperties);
-
-        if(this.needsFocus) {
-            const container = this.getElementsByClassName("ff-close-button").item(0) as HTMLElement;
-            container.focus();
-            this.needsFocus = false;
-        }
-    }
-
-    protected onKeyDown(e: KeyboardEvent)
-    {
-        if (e.code === "Escape") {
-            e.preventDefault();
-            this.close();
-        }
-        else if(e.code === "Tab") {
-            focusTrap(getFocusableElements(this) as HTMLElement[], e);
-        }
-    }
+        <div class="ff-title" id="embedTitle">${language.getLocalizedString("1. Scan the code with your mobile device to return here.")}</div>
+        <div class="ff-flex-row">
+            <img src=${imageUri}></img>
+        </div>
+        <div class="ff-title">${language.getLocalizedString("2. Tap ")}<ff-icon name="ar"></ff-icon>${language.getLocalizedString(" to launch an AR experience! ")}</div>`,
+        { label: windowName, panelClass: "sv-ar-code" });
 }

@@ -586,14 +586,8 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 .sv-ar-code {
-  position: relative;
   width: 420px;
   max-width: 85%;
-  max-height: 90%;
-  padding: 8px;
-  background: common.$color-background;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
-  pointer-events: auto;
 
   .ff-title {
     margin: 0.5em 0 1em 0;
@@ -770,16 +764,64 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SHARE MENU
+// MODAL WINDOWS (see ui/Modal.ts)
 
-.sv-share-menu {
+// Host element: covers its parent. The dialog fills it and serves as backdrop,
+// so the modal is confined to the Voyager element when embedded in a page.
+.sv-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+
+  & > dialog {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-sizing: border-box;
+    overflow: hidden;
+    color: inherit;
+    background-color: color.adjust(black, $alpha: -0.4);
+    pointer-events: auto;
+    outline: none;
+
+    &[open] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      // fade in the backdrop only, the panel appears at once
+      transition: background-color common.$tx-medium;
+
+      @starting-style {
+        background-color: transparent;
+      }
+    }
+  }
+}
+
+.sv-modal-panel {
   position: relative;
-  width: 450px;
-  max-width: 85%;
+  box-sizing: border-box;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
   padding: 8px;
   background: common.$color-background;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
-  pointer-events: auto;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SHARE MENU
+
+.sv-share-menu {
+  width: 450px;
+  max-width: 85%;
 
   .ff-title {
     margin: 0.5em 0 1em 0;
@@ -958,6 +1000,7 @@ $tour-entry-indent: 12px;
 
 .sv-option-menu {
   position: relative;
+  box-sizing: content-box; // width and height are for the content
   width: 225px;
   max-width: 85%;
   height: 200px;
@@ -1031,12 +1074,8 @@ $tour-entry-indent: 12px;
 // HELP SCREEN
 
 .sv-main-help {
-  position: relative;
   width: 90%;
   height: 90%;
-  padding: 8px;
-  background: common.$color-background;
-  pointer-events: auto;
 
   .sv-help-section {
     display: flex;
@@ -1551,13 +1590,9 @@ $tour-entry-indent: 12px;
 }
 
 .sv-splash {
-  padding: 7px;
-  pointer-events: auto;
   background-color: $menu-color-background;
   max-width: #{"min(80%, 800px)"};
   min-width: 50%;
-  max-height: 90%;
-  overflow-y: auto;
 
   & > :focus-visible {
     outline: none;
