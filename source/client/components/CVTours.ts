@@ -88,6 +88,29 @@ export default class CVTours extends Component
         return tour ? tour.steps[this.outs.stepIndex.value] : null;
     }
 
+    /**
+     * Shows or hides tours: enabling closes the reader and shows the tour menu.
+     * Does nothing if tours already are in the requested state.
+     * @returns true if tours were toggled.
+     */
+    setEnabled(enabled: boolean): boolean
+    {
+        if (this.ins.enabled.value === enabled) {
+            return false;
+        }
+
+        const readerIns = this.setup.reader.ins;
+        if (enabled && readerIns.enabled.value) {
+            readerIns.enabled.setValue(false);
+        }
+
+        this.ins.enabled.setValue(enabled);
+        if (enabled) {
+            this.ins.tourIndex.setValue(-1); // show tour menu
+        }
+        return true;
+    }
+
     get title() {
         const tour = this.activeTour;
         // TODO: Temporary - remove when single string properties are phased out
