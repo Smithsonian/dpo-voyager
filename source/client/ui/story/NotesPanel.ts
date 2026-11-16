@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import moment from "moment";
+import dayjs from "dayjs";
 
 import System from "@ff/graph/System";
 
@@ -44,7 +44,7 @@ export default class NotesPanel extends NodeView
 {
     protected static tableColumns: ITableColumn<INote>[] = [
         { header: "Date", width: 0.3,
-            cell: row => moment(row.date).format("YYYY-MM-DD HH:mm:ss"),
+            cell: row => dayjs(row.date).format("YYYY-MM-DD HH:mm:ss"),
             sortable: true
         },
         { header: "User", width: 0.25, cell: "user", sortable: true },
@@ -94,7 +94,7 @@ export default class NotesPanel extends NodeView
             </div>`;
         }
 
-        const date = moment(note.date).format("YYYY-MM-DD HH:mm:ss");
+        const date = dayjs(note.date).format("YYYY-MM-DD HH:mm:ss");
 
         return html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <div class="sv-note-field">${languageManager.getUILocalizedString("Created on")} ${date}</div>
