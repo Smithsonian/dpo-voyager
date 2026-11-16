@@ -50,7 +50,7 @@ import CVAssetManager from "../../components/CVAssetManager";
 import CVAssetReader from "../../components/CVAssetReader";
 import CVAssetWriter from "../../components/CVAssetWriter";
 
-import CVMediaManager, { IAssetOpenEvent, IAssetRenameEvent } from "../../components/CVMediaManager";
+import CVMediaManager, { IAssetMissingEvent, IAssetOpenEvent, IAssetRenameEvent } from "../../components/CVMediaManager";
 import CVStandaloneFileManager from "../../components/CVStandaloneFileManager";
 import CVArticlesTask from "../../components/CVArticlesTask";
 import { HTTPError } from "../../utils/errors";
@@ -309,6 +309,7 @@ export default class ArticleEditor extends SystemView
         super.connected();
         this.mediaManager.on<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
         this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
+        this.mediaManager.on<IAssetMissingEvent>("asset-missing", this.onMissingAsset, this);
 
         this._container.id = "editor_wrapper"
 
@@ -390,6 +391,7 @@ export default class ArticleEditor extends SystemView
 
     protected disconnected()
     {
+        this.mediaManager.off<IAssetMissingEvent>("asset-missing", this.onMissingAsset, this);
         this.mediaManager.off<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
         this.mediaManager.off<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
 
@@ -409,6 +411,12 @@ export default class ArticleEditor extends SystemView
         else if (event.asset.info.type.startsWith("text/")) {
             this.openArticle(event.asset.info.path);
         }
+    }
+
+    protected onMissingAsset(event: IAssetMissingEvent)
+    {
+        // Read it anyway: the listing may be out of date, and a 404 shows the "Create Article" action
+        this.openArticle(event.path);
     }
 
     protected onRenameAsset(event: IAssetRenameEvent)
