@@ -21,11 +21,8 @@ import "@ff/ui/ButtonGroup";
 
 import CVToolProvider from "../../components/CVToolProvider";
 import CVDocument from "../../components/CVDocument";
-import CVOrbitNavigation from "../../components/CVOrbitNavigation";
-import CVScene from "../../components/CVScene";
 
 import "../Logo";
-import "../Compass";
 import "./MainMenu";
 import "./ToolBar";
 import "./TourNavigator";
@@ -40,6 +37,7 @@ import LanguageMenu from "./LanguageMenu";
 import { EUIElements } from "client/components/CVInterface";
 import CVAssetReader from "client/components/CVAssetReader";
 import SplashScreen from "./SplashScreen";
+import CompassController from "../CompassController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,13 +48,7 @@ export default class ChromeView extends DocumentView
     protected titleElement: HTMLDivElement;
     protected assetPath: string = "";
     protected needsSplash: boolean = true;
-    protected compass: any = null;
-
-    private _compassHasDragged = -1; // negative: no drag; >= 0: mouse button that triggered the drag
-    private _compassDragStartX = 0;
-    private _compassLastX = 0;
-    private static readonly DRAG_THRESHOLD_PX = 4;
-    private static readonly DRAG_SENSITIVITY = 0.5; // degrees of yaw per pixel
+    protected compass: CompassController;
 
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
@@ -73,9 +65,8 @@ export default class ChromeView extends DocumentView
 
         this.classList.add("sv-chrome-view");
 
-        this.compass = document.createElement("sv-compass") as any;
-        this.compass.style.display = "none";
-        this.appendChild(this.compass);
+        this.compass = new CompassController(this.system);
+        this.appendChild(this.compass.element);
     }
 
     protected connected()
@@ -86,8 +77,7 @@ export default class ChromeView extends DocumentView
         this.activeDocument.setup.audio.outs.isPlaying.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.globalPlaying.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.ins.captionsEnabled.on("value", this.onUpdate, this);
-        this.system.getComponent(CVOrbitNavigation).ins.orbit.on("value", this.updateCompassRotation, this);
-        this.compass.addEventListener("mousedown", this.onCompassMouseDown);
+        this.compass.connect();
         this.titleElement = this.createElement("div", null);
         this.titleElement.classList.add("ff-ellipsis");
         this.assetPath = this.assetReader.getSystemAssetUrl("");
@@ -96,10 +86,7 @@ export default class ChromeView extends DocumentView
 
     protected disconnected()
     {
-        this.system.getComponent(CVOrbitNavigation).ins.orbit.off("value", this.updateCompassRotation, this);
-        this.compass.removeEventListener("mousedown", this.onCompassMouseDown);
-        window.removeEventListener("mousemove", this.onCompassMouseMove);
-        window.removeEventListener("mouseup", this.onCompassMouseUp);
+        this.compass.disconnect();
         this.removeEventListener("keydown", this.onKeyDown);
         this.activeDocument.setup.audio.ins.captionsEnabled.off("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.globalPlaying.off("value", this.onUpdate, this);
@@ -207,7 +194,7 @@ export default class ChromeView extends DocumentView
                     ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${languageManager.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
                 </div>
             </div>
-            ${this.compass}
+            ${this.compass.element}
             `;
     }
 
@@ -287,63 +274,12 @@ export default class ChromeView extends DocumentView
         this.requestUpdate();
     }
 
-    protected updateCompassRotation = () => {
-        if (this.compass) {
-            const orbit = this.system.getComponent(CVOrbitNavigation).ins.orbit.value;
-            const [pitch, yaw, roll] = orbit;
-            this.compass.cameraRotation = -yaw;
-        }
-    };
-
-    protected onCompassMouseDown = (event: MouseEvent) => {
-        if (event.button == 0) {
-          event.preventDefault();
-          this._compassHasDragged = -1;
-          this._compassDragStartX = event.clientX;
-          this._compassLastX = event.clientX;
-          document.body.style.cursor = "grabbing";
-          window.addEventListener("mousemove", this.onCompassMouseMove);
-          window.addEventListener("mouseup", this.onCompassMouseUp);
-        }
-    };
-
-    protected onCompassMouseMove = (event: MouseEvent) => {
-        if (this._compassHasDragged < 0) {
-            if (Math.abs(event.clientX - this._compassDragStartX) >= ChromeView.DRAG_THRESHOLD_PX) {
-                this._compassHasDragged = event.button;
-                this._compassLastX = event.clientX;
-            }
-        } else {
-            const dx = event.clientX - this._compassLastX;
-            this._compassLastX = event.clientX;
-            if (dx !== 0) {
-                this.system.getComponent(CVScene)?.models.forEach(model => model.rotateAroundY(dx * ChromeView.DRAG_SENSITIVITY));
-            }
-        }
-    };
-
-    protected onCompassMouseUp = (_event: MouseEvent) => {
-        const hasDragged = this._compassHasDragged >= 0;
-        this._compassHasDragged = -1;
-        window.removeEventListener("mousemove", this.onCompassMouseMove);
-        window.removeEventListener("mouseup", this.onCompassMouseUp);
-        document.body.style.cursor = "";
-        if (!hasDragged) {
-            // snap to North
-            const navIns = this.system.getComponent(CVOrbitNavigation).ins;
-            const [pitch, , roll] = navIns.orbit.value;
-            navIns.orbit.setValue([pitch, 0, roll]);
-        }
-    };
-
     toggleCompass() {
-        if (this.compass) {
-            this.compass.style.display = this.isCompassVisible() ? "none" : "block";
-        }
+        this.compass.toggle();
     }
 
     isCompassVisible(): boolean {
-        return this.compass && this.compass.style.display !== "none";
+        return this.compass?.isVisible() ?? false;
     }
     protected onKeyDown(e: KeyboardEvent)
     {
