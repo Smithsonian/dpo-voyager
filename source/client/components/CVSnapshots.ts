@@ -155,7 +155,6 @@ export default class CVSnapshots extends CTweenMachine
         if (this._deltaTargetCache) {
             this.targets = this._deltaTargetCache;
             this._deltaTargetCache = null;
-            this.outs.end.off("value", this.restoreDeltaTargets, this);
         }
     }
 
