@@ -148,8 +148,7 @@ export default class CVArticlesTask extends CVTask
                     this.reader.ins.refresh.set();
 
                     if(!this.mediaManager.getAssetByPath(activeArticle.uri)) {
-                        new Notification(`Unable to find article: '${activeArticle.uri}'. Check asset name.`, "error", 4000);
-                        this.mediaManager.open(null);
+                        this.openMissingArticle(activeArticle.uri);
                         return false;
                     }
                     else {
@@ -164,8 +163,7 @@ export default class CVArticlesTask extends CVTask
                         this.mediaManager.open(activeAsset);
                     }
                     else {
-                        new Notification(`Unable to find article: '${activeArticle.uri}'. Check asset name.`, "error", 4000);
-                        this.mediaManager.open(null);
+                        this.openMissingArticle(activeArticle.uri);
                         this.reader.ins.refresh.set();
                     }
                 }
@@ -234,6 +232,15 @@ export default class CVArticlesTask extends CVTask
                 }
             });
         });
+    }
+
+    /** Lets the article editor show that the file is missing, or tells the user if there's no editor */
+    protected openMissingArticle(uri: string)
+    {
+        if (!this.mediaManager.openMissing(uri)) {
+            new Notification(`Unable to find article: '${uri}'. Check asset name.`, "error", 4000);
+            this.mediaManager.open(null);
+        }
     }
 
     protected createEditArticle(article: Article)

@@ -17,6 +17,8 @@
 
 import { LoadingManager } from "three";
 
+import { HTTPError } from "../utils/errors";
+
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * Most generic loader, for files that require little to no processing.
@@ -43,7 +45,7 @@ export default class FileReader
             });
 
             if (!result.ok) {
-                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
+                throw new HTTPError(url, result.status, result.statusText);
             }
 
             return await result.json();
@@ -72,7 +74,7 @@ export default class FileReader
             if (!result.ok) {
                 //this._loadingManager.itemError(url);
                 //this._loadingManager.itemEnd(url);
-                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
+                throw new HTTPError(url, result.status, result.statusText);
             }
 
             //this._loadingManager.itemEnd(url);

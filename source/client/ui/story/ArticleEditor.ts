@@ -43,25 +43,56 @@ import contentOverrides from './editor_css/overrides.css?raw';
 import Notification from "@ff/ui/Notification";
 import MessageBox from "@ff/ui/MessageBox";
 
-import SystemView, { customElement } from "@ff/scene/ui/SystemView";
+import { render } from "@ff/ui/CustomElement";
+import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import CVAssetManager from "../../components/CVAssetManager";
 import CVAssetReader from "../../components/CVAssetReader";
 import CVAssetWriter from "../../components/CVAssetWriter";
 
-import CVMediaManager, { IAssetOpenEvent, IAssetRenameEvent } from "../../components/CVMediaManager";
+import CVMediaManager, { IAssetMissingEvent, IAssetOpenEvent, IAssetRenameEvent } from "../../components/CVMediaManager";
 import CVStandaloneFileManager from "../../components/CVStandaloneFileManager";
+import CVArticlesTask from "../../components/CVArticlesTask";
+import { HTTPError } from "../../utils/errors";
+import "../Spinner";
 import CVReader from "../../components/CVReader";
 
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export interface IOverlayAction
+{
+    text: string;
+    icon?: string;
+    onClick: () => void;
+}
+
+/**
+ * What the editor shows. Every state except "ready" covers the editor with an overlay:
+ * - closed: no article open
+ * - loading: a spinner and a message
+ * - error: a message, details and actions (retry, create...)
+ */
+export type EditorStatus =
+    | { state: "closed" }
+    | { state: "loading", message: string }
+    | { state: "error", message: string, details?: string, actions?: IOverlayAction[] }
+    | { state: "ready" };
 
 @customElement("sv-article-editor")
 export default class ArticleEditor extends SystemView
 {
     private _container: HTMLDivElement = null;
     private _overlay: HTMLElement = null;
+    /** Path of the article open in the editor, only set once it has been read */
     private _assetPath: string = "";
+    /** Path of the article being read; a response for any other path is outdated and ignored */
+    private _loadingPath: string = "";
+    private _status: EditorStatus = { state: "closed" };
+
+    get status(): EditorStatus {
+        return this._status;
+    }
 
     protected get mediaManager() {
         return this.system.getMainComponent(CVMediaManager);
@@ -77,6 +108,9 @@ export default class ArticleEditor extends SystemView
     }
     protected get standaloneFileManager() {
         return this.system.getMainComponent(CVStandaloneFileManager, true);
+    }
+    protected get articlesTask() {
+        return this.system.getComponent(CVArticlesTask, true);
     }
     protected get articleReader() {
         return this.system.getComponent(CVReader);
@@ -116,26 +150,50 @@ export default class ArticleEditor extends SystemView
 
     protected readArticle(assetPath: string)
     {
+        this._loadingPath = assetPath;
+        this.setStatus({ state: "loading", message: "Loading article..." });
+
         return this.assetReader.getText(assetPath)
         .then(content => this.parseArticle(content, assetPath))
-        .catch(e=>{
-            return `
-                <h2>Article not found at ${assetPath}</h2>
-                <p>
-                    ${e}
-                </p>
-            `;
-        })
         .then(content => {
-            //this._editor.root.innerHTML = content;
-            tinymce.activeEditor.setContent(content, {format: "raw"});
-            this._assetPath = assetPath;
-        }).then(() => {
-            tinymce.activeEditor.setDirty(false);
-            if(this._overlay.parentElement === this) {
-                this.removeChild(this._overlay);
+            if (this._loadingPath !== assetPath) {
+                return;
             }
+            this._loadingPath = "";
+            tinymce.activeEditor.setContent(content, {format: "raw"});
+            tinymce.activeEditor.setDirty(false);
+            this._assetPath = assetPath;
+            this.setStatus({ state: "ready" });
+        }, error => {
+            if (this._loadingPath !== assetPath) {
+                return;
+            }
+            this._loadingPath = "";
+            console.warn("Failed to read article '%s':", assetPath, error);
+            this.setStatus(this.getReadErrorStatus(assetPath, error));
         });
+    }
+
+    protected getReadErrorStatus(assetPath: string, error: Error): EditorStatus
+    {
+        if (error instanceof HTTPError && error.status === 404) {
+            // Create the file through the articles task, as it does for a language without a file
+            const task = this.articlesTask;
+            const canCreate = task && task.outs.isActive.value && task.activeArticle?.uri === assetPath;
+
+            return {
+                state: "error",
+                message: `Article not found: '${assetPath}'`,
+                actions: canCreate ? [{ text: "Create Article", icon: "create", onClick: () => task.ins.version.set() }] : [],
+            };
+        }
+
+        return {
+            state: "error",
+            message: `Failed to load article '${assetPath}'`,
+            details: error.message,
+            actions: [{ text: "Retry", onClick: () => this.openArticle(assetPath) }],
+        };
     }
 
     protected parseArticle(content: string, articlePath: string): Promise<string>
@@ -186,13 +244,49 @@ export default class ArticleEditor extends SystemView
 
     protected clearArticle()
     {
-        tinymce.activeEditor.setContent("");
-        this._assetPath = "";
-        tinymce.activeEditor.setDirty(false);
+        this._loadingPath = "";
+        if (this._assetPath) {
+            tinymce.activeEditor.setContent("");
+            tinymce.activeEditor.setDirty(false);
+            this._assetPath = "";
+        }
 
-        this.appendChild(this._overlay);
+        this.setStatus({ state: "closed" });
 
         return Promise.resolve();
+    }
+
+    protected setStatus(status: EditorStatus)
+    {
+        this._status = status;
+
+        if (status.state === "ready") {
+            if (this._overlay.parentElement === this) {
+                this.removeChild(this._overlay);
+            }
+            return;
+        }
+
+        if (this._overlay.parentElement !== this) {
+            this.appendChild(this._overlay);
+        }
+        render(this.renderOverlay(status), this._overlay);
+    }
+
+    protected renderOverlay(status: EditorStatus)
+    {
+        switch (status.state) {
+            case "loading":
+                return html`<sv-spinner visible .assetPath=${this.assetReader.getSystemAssetUrl("")}></sv-spinner>
+                    <div class="sv-overlay-message">${status.message}</div>`;
+            case "error":
+                return html`<div class="sv-overlay-message sv-error">${status.message}</div>
+                    ${status.details ? html`<div class="sv-overlay-details">${status.details}</div>` : null}
+                    <div class="sv-overlay-actions">${(status.actions ?? []).map(action => html`<ff-button
+                        text=${action.text} icon=${action.icon ?? ""} @click=${action.onClick}></ff-button>`)}</div>`;
+            default:
+                return html``;
+        }
     }
 
     
@@ -215,6 +309,7 @@ export default class ArticleEditor extends SystemView
         super.connected();
         this.mediaManager.on<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
         this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
+        this.mediaManager.on<IAssetMissingEvent>("asset-missing", this.onMissingAsset, this);
 
         this._container.id = "editor_wrapper"
 
@@ -296,6 +391,7 @@ export default class ArticleEditor extends SystemView
 
     protected disconnected()
     {
+        this.mediaManager.off<IAssetMissingEvent>("asset-missing", this.onMissingAsset, this);
         this.mediaManager.off<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
         this.mediaManager.off<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
 
@@ -307,7 +403,7 @@ export default class ArticleEditor extends SystemView
     {
         // if there is no asset, close any current article
         if(event.asset === null ) {
-            if(this._assetPath) {
+            if(this._status.state !== "closed") {
                 this.closeArticle();
             }
         }
@@ -315,6 +411,12 @@ export default class ArticleEditor extends SystemView
         else if (event.asset.info.type.startsWith("text/")) {
             this.openArticle(event.asset.info.path);
         }
+    }
+
+    protected onMissingAsset(event: IAssetMissingEvent)
+    {
+        // Read it anyway: the listing may be out of date, and a 404 shows the "Create Article" action
+        this.openArticle(event.path);
     }
 
     protected onRenameAsset(event: IAssetRenameEvent)

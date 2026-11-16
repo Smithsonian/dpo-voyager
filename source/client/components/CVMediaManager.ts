@@ -46,6 +46,12 @@ export interface IAssetRenameEvent extends ITypedEvent<"asset-rename">
     newPath: string;
 }
 
+/** Asks to open a file that isn't in the asset listing, see CVMediaManager.openMissing */
+export interface IAssetMissingEvent extends ITypedEvent<"asset-missing">
+{
+    path: string;
+}
+
 export default class CVMediaManager extends CAssetManager
 {
     static readonly typeName: string = "CVMediaManager";
@@ -100,6 +106,16 @@ export default class CVMediaManager extends CAssetManager
                 .catch(error => Notification.show(`Failed to create ${infoText}`));
             }
         });
+    }
+
+    /**
+     * Asks to open a file that isn't in the asset listing, e.g. an article whose file is missing,
+     * so the view that would show it can say so and offer to create it.
+     * @returns false if no view handled the request.
+     */
+    openMissing(path: string): boolean
+    {
+        return this.emit<IAssetMissingEvent>({ type: "asset-missing", path });
     }
 
     getAssetURL(uri: string)
