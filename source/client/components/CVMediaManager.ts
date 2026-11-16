@@ -24,14 +24,14 @@ import { ITypedEvent } from "@ff/graph/Component";
 import ExplorerApplication from "client/applications/ExplorerApplication";
 import MainView from "client/ui/explorer/MainView";
 import CVDocumentProvider from "./CVDocumentProvider";
-import ImportMenu from "client/ui/story/ImportMenu";
+import { showImportMenu } from "client/ui/story/ImportMenu";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import { EAssetType, EDerivativeQuality, EDerivativeUsage, EMapType } from "client/schema/model";
 import CSelection from "@ff/graph/components/CSelection";
 import CVMeta from "./CVMeta";
 import Article from "client/models/Article";
 import CVEnvironment from "./CVEnvironment";
-import ImageImportMenu from "client/ui/story/ImageImportMenu";
+import { showImageImportMenu } from "client/ui/story/ImageImportMenu";
 import CVAssetReader from "./CVAssetReader";
 import NVNode from "client/nodes/NVNode";
 import CVImagePlane from "./CVImagePlane";
@@ -188,7 +188,13 @@ export default class CVMediaManager extends CAssetManager
         const filename = filepath.substr(filepath.lastIndexOf("/") + 1);
         const selection = this.getMainComponent(CSelection);
 
-        ImportMenu.show(mainView, activeDoc.setup.language, filename).then(([quality, parentName]) => {
+        showImportMenu(mainView, activeDoc.setup.language, filename).then(result => {
+            if (!result) {
+                // cancelled: discard the uploaded file
+                this.delete(this.getAssetByPath(filepath));
+                return;
+            }
+            const [quality, parentName] = result;
             this.assetManager.ins.initialLoad.setValue(true);
             const model = this.getSystemComponents(CVModel2).find(element => element.node.name === parentName);
             if(model === undefined) {
@@ -222,7 +228,12 @@ export default class CVMediaManager extends CAssetManager
         const asset = this.getAssetByPath(filepath);
         const rootPath = filename;
 
-        ImageImportMenu.show(mainView, activeDoc.setup.language, filename).then((returnVals) => {
+        showImageImportMenu(mainView, activeDoc.setup.language, filename).then((returnVals) => {
+            if (!returnVals) {
+                // cancelled: discard the uploaded file
+                this.delete(asset);
+                return;
+            }
             const type = returnVals[0];
             switch(type) {
                 case "environment":

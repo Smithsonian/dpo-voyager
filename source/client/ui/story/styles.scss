@@ -39,7 +39,7 @@
   }
 }
 
-.ff-popup {
+.ff-popup, .sv-modal {
   @include common.font-ui-normal;
   font-size: 16px;
   color: common.$color-text;
