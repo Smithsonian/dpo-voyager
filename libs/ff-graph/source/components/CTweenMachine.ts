@@ -118,14 +118,10 @@ export default class CTweenMachine extends Component
 
     clear()
     {
+        this.cancelTween();
         this.targets.forEach(target => target.property.off("dispose", this.onPropertyDispose, this));
         this.targets.length = 0;
         this.states = {};
-
-        this._currentValues = null;
-        this._targetState = null;
-        this._startTime = 0;
-        this._easingFunction = null;
     }
 
     dispose()
@@ -137,19 +133,36 @@ export default class CTweenMachine extends Component
     tweenTo(stateId: string, secondsElapsed: number)
     {
         const state = this.states[stateId];
-        const outs = this.outs;
 
         if (state) {
-            this._targetState = state;
-            this._currentValues = this.getCurrentValues();
-            this._startTime = secondsElapsed;
-            this._easingFunction = getEasingFunction(state.curve);
-            outs.switched.setValue(false);
-            outs.tweening.setValue(true);
-            outs.start.set();
-            return true;
+            return this.startTween(state, secondsElapsed);
         }
 
+    }
+
+    /** Starts a transition with an optional transient state or captured starting values. */
+    protected startTween(state: ITweenState, secondsElapsed: number, currentValues = this.getCurrentValues())
+    {
+        this._targetState = state;
+        this._currentValues = currentValues;
+        this._startTime = secondsElapsed;
+        this._easingFunction = getEasingFunction(state.curve);
+        this.outs.switched.setValue(false);
+        this.outs.tweening.setValue(true);
+        this.outs.start.set();
+        return true;
+    }
+
+    /** Stops without applying the destination or firing completion actions. */
+    cancelTween()
+    {
+        this.ins.tween.changed = false;
+        this.ins.recall.changed = false;
+        this._currentValues = null;
+        this._targetState = null;
+        this._startTime = 0;
+        this._easingFunction = null;
+        this.outs.tweening.setValue(false);
     }
 
     endTween()
@@ -180,6 +193,7 @@ export default class CTweenMachine extends Component
                 return true;
             }
             if (ins.recall.changed) {
+                this.cancelTween();
                 this.setValues(state.values);
                 return true;
             }
