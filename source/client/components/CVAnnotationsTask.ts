@@ -159,20 +159,9 @@ export default class CVAnnotationsTask extends CVTask
     saveAnnotationView()
     {
         const machine = this._machine;
-        const props = machine.getTargetProperties();
-        const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
-        const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
-
-        // set non camera properties to null to skip them
-        const values = machine.getCurrentValues();
-        values.forEach((v, idx) => {
-            if(idx != orbitIdx && idx != offsetIdx) {
-                values[idx] = null;
-            }
-        });
 
         const id = machine.setState({
-            values: values,
+            values: machine.keepCameraValues(machine.getCurrentValues()),
             curve: EEasingCurve.EaseOutQuad,
             duration: 1.0,
             threshold: 0.5,
@@ -188,16 +177,8 @@ export default class CVAnnotationsTask extends CVTask
     {
         const machine = this._machine;
         const annotation = this._activeAnnotations.activeAnnotation;
-        
-        // If activeAnnotation is being tracked, make sure it is set
-        const activeIdx = machine.getTargetProperties().findIndex(prop => prop.name == "ActiveId");
-        if(activeIdx >= 0) {
-            const viewState = machine.getState(this.selectedState);
-            viewState.values[activeIdx] = annotation.data.id;
-        }
-        
         const pulse = this.getMainComponent(CPulse);
-        machine.tweenTo(this.selectedState, pulse.context.secondsElapsed);
+        machine.tweenToAnnotationView(this.selectedState, pulse.context.secondsElapsed, annotation.data.id);
     }
 
     deleteAnnotationView()
