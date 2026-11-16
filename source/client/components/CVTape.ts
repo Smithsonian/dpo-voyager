@@ -160,10 +160,6 @@ export default class CVTape extends CObject3D
         const lineGeometry = this.line.geometry as BufferGeometry;
         const { startMarker, endMarker, line, ins } = this;
 
-        if (ins.enabled.changed) {
-            ins.visible.setValue(ins.enabled.value);
-        }
-
         super.update(context);
 
         // handle marker style change
@@ -188,19 +184,18 @@ export default class CVTape extends CObject3D
         }
 
         // if tape is enabled, listen for pointer events to set tape start/end
-        if (ins.enabled.changed) {
-            if (ins.enabled.value) {
+        if (ins.enabled.changed || ins.visible.changed) {
+            if (ins.enabled.value && ins.visible.value) {
                 this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
                 this.annotationView.ins.visible.setValue(this.outs.distance.value > 0);
             }
             else {
                 this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
-                this.annotationView.ins.visible.setValue(false);
+                this.annotationView.ins.visible.setValue(this.outs.distance.value > 0 && this.ins.visible.value);
             }
         }
 
         if(ins.visible.changed) {
-            ins.enabled.setValue(ins.visible.value, true);
             if(ins.visible.value) {
                 const startPos = ins.startPosition.value;
                 const endPos = ins.endPosition.value;
