@@ -19,7 +19,7 @@ import { customElement, html, property } from "@ff/ui/CustomElement";
 import sanitizeHtml from 'sanitize-html';
 
 import List from "@ff/ui/List";
-import MessageBox from "@ff/ui/MessageBox";
+import { showMessageBox } from "../MessageBox";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 
@@ -114,7 +114,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 
     protected onClickDelete()
     {
-        MessageBox.show("Delete Article", "Are you sure?", "warning", "ok-cancel").then(result => {
+        showMessageBox("Delete Article", "Are you sure?", "warning", "ok-cancel").then(result => {
             if (result.ok) {
                 this.task.ins.delete.set();
             }

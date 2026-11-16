@@ -15,154 +15,116 @@
  * limitations under the License.
  */
 
-import Popup, { customElement, html } from "@ff/ui/Popup";
+import { html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
-import "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import { EDerivativeQuality, TDerivativeQuality } from "client/schema/model";
 import CVModel2 from "client/components/CVModel2";
-import Notification from "@ff/ui/Notification";
 import CVImagePlane from "client/components/CVImagePlane";
+import { openModal } from "../Modal";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-import-menu")
-export default class ImportMenu extends Popup
+interface IModelOption
 {
-    protected url: string;
-    protected language: CVLanguageManager = null;
-    protected filename: string = "";
-    protected errorString: string = "";
-    protected modelOptions: {name: string, id: string}[] = [];
-    protected qualitySelection: EDerivativeQuality = null;
-    protected parentSelection: {name: string, id: string} = null;
+    name: string;
+    id: string;
+}
 
-    static show(parent: HTMLElement, language: CVLanguageManager, filename: string): Promise<[EDerivativeQuality, string]>
-    {
-        const menu = new ImportMenu(language, filename);
-        parent.appendChild(menu);
+/**
+ * Asks for the derivative quality of an imported model file, and the model it is
+ * for: an existing one, or a new one to create with the given name.
+ * Resolves with them, or `undefined` if cancelled.
+ */
+export function showImportMenu(parent: HTMLElement, language: CVLanguageManager, filename: string): Promise<[EDerivativeQuality, string] | undefined>
+{
+    const modelOptions: IModelOption[] = language.getGraphComponents(CVModel2)
+        .filter(model => !model.is(CVImagePlane))
+        .map(model => ({ name: model.node.name, id: model.id }));
 
-        return new Promise((resolve, reject) => {
-            menu.on("confirm", () => resolve([menu.qualitySelection, menu.parentSelection.name]));
-            menu.on("close", () => reject());
-        });
-    }
+    let newModelName = "Model" + modelOptions.length.toString();
+    let qualitySelection: EDerivativeQuality = null;
+    let parentSelection: IModelOption = modelOptions.length > 0 ? modelOptions[0] : { name: newModelName, id: "-1" };
+    let errorString = "";
 
-    constructor( language: CVLanguageManager, filename: string )
-    {
-        super();
+    return openModal<[EDerivativeQuality, string]>(parent, ({ close, update }) => {
 
-        this.language = language;
-        this.filename = filename;
-        this.modelOptions = this.modelOptions.concat(language.getGraphComponents(CVModel2).filter(model => !model.is(CVImagePlane)).map(model => ({name: model.node.name, id: model.id})));
-        this.position = "center";
-        this.modal = true;
-        this.parentSelection = this.modelOptions.length > 0 ? this.modelOptions[0] : {name: "Model"+this.modelOptions.length.toString(), id: "-1"};
+        const confirm = () => {
+            if (qualitySelection === null) {
+                errorString = language.getUILocalizedString("Please select derivative quality.");
+                update();
+            }
+            else {
+                close([qualitySelection, parentSelection.name]);
+            }
+        };
 
-        this.url = window.location.href;
-    }
+        const onClickQuality = (e: MouseEvent, index: number) => {
+            e.stopPropagation();
+            qualitySelection = EDerivativeQuality[EDerivativeQuality[index]];
+            update();
+        };
 
-    close()
-    {
-        this.dispatchEvent(new CustomEvent("close"));
-        this.remove();
-    }
+        // index -1: new model
+        const onClickParent = (e: MouseEvent, index: number) => {
+            e.stopPropagation();
+            parentSelection = modelOptions[index] || { name: newModelName, id: "-1" };
+            update();
+        };
 
-    confirm()
-    {
-        if(this.qualitySelection === null) {
-            this.errorString = this.language.getUILocalizedString("Please select derivative quality.");
-            this.requestUpdate();
-        }
-        else {
-            this.dispatchEvent(new CustomEvent("confirm"));
-            this.remove();
-        }
-    }
+        const onNameInput = (e: Event) => {
+            newModelName = (e.target as HTMLInputElement).value;
+            if (parentSelection.id === "-1") {
+                parentSelection.name = newModelName;
+            }
+        };
 
-    protected firstConnected()
-    {
-        super.firstConnected();
-        this.classList.add("sv-option-menu", "sv-import-menu");
-    }
+        const renderQualityEntry = (quality: EDerivativeQuality, index: number) =>
+            html`<div class="sv-entry" @click=${e => onClickQuality(e, index)} ?selected=${ quality === qualitySelection }>
+                ${EDerivativeQuality[quality] as TDerivativeQuality}
+            </div>`;
 
-    protected renderQualityEntry(quality: EDerivativeQuality, index: number)
-    {
-        return html`<div class="sv-entry" @click=${e => this.onClickQuality(e, index)} ?selected=${ quality === this.qualitySelection }>
-            ${EDerivativeQuality[quality] as TDerivativeQuality}
-        </div>`;
-    }
-
-    protected renderParentEntry(option: string, index: number)
-    {
-        return html`<div class="sv-entry" @click=${e => this.onClickParent(e, index)} ?selected=${ option === this.parentSelection.name }>
-            ${option}
-        </div>`;
-    }
-
-    protected render()
-    {
-        const language = this.language;
+        const renderParentEntry = (option: string, index: number) =>
+            html`<div class="sv-entry" @click=${e => onClickParent(e, index)} ?selected=${ option === parentSelection.name }>
+                ${option}
+            </div>`;
 
         return html`
-        <div>
             <div class="ff-flex-column ff-fullsize">
                 <div class="ff-flex-row">
-                    <div class="ff-flex-spacer ff-title">${language.getUILocalizedString("File:")} <i>${this.filename}</i></div>
-                    <ff-button icon="close" transparent class="ff-close-button" title=${language.getUILocalizedString("Close")} @click=${this.close}></ff-button>
+                    <div class="ff-flex-spacer ff-title">${language.getUILocalizedString("File:")} <i>${filename}</i></div>
+                    <ff-button icon="close" transparent class="ff-close-button" title=${language.getUILocalizedString("Close")} @click=${() => close()}></ff-button>
                 </div>
                 <div class="ff-flex-row">
                     <div class="ff-flex-spacer ff-header">${language.getUILocalizedString("Select Derivative Quality:")}</div>
                 </div>
                 <div class="ff-splitter-section" style="flex-basis: 70%">
                     <div class="ff-scroll-y">
-                        ${Object.keys(EDerivativeQuality).filter(key => typeof EDerivativeQuality[key] === 'number').map((key, index) => this.renderQualityEntry(EDerivativeQuality[key], index))}
+                        ${Object.keys(EDerivativeQuality).filter(key => typeof EDerivativeQuality[key] === 'number').map((key, index) => renderQualityEntry(EDerivativeQuality[key], index))}
                     </div>
                 </div>
                 <div class="ff-flex-row">
                     <div class="ff-flex-spacer ff-header">${language.getUILocalizedString("Select Model:")}</div>
                 </div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
-                    ${this.modelOptions.length > 0 ? html`<div class="ff-scroll-y">
-                        ${this.modelOptions.map((option, index) => this.renderParentEntry(option.name, index))}
+                    ${modelOptions.length > 0 ? html`<div class="ff-scroll-y">
+                        ${modelOptions.map((option, index) => renderParentEntry(option.name, index))}
                     </div>` : html`<div class="ff-flex-row sv-centered sv-notification" style="height:100%; align-items:center">${language.getUILocalizedString("No Models In Scene")}</div>`}
                 </div>
-                <div class="sv-entry" @click=${e => this.onClickParent(e, -1)} ?selected=${ "-1" === this.parentSelection.id }>
+                <div class="sv-entry" @click=${e => onClickParent(e, -1)} ?selected=${ "-1" === parentSelection.id }>
                     <div class="ff-flex-row">
                         <label class="ff-label ff-off">${language.getUILocalizedString("Add New Model")}:</label>
                         <div class="ff-flex-spacer"></div>
-                        <input id="modelName" tabindex="0" class="ff-property-field ff-input" @change=${this.onNameChange} value=${"Model"+this.modelOptions.length.toString()} touch-action="none" style="touch-action: none;" title="Parent.Name [string]"><div class="ff-fullsize ff-off ff-content"></div></input>
+                        <input id="modelName" tabindex="0" class="ff-property-field ff-input" @input=${onNameInput} .value=${newModelName} touch-action="none" style="touch-action: none;" title="Parent.Name [string]">
                     </div>
                 </div>
                 <div class="ff-flex-row sv-centered">
-                    <ff-button icon="upload" class="ff-button ff-control" text=${language.getUILocalizedString("Import Model")} title=${language.getUILocalizedString("Import Model")} @click=${this.confirm}></ff-button>
+                    <ff-button icon="upload" class="ff-button ff-control" text=${language.getUILocalizedString("Import Model")} title=${language.getUILocalizedString("Import Model")} @click=${confirm}></ff-button>
                 </div>
                 <div class="ff-flex-row sv-centered sv-import-error-msg">
-                    <div>${this.errorString}</div>
+                    <div>${errorString}</div>
                 </div>
-            </div>
-        </div>
-        `;
-    }
-
-    protected onClickQuality(e: MouseEvent, index: number)
-    {
-        e.stopPropagation();
-
-        this.qualitySelection = EDerivativeQuality[EDerivativeQuality[index]];
-        this.requestUpdate();
-    }
-
-    protected onClickParent(e: MouseEvent, index: number)
-    {
-        e.stopPropagation();
-
-        this.parentSelection = this.modelOptions[index] || {name: (this.querySelector("#modelName") as HTMLInputElement).value, id: "-1"};
-        this.requestUpdate();
-    }
-
-    protected onNameChange() {
-        this.parentSelection.name = (this.querySelector("#modelName") as HTMLInputElement).value;
-    }
+            </div>`;
+    }, { label: language.getUILocalizedString("Import Model"), panelClass: "sv-option-menu sv-import-menu" });
 }

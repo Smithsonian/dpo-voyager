@@ -15,116 +15,53 @@
  * limitations under the License.
  */
 
-import Popup, { customElement, html } from "@ff/ui/Popup";
-
+import { html } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
-import "@ff/ui/TextEdit";
-import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+
+import Modal from "../Modal";
 import AnnotationSprite from "client/annotations/AnnotationSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-annotation-overlay")
-export default class AnnotationOverlay extends Popup
+// The popup lives in the scene view's overlay, whose handlers would otherwise act on
+// events in it: navigation and picking (pointer, wheel), keyboard navigation, and
+// leaving annotations on Escape.
+const sceneViewEvents = [ "pointerdown", "pointermove", "pointerup", "pointercancel", "wheel", "keydown" ];
+
+const stopPropagation = (event: Event) => event.stopPropagation();
+
+/**
+ * Shows the full content of an annotation in a popup, over the scene view only:
+ * the chrome view (titles, menus) stays above it.
+ * `content` is the annotation's content element: it is moved into the popup, the
+ * caller has to put it back once the returned promise resolves.
+ * The popup closes when the annotation's article link is followed.
+ */
+export function showAnnotationOverlay(parent: HTMLElement, content: HTMLElement, sprite: AnnotationSprite): Promise<void>
 {
-    protected content: HTMLElement = null;
-    protected sprite: AnnotationSprite = null;
-    protected resizeObserver: ResizeObserver = null;
+    const modal = new Modal();
+    modal.label = "Annotation pop-up";
+    modal.panelClass = "sv-annotation-overlay sv-annotation";
 
-    static show(parent: HTMLElement, content: HTMLElement, sprite: AnnotationSprite): Promise<void>
-    {
-        const popup = new AnnotationOverlay(parent, content, sprite);
-        parent.appendChild(popup);
+    const close = () => modal.close();
 
-        return new Promise((resolve, reject) => {
-            popup.on("close", () => resolve());
-        });
-    }
-
-    constructor( parent: HTMLElement, content: HTMLElement, sprite: AnnotationSprite )
-    {
-        super();
-
-        this.close = this.close.bind(this);
-        this.onKeyDownMain = this.onKeyDownMain.bind(this);
-
-        this.content = content;
-        this.title = "";
-        this.sprite = sprite;
-        this.position = "center";
-        this.portal = parent;
-        this.modal = true;
-    }
-
-    close()
-    {
-        this.dispatchEvent(new CustomEvent("close"));
-        this.remove();
-    }
-
-    protected firstConnected()
-    {
-        super.firstConnected();
-        this.classList.add("sv-annotation-overlay", "sv-annotation");
-    }
-
-    protected connected()
-    {
-        super.connected();
-
-        this.sprite.addEventListener("link", this.close);
-        
-        if(!this.resizeObserver) { 
-            this.resizeObserver = new ResizeObserver(() => this.onResize());
-        }
-        this.resizeObserver.observe(this);
-    }
-
-    protected disconnected()
-    {
-        this.resizeObserver.disconnect();
-
-        this.sprite.removeEventListener("link", this.close);
-
-        super.disconnected();
-    }
-
-    protected render()
-    {
-        return html`
-        <div class="sv-help-region" id="anno_container" role="region" @wheel=${(e) => this.discardEvents(e)} @pointerdown=${(e) => this.discardEvents(e)} aria-label="Annotation pop-up" aria-live="polite" aria-atomic="true" @keydown=${e =>this.onKeyDownMain(e)}>
+    // the title is rendered after a delay, so that screen readers announce it
+    const render = (title: string) => html`<div class="sv-help-region" aria-live="polite" aria-atomic="true">
             <div class="ff-flex-row">
-                <div id="ovr_title" class="ff-flex-spacer ff-title"><b>${this.title}</b></div>
-                <ff-button icon="close" transparent class="ff-close-button" title="Close" @click=${this.close}></ff-button>
+                <div class="ff-flex-spacer ff-title"><b>${title}</b></div>
+                <ff-button icon="close" transparent class="ff-close-button" title="Close" autofocus @click=${close}></ff-button>
             </div>
-        </div>
-        `;
-    }
+            ${content}
+        </div>`;
 
-    protected firstUpdated(changedProperties) {
-        super.firstUpdated(changedProperties);
+    modal.content = render("");
+    const timer = window.setTimeout(() => { modal.content = render(sprite.annotation.title); }, 100);
 
-        (this.getElementsByClassName("ff-close-button")[0] as HTMLElement).focus();
+    sceneViewEvents.forEach(type => modal.addEventListener(type, stopPropagation));
+    sprite.addEventListener("link", close);
 
-        const annoContainer = this.querySelector("#anno_container");
-        annoContainer.append(this.content);
-
-        // Trigger screen reader update
-        setTimeout(() => {this.title = this.sprite.annotation.title; this.requestUpdate();}, 100);   
-    }
-
-    protected onKeyDownMain(e: KeyboardEvent)
-    {
-        if (e.code === "Escape") {
-            this.close();
-        }
-        else if(e.code === "Tab") {
-            e.stopPropagation();
-            focusTrap(getFocusableElements(this) as HTMLElement[], e);
-        }
-    }
-
-    protected discardEvents(event: PointerEvent | WheelEvent) {
-        event.stopPropagation();
-    }
+    return modal.openIn(parent).then(() => {
+        window.clearTimeout(timer);
+        sprite.removeEventListener("link", close);
+    });
 }

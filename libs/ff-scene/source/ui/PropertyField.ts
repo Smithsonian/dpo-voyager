@@ -362,17 +362,10 @@ export default class PropertyField extends CustomElement
     protected showPopupOptions(event: MouseEvent)
     {
         const property = this.property;
-        const popup = new PopupOptions();
-        popup.options = property.schema.options;
+        const popup = new PopupOptions(property.schema.options);
         popup.selectionIndex = property.getValidatedValue();
-        popup.position = "anchor";
-        popup.anchor = this;
-        popup.align = "fixed";
-        popup.justify = "end";
-        popup.positionX = event.clientX - 10;
-        popup.keepVisible = true;
         popup.addEventListener(PopupOptions.selectEvent, this.onSelectOption);
-        document.body.appendChild(popup);
+        popup.show(document.body, this, { x: event.clientX - 10 });
     }
 
     protected onSelectOption(event: IPopupMenuSelectEvent)

@@ -39,10 +39,53 @@
   }
 }
 
-.ff-popup {
+.sv-modal {
   @include common.font-ui-normal;
   font-size: 16px;
   color: common.$color-text;
+}
+
+.sv-message-box {
+  box-sizing: content-box;
+  min-width: 350px;
+  max-width: 450px;
+  width: 90%;
+  padding: 16px;
+
+  .ff-title {
+    align-items: flex-start;
+
+    .ff-type-icon {
+      margin: 0 16px 0 0;
+      height: 2.5em;
+      &[name="prompt"] { fill: common.$color-prompt; }
+      &[name="info"] { fill: common.$color-info; }
+      &[name="warning"] { fill: common.$color-warning; }
+      &[name="error"] { fill: common.$color-error; }
+    }
+    .ff-content {
+      flex: 1 1 auto;
+      margin: 0 0 2em 0;
+    }
+    .ff-caption {
+      font-size: 1.5em;
+    }
+    .ff-text {
+      margin: 2em 0 1em 0;
+    }
+    .ff-line-edit {
+      margin: 0 0 1em 0;
+      input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 4px;
+      }
+    }
+  }
+
+  .ff-button + .ff-button {
+    margin-left: 8px;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

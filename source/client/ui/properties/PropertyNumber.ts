@@ -18,7 +18,6 @@
 import Property from "@ff/graph/Property";
 import { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
-import PropertyField from "@ff/scene/ui/PropertyField";
 import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,6 +25,10 @@ import PropertyBase from "./PropertyBase";
 @customElement("sv-property-number")
 export default class PropertyNumber extends PropertyBase
 {
+    // same defaults as ff-property-field
+    static readonly defaultPrecision = 2;
+    static readonly defaultSpeed = 0.1;
+
     type = "number";
 
     /**
@@ -136,7 +139,7 @@ export default class PropertyNumber extends PropertyBase
         }
         else{
             const precision = schema.precision !== undefined
-            ? schema.precision : PropertyField.defaultPrecision;
+            ? schema.precision : PropertyNumber.defaultPrecision;
 
             if (schema.percent) {
                 text = (value * 100).toFixed(precision - 2);
@@ -209,7 +212,7 @@ export default class PropertyNumber extends PropertyBase
 
         const property = this.property;
         const schema = property.schema;
-        let speed = PropertyField.defaultSpeed;
+        let speed = PropertyNumber.defaultSpeed;
         if (schema.speed) {
             speed = schema.speed;
         } else if (schema.min !== undefined && schema.max !== undefined) {
@@ -227,7 +230,7 @@ export default class PropertyNumber extends PropertyBase
         value = schema.max !== undefined ? Math.min(value, schema.max) : value;
 
         const precision = schema.precision !== undefined
-                            ? schema.precision : PropertyField.defaultPrecision;
+                            ? schema.precision : PropertyNumber.defaultPrecision;
         value = +value.toFixed(precision);
 
 

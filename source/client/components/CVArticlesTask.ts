@@ -19,7 +19,7 @@ import filenamify from "filenamify";
 
 import { Node, types } from "@ff/graph/Component";
 
-import MessageBox from "@ff/ui/MessageBox";
+import { showMessageBox } from "../ui/MessageBox";
 import Notification from "@ff/ui/Notification";
 
 import Article from "../models/Article";
@@ -249,7 +249,7 @@ export default class CVArticlesTask extends CVTask
                 this.reader.ins.articleId.setValue(article.id);
             }
         })
-        .catch(error => MessageBox.show("Error", `Failed to create article at '${uri}'`, "error"));
+        .catch(error => showMessageBox("Error", `Failed to create article at '${uri}'`, "error"));
     }
 
     protected getSafeArticlePath(title: string)

@@ -15,143 +15,73 @@
  * limitations under the License.
  */
 
-import Popup, { customElement, html } from "@ff/ui/Popup";
+import { html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
-import "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import { ILanguageOption } from "client/schema/setup";
-import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+import { openModal } from "../Modal";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-language-menu")
-export default class LanguageMenu extends Popup
+/** Lets the user pick the scene's active language among the available ones. */
+export function showLanguageMenu(parent: HTMLElement, language: CVLanguageManager): Promise<void>
 {
-    protected url: string;
-    protected language: CVLanguageManager = null;
+    const windowName = language.getLocalizedString("Set Language");
 
-    static show(parent: HTMLElement, language: CVLanguageManager): Promise<void>
-    {
-        const menu = new LanguageMenu(parent, language);
-        parent.appendChild(menu);
+    return openModal(parent, ({ close }) => {
 
-        return new Promise((resolve, reject) => {
-            menu.on("close", () => resolve());
-        });
-    }
+        const select = (index: number) => {
+            language.ins.activeLanguage.setValue(language.sceneLanguages[index].id);
+            close();
+        };
 
-    constructor( parent: HTMLElement, language: CVLanguageManager )
-    {
-        super();
+        const onKeyDownEntry = (event: KeyboardEvent, index: number) => {
+            const entry = event.currentTarget as HTMLElement;
 
-        this.language = language;
-        this.position = "center";
-        this.modal = true;
-        this.portal = parent;
+            if (event.code === "Space" || event.code === "Enter") {
+                event.preventDefault();
+                event.stopPropagation();
+                select(index);
+            }
+            else if (event.code === "ArrowUp" || event.code === "ArrowDown") {
+                const next = (event.code === "ArrowUp" ? entry.previousElementSibling : entry.nextElementSibling) as HTMLElement;
+                if (next) {
+                    entry.setAttribute("tabIndex", "-1");
+                    next.setAttribute("tabIndex", "0");
+                    next.focus();
+                }
+            }
+            else if (event.code === "Tab") {
+                // leaving the list: make the selected entry the list's tab stop again
+                entry.addEventListener("blur", () => {
+                    const selected = entry.parentElement.querySelector("[selected]");
+                    if (selected && selected !== entry) {
+                        entry.setAttribute("tabIndex", "-1");
+                        selected.setAttribute("tabIndex", "0");
+                    }
+                }, { once: true });
+            }
+        };
 
-        this.url = window.location.href;
-    }
-
-    close()
-    {
-        this.dispatchEvent(new CustomEvent("close"));
-        this.remove();
-    }
-
-    protected firstConnected()
-    {
-        super.firstConnected();
-        this.classList.add("sv-language-menu", "sv-option-menu");
-    }
-
-    protected renderEntry(language: ILanguageOption, index: number)
-    {
-        const isSelected = language.name === this.language.nameString();
-        return html`<div class="sv-entry" role="option" tabindex=${isSelected ? "0" : "-1"} @click=${e => this.onClickLanguage(e, index)} @keydown=${e =>this.onKeyDownEntry(e, index)} ?selected=${isSelected}>
-            ${language.name}
-        </div>`;
-    }
-
-    protected render()
-    {
-        const language = this.language;
+        const renderEntry = (option: ILanguageOption, index: number) => {
+            const isSelected = option.name === language.nameString();
+            return html`<div class="sv-entry" role="option" tabindex=${isSelected ? "0" : "-1"} ?autofocus=${isSelected} ?selected=${isSelected}
+                @click=${(event: MouseEvent) => { event.stopPropagation(); select(index); }}
+                @keydown=${(event: KeyboardEvent) => onKeyDownEntry(event, index)}>
+                ${option.name}
+            </div>`;
+        };
 
         return html`
-        <div role="region" aria-label="Language Menu" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
-                <div class="ff-flex-spacer ff-title">${language.getLocalizedString("Set Language")}</div>
-                <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
+                <div class="ff-flex-spacer ff-title">${windowName}</div>
+                <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${() => close()}></ff-button>
             </div>
             <div class="ff-flex-row">
                 <div class="ff-scroll-y sv-scroll-offset" role="listbox">
-                    ${language.sceneLanguages.map((language, index) => this.renderEntry(language, index))}
+                    ${language.sceneLanguages.map(renderEntry)}
                 </div>
-            </div>
-        </div>
-        `;
-    }
-
-    protected firstUpdated(changedProperties) {
-        super.firstUpdated(changedProperties);
-
-        (Array.from(this.getElementsByClassName("sv-entry")).find(elem => elem.getAttribute("tabIndex") === "0") as HTMLElement).focus();
-    }
-
-    protected onClickLanguage(e: MouseEvent, index: number)
-    {
-        const language = this.language;
-
-        e.stopPropagation();
-
-        language.ins.activeLanguage.setValue(language.sceneLanguages[index].id);  
-        this.close();  
-    }
-
-    protected onKeyDownEntry(e: KeyboardEvent, index: number)
-    {
-        const language = this.language;
-        if (e.code === "Space" || e.code === "Enter") {
-            e.preventDefault();
-            e.stopPropagation();
-            language.ins.activeLanguage.setValue(language.sceneLanguages[index].id);
-            this.close();
-        }
-        else if(e.code === "ArrowUp" || e.code === "ArrowDown") {
-            const currentActive = e.target instanceof Element ? e.target as Element : null;
-            if(currentActive) {
-                const newActive = e.code === "ArrowUp" ? currentActive.previousElementSibling : currentActive.nextElementSibling;
-                if(newActive) {
-                    currentActive.setAttribute("tabIndex", "-1");
-                    newActive.setAttribute("tabIndex", "0");
-                    (newActive as HTMLElement).focus();
-                }
-            }
-        }
-        else if(e.code === "Tab") {
-            this.addEventListener('blur', this.tabReset, { once: true, capture: true });
-        }
-    }
-
-    protected onKeyDownMain(e: KeyboardEvent)
-    {
-        if (e.code === "Escape") {
-            this.close();
-        }
-        else if(e.code === "Tab") {
-            focusTrap(getFocusableElements(this) as HTMLElement[], e);
-        }
-    }
-
-    // resets tabIndex if needed
-    protected tabReset(e: FocusEvent) {
-        const currentActive = e.target instanceof Element ? e.target as Element : null;
-        if(currentActive) {
-            const currentSelected = Array.from(currentActive.parentElement.children).find(elem => elem.hasAttribute("selected"));
-            if(currentSelected !== currentActive) {
-                currentActive.setAttribute("tabIndex", "-1");
-                currentSelected.setAttribute("tabIndex", "0");
-            }
-        }
-    }
+            </div>`;
+    }, { label: windowName, panelClass: "sv-language-menu sv-option-menu" });
 }

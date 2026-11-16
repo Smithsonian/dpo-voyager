@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import MessageBox from "@ff/ui/MessageBox";
+import { showMessageBox } from "../MessageBox";
 import Notification from "@ff/ui/Notification";
 
 import "@ff/scene/ui/AssetTree";
@@ -64,7 +64,7 @@ export default class AssetPanel extends DocumentView
         const parentAsset = this.mediaManager.selectedAssets[0] || this.mediaManager.root;
 
         if (parentAsset && parentAsset.info.folder) {
-            MessageBox.show("Create Folder", "Folder name:", "prompt", "ok-cancel", "New Folder").then(result => {
+            showMessageBox("Create Folder", "Folder name:", "prompt", "ok-cancel", "New Folder").then(result => {
                 if (result.ok && result.text) {
                     const infoText = `folder '${result.text}' in '${parentAsset.info.path}'`;
                     this.mediaManager.createFolder(parentAsset, result.text)
@@ -80,7 +80,7 @@ export default class AssetPanel extends DocumentView
         const assets = this.mediaManager.selectedAssets;
         if (assets.length === 1) {
             const asset = assets[0];
-            MessageBox.show("Rename Asset", "New name:", "prompt", "ok-cancel", asset.info.name).then(result => {
+            showMessageBox("Rename Asset", "New name:", "prompt", "ok-cancel", asset.info.name).then(result => {
                 if (result.ok && result.text) {
                     const infoText = `asset '${asset.info.path}' to '${result.text}.'`;
                     this.mediaManager.rename(asset, result.text)
@@ -93,7 +93,7 @@ export default class AssetPanel extends DocumentView
 
     protected onClickDelete()
     {
-        MessageBox.show("Delete Assets", "Are you sure?", "warning", "ok-cancel").then(result => {
+        showMessageBox("Delete Assets", "Are you sure?", "warning", "ok-cancel").then(result => {
             if (result.ok) {
                 this.mediaManager.deleteSelected()
                     .then(() => Notification.show("Deleted selected assets."))
