@@ -37,6 +37,7 @@ import LanguageMenu from "./LanguageMenu";
 import { EUIElements } from "client/components/CVInterface";
 import CVAssetReader from "client/components/CVAssetReader";
 import SplashScreen from "./SplashScreen";
+import CompassController from "../CompassController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +48,7 @@ export default class ChromeView extends DocumentView
     protected titleElement: HTMLDivElement;
     protected assetPath: string = "";
     protected needsSplash: boolean = true;
+    protected compass: CompassController;
 
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
@@ -62,6 +64,9 @@ export default class ChromeView extends DocumentView
         this.setAttribute("pointer-events", "none");
 
         this.classList.add("sv-chrome-view");
+
+        this.compass = new CompassController(this.system);
+        this.appendChild(this.compass.element);
     }
 
     protected connected()
@@ -72,6 +77,7 @@ export default class ChromeView extends DocumentView
         this.activeDocument.setup.audio.outs.isPlaying.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.globalPlaying.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.ins.captionsEnabled.on("value", this.onUpdate, this);
+        this.compass.connect();
         this.titleElement = this.createElement("div", null);
         this.titleElement.classList.add("ff-ellipsis");
         this.assetPath = this.assetReader.getSystemAssetUrl("");
@@ -80,6 +86,7 @@ export default class ChromeView extends DocumentView
 
     protected disconnected()
     {
+        this.compass.disconnect();
         this.removeEventListener("keydown", this.onKeyDown);
         this.activeDocument.setup.audio.ins.captionsEnabled.off("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.globalPlaying.off("value", this.onUpdate, this);
@@ -186,7 +193,9 @@ export default class ChromeView extends DocumentView
                          : ""} text=${setup.language.codeString()} title=${languageManager.getLocalizedString("Set Language")} @click=${this.openLanguageMenu} class="sv-text-icon"></ff-button>` : null}
                     ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${languageManager.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
                 </div>
-            </div>`;
+            </div>
+            ${this.compass.element}
+            `;
     }
 
     protected onSelectTour(event: ITourMenuSelectEvent)
@@ -265,6 +274,13 @@ export default class ChromeView extends DocumentView
         this.requestUpdate();
     }
 
+    toggleCompass() {
+        this.compass.toggle();
+    }
+
+    isCompassVisible(): boolean {
+        return this.compass?.isVisible() ?? false;
+    }
     protected onKeyDown(e: KeyboardEvent)
     {
         if (e.code === "ArrowDown" || e.code === "ArrowUp") {

@@ -20,12 +20,18 @@ import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
+import CRenderer from "@ff/scene/components/CRenderer";
+import RenderQuadView from "@ff/scene/RenderQuadView";
 
 import "./PropertyView";
 
 import CVPoseTask, { EPoseManipMode } from "../../components/CVPoseTask";
 import { TaskView } from "../../components/CVTask";
+import CVDocument from "../../components/CVDocument";
+import CVSunLight from "../../components/lights/CVSunLight";
+import { IComponentEvent } from "@ff/graph/Component";
 import { EUnitType } from "client/schema/model";
+import CompassController from "../CompassController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,15 +44,39 @@ import { EUnitType } from "client/schema/model";
 @customElement("sv-pose-task-view")
 export default class PoseTaskView extends TaskView<CVPoseTask>
 {
+    protected compass: CompassController;
+    private sunLights = new Set<CVSunLight>();
+
+    protected firstConnected()
+    {
+        super.firstConnected();
+        this.compass = new CompassController(this.system);
+    }
+
     protected connected()
     {
         super.connected();
+        const quadView = this.system.getMainComponent(CRenderer).views.find(
+            (view): view is RenderQuadView => view instanceof RenderQuadView
+        );
+        const firstViewportOverlay = quadView?.viewports[0]?.overlay;
+        if (!firstViewportOverlay) {
+            throw new Error("Pose view compass requires a first viewport overlay");
+        }
+        firstViewportOverlay.appendChild(this.compass.element);
+        this.compass.connect();
+        this.system.components.on(CVSunLight, this.onSunlightComponent, this);
+        this.updateSunlights(this.activeDocument);
         this.task.on("update", this.onUpdate, this);
         this.task.outs.size.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
+        this.system.components.off(CVSunLight, this.onSunlightComponent, this);
+        this.updateSunlights(null);
+        this.compass.disconnect();
+        this.compass.element.remove();
         this.task.outs.size.off("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
         super.disconnected();
@@ -57,6 +87,9 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
         if(!this.activeDocument) {
             return;
         }
+        const hasActiveSunlight = [...this.sunLights].some(sunlight => sunlight.ins.enabled.value);
+        this.compass.setVisible(hasActiveSunlight);
+
         const node = this.activeNode;
         const model = node && node.model;
         const languageManager = this.activeDocument.setup.language;
@@ -90,6 +123,34 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
                 <sv-property-view .property=${position}></sv-property-view>
                 <sv-property-view .property=${rotation}></sv-property-view>
             </div></div>`;
+    }
+
+    protected onActiveDocument(_previous: CVDocument, next: CVDocument)
+    {
+        this.updateSunlights(next);
+    }
+
+    private onSunlightComponent(_event: IComponentEvent<CVSunLight>)
+    {
+        this.updateSunlights(this.activeDocument);
+    }
+
+    private updateSunlights(document: CVDocument)
+    {
+        const nextSunLights = new Set(document?.getInnerComponents(CVSunLight) ?? []);
+        this.sunLights.forEach(sunlight => {
+            if (!nextSunLights.has(sunlight)) {
+                sunlight.ins.enabled.off("value", this.onUpdate, this);
+                this.sunLights.delete(sunlight);
+            }
+        });
+        nextSunLights.forEach(sunlight => {
+            if (!this.sunLights.has(sunlight)) {
+                sunlight.ins.enabled.on("value", this.onUpdate, this);
+                this.sunLights.add(sunlight);
+            }
+        });
+        this.onUpdate();
     }
 
     protected onClickMode(event: IButtonClickEvent)
