@@ -23,6 +23,7 @@ import { customElement, property, PropertyValues, html } from "@ff/ui/CustomElem
 import "@ff/ui/Button";
 import "@ff/ui/ColorEdit";
 import Notification from "@ff/ui/Notification";
+import { showPopover } from "@ff/ui/popover";
 
 import { focusTrap, getFocusableElements } from "client/utils/focusHelpers";
 
@@ -103,7 +104,8 @@ export default class PropertyColor extends PropertyBase
         const color = this.color.toString(this.alphaEnabled);
 
         const colorEdit = html`<ff-color-edit .color=${this.color} @keydown=${e =>this.onKeyDown(e)} @change=${this.onColorChange}></ff-color-edit>`;
-        const popupColorEdit = html`<ff-popup .keepVisible=${true} .anchor=${this} .position=${"anchor"} .align=${"end"} .justify=${"end"}>${colorEdit}</ff-popup>`
+        // floating: shown in the top layer, so that it's not clipped by the containing panel
+        const popupColorEdit = html`<div popover="manual" class="sv-color-popover">${colorEdit}</div>`;
 
         return html`<label class="ff-label ff-off">${name}</label>
             <span class="sv-property-field">
@@ -130,6 +132,12 @@ export default class PropertyColor extends PropertyBase
     protected async setPickerFocus()
     {
         await this.updateComplete;
+
+        const popover = this.querySelector<HTMLElement>(":scope > .sv-color-popover");
+        if (popover) {
+            showPopover(popover, this, { x: "end", y: "above" });
+        }
+
         const container = this.getElementsByTagName("ff-color-edit").item(0) as HTMLElement;
         (getFocusableElements(container)[0] as HTMLElement).focus();
     }

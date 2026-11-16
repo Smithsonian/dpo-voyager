@@ -1369,6 +1369,11 @@ $tour-entry-indent: 12px;
       padding: 8px;
       border-radius: 2px;
     }
+
+    // floating picker: the popover is positioned instead (see PropertyColor)
+    .sv-color-popover .ff-color-edit {
+      position: static;
+    }
   }
   
   &.sv-property-number{

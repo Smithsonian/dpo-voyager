@@ -50,6 +50,10 @@ export default class Modal extends CustomElement
     @property({ type: String })
     panelClass = "";
 
+    /** If false, Escape and backdrop clicks don't close the dialog: only its content does. */
+    @property({ type: Boolean })
+    dismissible = true;
+
     protected dialog: HTMLDialogElement = null;
 
     private _value: unknown = undefined;
@@ -106,7 +110,7 @@ export default class Modal extends CustomElement
     {
         // tabindex: clicks on non-focusable content keep focus in the dialog, so that
         // the keydown fallback for browsers without `closedby` keeps working
-        return html`<dialog closedby="closerequest" tabindex="-1" aria-label=${ifDefined(this.label || undefined)}
+        return html`<dialog closedby=${this.dismissible ? "closerequest" : "none"} tabindex="-1" aria-label=${ifDefined(this.label || undefined)}
             @close=${this.onDialogClose} @keydown=${this.onDialogKeyDown}
             @pointerdown=${this.onDialogPointerDown} @click=${this.onDialogClick}>
             <div class="sv-modal-panel ${this.panelClass}">${this.content}</div>
@@ -139,7 +143,7 @@ export default class Modal extends CustomElement
     {
         // Fallback for browsers not supporting `closedby`, in which non-modal
         // dialogs don't handle close requests
-        if (event.key === "Escape" && !("closedBy" in HTMLDialogElement.prototype)) {
+        if (event.key === "Escape" && this.dismissible && !("closedBy" in HTMLDialogElement.prototype)) {
             event.preventDefault();
             this.close();
         }
@@ -154,7 +158,7 @@ export default class Modal extends CustomElement
     {
         // Only dismiss if both press and release happened on the backdrop, so that
         // e.g. selecting text in the panel and releasing outside doesn't close it.
-        if (event.target === this.dialog && this._backdropPress) {
+        if (event.target === this.dialog && this._backdropPress && this.dismissible) {
             this.close();
         }
         this._backdropPress = false;
@@ -169,6 +173,8 @@ export interface IModalOptions
     label: string;
     /** CSS class(es) added to the panel, for per-popup styling. */
     panelClass?: string;
+    /** If false, Escape and backdrop clicks don't close the popup. Default: true. */
+    dismissible?: boolean;
 }
 
 export interface IModalContext<T>
@@ -189,6 +195,7 @@ export function openModal<T = void>(parent: HTMLElement,
     const modal = new Modal();
     modal.label = options.label;
     modal.panelClass = options.panelClass || "";
+    modal.dismissible = options.dismissible !== false;
 
     const context: IModalContext<T> = {
         close: (value?: T) => modal.close(value),

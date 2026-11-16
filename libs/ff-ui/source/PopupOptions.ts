@@ -5,8 +5,8 @@
  * License: MIT
  */
 
-import Popup from "./Popup";
-import { customElement, html, property } from "./CustomElement";
+import CustomElement, { customElement, html, property } from "./CustomElement";
+import { showPopover, IPopoverPlacement } from "./popover";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -18,8 +18,12 @@ export interface IPopupMenuSelectEvent extends CustomEvent
     }
 }
 
+/**
+ * List of options to pick from, shown as a popover next to an anchor element.
+ * Closes on selection, Escape and clicks outside, and removes itself when closed.
+ */
 @customElement("ff-popup-options")
-export default class PopupOptions extends Popup
+export default class PopupOptions extends CustomElement
 {
     static readonly selectEvent = "ff-select";
 
@@ -34,25 +38,37 @@ export default class PopupOptions extends Popup
         super();
 
         this.onClick = this.onClick.bind(this);
-        this.onClose = this.onClose.bind(this);
+        this.onToggle = this.onToggle.bind(this);
 
         this.addEventListener("click", this.onClick);
-        this.addEventListener("close", this.onClose);
+        this.addEventListener("toggle", this.onToggle);
 
         this.options = options || [];
         this.selectionIndex = -1;
+    }
+
+    /** Appends the element to `parent` and shows it next to `anchor`, focusing the selected option. */
+    show(parent: HTMLElement, anchor: Element, placement?: IPopoverPlacement)
+    {
+        parent.appendChild(this);
+
+        return this.updateComplete.then(() => {
+            showPopover(this, anchor, placement);
+
+            const index = this.selectionIndex >= 0 ? this.selectionIndex : 0;
+            const button = this.children.item(index) as HTMLButtonElement;
+            if (button) {
+                button.focus();
+            }
+        });
     }
 
     protected firstConnected()
     {
         super.firstConnected();
 
+        this.setAttribute("popover", "auto");
         this.classList.add("ff-popup-options");
-
-        this.setStyle({
-            display: "flex",
-            flexDirection: "column"
-        });
     }
 
     protected render()
@@ -62,17 +78,6 @@ export default class PopupOptions extends Popup
                 <button>${option}</button>
             `)}
         `;
-    }
-
-    protected updated()
-    {
-        super.updated();
-
-        const index = this.selectionIndex >= 0 ? this.selectionIndex : 0;
-        const button = this.children.item(index) as HTMLButtonElement;
-        if (button) {
-            button.focus();
-        }
     }
 
     protected onClick(event: MouseEvent)
@@ -87,11 +92,13 @@ export default class PopupOptions extends Popup
                 }}) as IPopupMenuSelectEvent);
         }
 
-        this.remove();
+        this.hidePopover();
     }
 
-    protected onClose()
+    protected onToggle(event: Event)
     {
-        this.remove();
+        if ((event as ToggleEvent).newState === "closed") {
+            this.remove();
+        }
     }
 }
