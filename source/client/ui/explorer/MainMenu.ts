@@ -169,22 +169,12 @@ export default class MainMenu extends DocumentView
 
     protected onToggleTours()
     {
-        const tourIns = this.activeDocument.setup.tours.ins;
-        const readerIns = this.activeDocument.setup.reader.ins;
+        const tours = this.activeDocument.setup.tours;
+        const enabled = !tours.ins.enabled.value;
 
-        if (tourIns.enabled.value) {
-            tourIns.enabled.setValue(false);
+        if (tours.setEnabled(enabled)) {
+            this.analytics.sendProperty("Tours_Enabled", enabled);
         }
-        else {
-            if (readerIns.enabled.value) {
-                readerIns.enabled.setValue(false); // disable reader
-            }
-
-            tourIns.enabled.setValue(true); // enable tours
-            tourIns.tourIndex.setValue(-1); // show tour menu
-        }
-
-        this.analytics.sendProperty("Tours_Enabled", tourIns.enabled.value);
     }
 
     protected onToggleAnnotations()

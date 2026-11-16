@@ -455,20 +455,11 @@ Version: ${ENV_VERSION}
 
     setToursEnabled(enabled: boolean)
     {
-        const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
-        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+        const tours = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours;
 
-        if (enabled && readerIns.enabled.value) {
-            readerIns.enabled.setValue(false);
+        if (tours.setEnabled(enabled)) {
+            this.analytics.sendProperty("Tours_Enabled", enabled);
         }
-
-        tourIns.enabled.setValue(enabled);
-
-        if (enabled) {
-            tourIns.tourIndex.setValue(-1); // show tour menu
-        }
-
-        this.analytics.sendProperty("Tours_Enabled", enabled);
     }
 
     toggleTools()
