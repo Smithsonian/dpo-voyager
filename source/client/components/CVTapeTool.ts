@@ -53,6 +53,18 @@ export class TapeToolView extends ToolView<CVTapeTool>
         this.classList.add("sv-group", "sv-tape-tool-view");
     }
 
+    protected connected()
+    {
+        super.connected();
+        this.activeDocument.setup.tape.ins.enabled.setValue(true);
+    }
+
+    protected disconnected()
+    {
+        this.activeDocument.setup.tape.ins.enabled.setValue(false);
+        super.disconnected();
+    }
+
     protected render()
     {
         const document = this.activeDocument;
@@ -63,14 +75,14 @@ export class TapeToolView extends ToolView<CVTapeTool>
 
         const tool = this.tool;
         const tape = document.setup.tape;
-        const enabled = tape.ins.enabled;
+        const visible = tape.ins.visible;
         const state = tape.outs.state.value;
         const distance = tape.outs.distance.value;
         const language = document.setup.language;
 
         let text;
 
-        if (!enabled.value) {
+        if (!visible.value) {
             text = language.getLocalizedString("Switch on to take measurements") + ".";
         }
         else if (distance === 0) {
@@ -88,7 +100,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
 
         return html`<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
-                <sv-property-boolean .property=${enabled} .language=${language} name=${language.getLocalizedString("Tape Tool")}></sv-property-boolean>
+                <sv-property-boolean .property=${visible} .language=${language} name=${language.getLocalizedString("Tape Tool")}></sv-property-boolean>
                 <div class="sv-property-view"><label class="ff-label ff-off">${language.getLocalizedString("Measured Distance")}</label>
                 <div class="ff-string" aria-live="polite" aria-atomic="true"></div></div>
             </div></div>`;
