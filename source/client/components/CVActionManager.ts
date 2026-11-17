@@ -338,7 +338,8 @@ export default class CVActionManager extends Component
     {
         if(this.tours.activeTour) {
             // Set any currently active or queued animations to their finish state
-            while(this._actionQueue.length > 0) {
+            const queueCount = this._actionQueue.length;
+            for(let i=0; i<queueCount; i++) {
                 const action = this._actionQueue.pop();
                 this.playAction(action.model, action.action);
             }
@@ -454,11 +455,6 @@ export default class CVActionManager extends Component
                 // If a different state change is in progress, push it to the end before triggering the new one
                 else if(machine.deltaStates.some(state => state.id === machine.ins.id.value)) {
                     machine.endTween();
-                }
-                else {
-                    // Queue up action if tour state tweening
-                    this._actionQueue.push({model: model, action: action});
-                    return;
                 }
             }
 
