@@ -159,6 +159,16 @@ export default class CameraController implements IManip
         this.viewportHeight = height;
     }
 
+    /** Discards pending input and inertia before applying a camera pose. */
+    stop()
+    {
+        this.mode = EManipMode.Off;
+        this.phase = EManipPhase.Off;
+        this.deltaX = this.deltaY = this.deltaWheel = 0;
+        this.deltaPinch = 1;
+        this.prevPinchDist = 0;
+    }
+
     updateController(object?: Object3D, adaptLimits?: boolean)
     {
         const camera = this.camera;
