@@ -186,10 +186,7 @@ export default class CVToursTask extends CVTask
                 return true;
             }
             if (ins.deleteTour.changed) {
-                tour.steps.forEach(step => machine.deleteState(step.id));
-                tourList.splice(tourIndex, 1);
-                tours.ins.tourIndex.setValue(tourIndex);
-                tours.outs.count.setValue(tourList.length);
+                tours.removeTour(tourIndex);
                 return true;
             }
             if (tourIndex > 0 && ins.moveTourUp.changed) {
@@ -207,18 +204,17 @@ export default class CVToursTask extends CVTask
         }
 
         if (ins.createTour.changed) {
-            tourList.splice(tourIndex + 1, 0, {
+            tours.insertTour({
                 title: "",
-                titles: {},
+                titles: {
+                    [ELanguageType[languageManager.ins.primarySceneLanguage.value]]: "New Tour #" + _nextTourIndex++
+                },
                 lead: "",
                 leads: {},
                 tags: [],
                 taglist: {},
                 steps: []
-            });
-            tourList[tourIndex + 1].titles[ELanguageType[languageManager.ins.primarySceneLanguage.value]] = "New Tour #" + _nextTourIndex++;
-            tours.ins.tourIndex.setValue(tourIndex + 1);
-            tours.outs.count.setValue(tourList.length);
+            }, tourIndex + 1);
             languageManager.ins.activeLanguage.setValue(languageManager.ins.primarySceneLanguage.value);
             return true;
         }
