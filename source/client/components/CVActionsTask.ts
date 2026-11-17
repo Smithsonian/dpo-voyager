@@ -196,7 +196,7 @@ export default class CVActionsTask extends CVTask
                     this.synchTourStepOptions();
                     this.ins.tourStep.setValue(0);
                 }
-                action.triggerDetail = this.ins.tour.value > 0 ? this.tours.tours[this.ins.tour.value-1].steps[this.ins.tourStep.value].id : "";
+                action.triggerDetail = this.ins.tour.value > 0 ? (this.tours.tours[this.ins.tour.value-1].steps[this.ins.tourStep.value]?.id || "" ): "";
             }
             if(ins.action.changed) {
                 action.triggerDetail = ins.action.value > 0 ? this._actionIds[ins.action.value] : undefined;
@@ -360,7 +360,7 @@ export default class CVActionsTask extends CVTask
         const tour = this.activeDocument.setup.tours.tours[this.ins.tour.value - 1];
 
         const stepOptions = ["None"];
-        if(tour) {
+        if(tour && tour.steps.length > 0) {
             stepOptions.splice(0, 1, ...[...Array(tour.steps.length).keys()].map(x => (x + 1).toString()));
         }
 
