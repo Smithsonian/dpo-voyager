@@ -67,6 +67,12 @@ export default class CVAssetManager extends Component
         this._baseUrl = new URL(url, window.location.href).href;
     }
 
+    /** Publish completion immediately; asset activity may continue afterwards. */
+    completeInitialLoad()
+    {
+        this.outs.initialLoad.setValue(false);
+    }
+
     getAssetName(pathOrUrl: string)
     {
         return pathOrUrl.split("/").pop();
