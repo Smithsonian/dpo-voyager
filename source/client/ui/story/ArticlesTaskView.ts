@@ -67,11 +67,12 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 
         const detailView = activeArticle ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
-            <div class="sv-label">Title</div>
-            <ff-line-edit name="title" text=${task.ins.title.value} @change=${this.onTextEdit}></ff-line-edit>
-            <sv-property-view .property=${task.ins.tags}></sv-property-view>
-            <div class="sv-label">Lead</div>
-            <ff-text-edit name="lead" text=${task.ins.lead.value} @change=${this.onTextEdit}></ff-text-edit>
+            <div class="sv-indent">
+                <sv-property-view .property=${task.ins.title}></sv-property-view>
+                <sv-property-view .property=${task.ins.tags}></sv-property-view>
+                <div class="sv-label">Lead</div>
+                <ff-text-edit name="lead" text=${task.ins.lead.value} @change=${this.onTextEdit}></ff-text-edit>
+            </div>
             <sv-property-view class="sv-property-block" disabled .property=${task.ins.uri}></sv-property-view>
         </div>` : null;
 
