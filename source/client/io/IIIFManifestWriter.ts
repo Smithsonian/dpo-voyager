@@ -31,6 +31,12 @@ import documentTemplate from "client/templates/default.svx.json";
 import CVStoryApplication from "client/components/CVStoryApplication";
 import unitScaleFactor from "client/utils/unitScaleFactor";
 import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
+import CVMeta from "client/components/CVMeta";
+import { EActionTrigger, IAction, TActionTrigger } from "client/schema/meta";
+import { Dictionary } from "@ff/core/types";
+import CVModel2 from "client/components/CVModel2";
+import CVSetup from "client/components/CVSetup";
+import Component from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,6 +72,7 @@ export default class IIIFManifestWriter {
             light: 0,
             camera: 0
         };
+        const nodeMap: Dictionary<string> = {};
 
         _color.setRGB(background.ins.color0.value[0],background.ins.color0.value[1],background.ins.color0.value[2]);
 
@@ -110,7 +117,7 @@ export default class IIIFManifestWriter {
         commentPage["items"] = [];
 
         // serialize node tree
-        this.parseChildNodes(cvDocument, cvDocument.root.transform.children, iiifScene, annotationPage, commentPage, counts);
+        this.parseChildNodes(cvDocument, cvDocument.root.transform.children, nodeMap, iiifScene, annotationPage, commentPage, counts);
 
         // look for IIIF canvases to export
         // TODO: Get rid of userData hack when we can support canvases as scenegraph nodes
@@ -212,6 +219,43 @@ export default class IIIFManifestWriter {
             }
         }
 
+        //-- process actions --//
+        //
+        // gather actions
+        const actions : IAction[] = [];
+        const models = cvDocument.innerGraph.getComponents(CVModel2);
+        models.forEach(model => {
+            const meta = model.node.getComponent(CVMeta, true);
+            if(meta) {
+                actions.push(...meta.actions.items);
+            }
+        });
+
+        // generate action lists per activating annotation
+        commentPage["items"].forEach(item => {
+            if(item["motivation"]?.includes("activating")) {
+                const triggerAction = Object.keys(nodeMap).find(key => nodeMap[key] === item.id);
+                const action = actions.find(elem => elem.id === triggerAction);
+
+                const iiifAction = {
+                    "type": "SpecificResource",
+                    "source": {
+                        "id": this.getActionTarget(action, nodeMap),
+                        "type": "Annotation"
+                    },
+                    "action": [this.getActionType(action)]
+                }
+
+                item.body.items.push(iiifAction);  // add trigger action
+
+                // add any dependent actions
+                const dependentActions = actions.filter(elem => elem.trigger === EActionTrigger[EActionTrigger.OnActionEnd] as TActionTrigger ||
+                    elem.trigger === EActionTrigger[EActionTrigger.OnActionBegin] as TActionTrigger
+                );
+                this.addDependentActions(dependentActions, action, nodeMap, item);
+            }
+        });
+
         // remove comment page element if items are empty
         if(commentPage["items"].length == 0) {
             delete iiifScene["annotations"];
@@ -220,7 +264,7 @@ export default class IIIFManifestWriter {
         return JSON.stringify(jsonObj, null, 2);
     }
 
-    protected parseChildNodes(cvDocument: CVDocument, nodes, scene, annotationPage, commentPage, counts) {
+    protected parseChildNodes(cvDocument: CVDocument, nodes, nodeMap, scene, annotationPage, commentPage, counts) {
         const children = nodes.map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];
         const setup = cvDocument.setup;
         //const sceneDefaultLang = ELanguageType[setup.language.ins.primarySceneLanguage.value];
@@ -453,7 +497,40 @@ export default class IIIFManifestWriter {
                     }
 
                     comment["body"]["items"].length > 0 ? commentPage["items"].push(comment) : null;
+                    nodeMap[anno.id] = comment.id;
                 });
+
+                // process actions
+                const meta = child.model.node.getComponent(CVMeta, true);
+                if(meta) {
+                    const actions = meta.actions.items;
+                    actions.forEach(action => {
+                        switch(action.trigger) {
+                            case "OnClick":
+                            case "OnAnnotation":
+                                const activatingAnno = {
+                                    "id": "https://example.org/iiif/scene/switch/scene-1/annos/1/activating-" + (++counts.anno),
+                                    "type": "Annotation",
+                                    "motivation": [
+                                      "activating"
+                                    ],
+                                    "target": {
+                                      "id": action.trigger === "OnClick" ? annotation.id : nodeMap[action.actionAnnoId],
+                                      "type": "Annotation"
+                                    },
+                                    "body": {
+                                      "type": "List",
+                                      "items": []
+                                    }
+                                }
+                                commentPage["items"].push(activatingAnno);
+                                nodeMap[action.id] = activatingAnno.id;
+                                break;
+                        }
+                    });
+                }
+
+                nodeMap[child.model.id] = annotation.id;
             }
 
             if (child.camera) {
@@ -475,13 +552,15 @@ export default class IIIFManifestWriter {
                 _vec3b.fromArray(setup.setupCache.navigation.orbit.offset);
                 math.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
                 this.setTransform(annotation, _mat4);
+
+                nodeMap[child.camera.id] = annotation.id;
             }
 
             if (child.light) {
                 const light = child.light;
 
                 // check unhandled light types
-                if(IIIFManifestWriter.iiifUnhandledLights.includes(light.typeName) || !light.ins.enabled.value) {
+                if(IIIFManifestWriter.iiifUnhandledLights.includes(light.typeName)) {
                     counts.anno--;
                     return;
                 }
@@ -516,6 +595,12 @@ export default class IIIFManifestWriter {
 
                 // add transform
                 this.setTransform(annotation, child.transform.object3D.matrix);
+
+                if(!light.ins.enabled.value) {
+                    annotation["behavior"] = ["hidden"];
+                }
+
+                nodeMap[child.light.id] = annotation.id;
             }
 
             if (child.model || child.light || child.camera) { 
@@ -526,7 +611,7 @@ export default class IIIFManifestWriter {
             }
 
             if (child.transform.children) {
-                this.parseChildNodes(cvDocument, child.transform.children, scene, annotationPage, commentPage, counts);
+                this.parseChildNodes(cvDocument, child.transform.children, nodeMap, scene, annotationPage, commentPage, counts);
             }
         });
     }
@@ -572,7 +657,92 @@ export default class IIIFManifestWriter {
         return Math.round(num * Math.pow(10, digits)) / Math.pow(10, digits);
     }
 
-    protected generateAnnotationIndex() {
-        return 
+    // Action parsing helpers
+    protected getActionType(action: IAction) : string {
+        switch(action.type) {
+            case "PlayAnimation":
+            case "PlayAudio":
+                return "start";
+            case "ShowAnnotation":
+                return "show";
+            case "HideAnnotation":
+                return "hide";
+            case "StateChange":
+                // TODO: handle more than one state change type
+                return this.getStateChangeTypes(action)[0];
+            case "EnableAction":
+                return "enable";
+            case "DisableAction":
+                return "disable";
+            default:
+                console.log("Unsupported Voyager action type: "+action.type);
+                return null;
+        }
+    }
+
+    protected getActionTarget(action: IAction, nodeMap: Dictionary<string>) : string {
+        switch(action.type) {
+            case "ShowAnnotation":
+            case "HideAnnotation":
+            case "EnableAction":
+            case "DisableAction":
+                return nodeMap[action.actionTargetId];
+            case "StateChange":
+                // TODO: handle more than one state change target
+                return nodeMap[this.getStateChangeTargets(action)[0].id];
+        }
+    }
+
+    protected getStateChangeTargets(action: IAction) : Component[] {
+        const setup = this.application.system.getComponent(CVSetup);
+        const stateChange = setup.snapshots.deltaStates.find(state => state.id === action.stateId);
+        const returnList = [];
+        if(stateChange) {
+            stateChange.paths.forEach(path => {
+                const pathTokens = path.split('/');
+                const component = this.application.system.components.getById(pathTokens[0]);
+                if(component) {
+                    returnList.push(component);
+                }
+            });
+            return returnList;
+        }
+        return null;
+    }
+
+    protected getStateChangeTypes(action: IAction) : string[] {
+        const setup = this.application.system.getComponent(CVSetup);
+        const stateChange = setup.snapshots.deltaStates.find(state => state.id === action.stateId);
+        const returnList = [];
+        if(stateChange) {
+            stateChange.paths.forEach((path, idx) => {
+                const pathTokens = path.split('/');
+                if(pathTokens[1] === "enabled") {
+                    returnList.push(stateChange.values[idx] ? "show" : "hide");
+                }
+            });
+            return returnList;
+        }
+        return null;
+    }
+
+    protected addDependentActions(actionList: IAction[], currAction: IAction, nodeMap: Dictionary<string>, activatingAnnotation) {
+        const nextIdx = actionList.findIndex(action => action.triggerDetail === currAction.id);
+
+        if(nextIdx >= 0) {
+            const nextAction = actionList.splice(nextIdx, 1)[0];
+
+            const iiifAction = {
+                "type": "SpecificResource",
+                "source": {
+                    "id": this.getActionTarget(nextAction, nodeMap),
+                    "type": "Annotation"
+                },
+                "action": [this.getActionType(nextAction)]
+            }
+
+            activatingAnnotation.body.items.push(iiifAction);
+            this.addDependentActions(actionList, nextAction, nodeMap, activatingAnnotation);
+        }
     }
 }
