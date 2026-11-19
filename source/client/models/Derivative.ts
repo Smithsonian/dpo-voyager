@@ -29,6 +29,8 @@ import {
     TDerivativeUsage,
 } from "client/schema/model";
 
+import { ITypedEvent } from "@ff/core/Publisher";
+
 import CVAssetReader from "../components/CVAssetReader";
 
 import Asset, { EAssetType, EMapType } from "./Asset";
@@ -37,6 +39,14 @@ import { addCustomMaterialDefines, extendShaders, } from "client/shaders/ShaderE
 ////////////////////////////////////////////////////////////////////////////////
 
 export { EDerivativeQuality, EDerivativeUsage, Asset, EAssetType };
+
+export type TDerivativeLoadState = "idle" | "loading" | "loaded" | "error";
+
+/** Emitted each time {@link Derivative.state} changes */
+export interface IDerivativeStateEvent extends ITypedEvent<"state">
+{
+    derivative: Derivative;
+}
 
 export type IDerivativeUpdateEvent = IDocumentUpdateEvent<Derivative>;
 export type IDerivativeDisposeEvent = IDocumentDisposeEvent<Derivative>;
@@ -60,9 +70,43 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
 
     abortControl :AbortController = null;
 
+    /** The load in flight, if any */
+    private _loading: Promise<Object3D> = null;
+    private _error: Error = null;
+
     constructor(json?: IDerivativeJSON){
         super(json);
-        this.addEvent("load");
+        this.addEvent("state");
+    }
+
+    /**
+     * Where this derivative stands as a resource. "loaded" means its model is in memory,
+     * not that it is displayed: the model component decides that.
+     */
+    get state(): TDerivativeLoadState
+    {
+        if (this._loading) return "loading";
+        if (this._error) return "error";
+        return this.model ? "loaded" : "idle";
+    }
+
+    /** The load in flight, to wait on. Null when there is none. */
+    get pending(): Promise<Object3D> | null
+    {
+        return this._loading;
+    }
+
+    /** Why the last load failed. Null until it does, and again as soon as a new load starts or this is unloaded. */
+    get error(): Error | null
+    {
+        return this._error;
+    }
+
+    private setLoading(loading: Promise<Object3D>, error: Error = null)
+    {
+        this._loading = loading;
+        this._error = error;
+        this.emit<IDerivativeStateEvent>({ type: "state", derivative: this });
     }
 
     dispose()
@@ -71,12 +115,36 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         super.dispose();
     }
 
+    /**
+     * Loads the model. Settles once it is in memory (resolves with it) or has failed (rejects, and {@link error} is set).
+     * Rejects with an AbortError if {@link unload} or a new call to load() comes first, leaving the state to whoever did.
+     */
     load(assetReader: CVAssetReader): Promise<Object3D>
     {
         if (this.data.usage !== EDerivativeUsage.Web3D) {
             throw new Error("can't load, not a Web3D derivative");
         }
 
+        const loading: Promise<Object3D> = this.fetchModel(assetReader).then(
+            object => {
+                if (this._loading === loading) this.setLoading(null);
+                return object;
+            },
+            error => {
+                // Superseded or unloaded: whoever did it owns the state
+                if (this._loading === loading) {
+                    const aborted = error?.name == "AbortError" || error?.name == "ABORT_ERR";
+                    this.setLoading(null, aborted ? null : error);
+                }
+                throw error;
+            }
+        );
+        this.setLoading(loading);
+        return loading;
+    }
+
+    private async fetchModel(assetReader: CVAssetReader): Promise<Object3D>
+    {
         if(this.abortControl){
             ENV_DEVELOPMENT && console.warn("Aborting inflight derivative load");
             this.abortControl.abort(new Error("Derivative load cancelled")); //This should not happen, but if in doubt, cancel duplicates
@@ -85,7 +153,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         const modelAsset = this.findAsset(EAssetType.Model);
 
         if (modelAsset) {
-            return assetReader.getModel(modelAsset.data.uri, {signal: this.abortControl.signal})
+            return await assetReader.getModel(modelAsset.data.uri, {signal: this.abortControl.signal})
             .then(object => {
                 if (this.model) {
                     disposeObject(this.model);
@@ -99,7 +167,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         const imageAssets = this.findAssets(EAssetType.Image);
 
         if (geoAsset) {
-            return assetReader.getGeometry(geoAsset.data.uri)
+            return await assetReader.getGeometry(geoAsset.data.uri)
             .then(geometry => {
                 this.model = new Mesh(geometry, new MeshStandardMaterial());
                 this.model.castShadow = true;
@@ -130,11 +198,16 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
                 return this.model;
             });
         }
+
+        throw new Error("derivative has no model or geometry asset");
     }
 
     unload()
     {
         this.abortControl?.abort();
+        if (this._loading || this._error) {
+            this.setLoading(null);
+        }
         if (this.model) {
             // handle disposing variants
             if(this.model.userData["variants"]) {
