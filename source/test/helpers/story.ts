@@ -2,6 +2,9 @@
  * Builds a Voyager Story system the way StoryApplication does, without its UI.
  * Graph updates don't run on their own: call `update()` to process pending property changes.
  */
+import { readFile } from "fs/promises";
+import path from "path";
+
 import System from "@ff/graph/System";
 import TypeRegistry from "@ff/core/TypeRegistry";
 import CPulse from "@ff/graph/components/CPulse";
@@ -58,7 +61,11 @@ export function createStory(data: IDocument): IStory
     system.graph.createCustomNode(NVTasks, "Tasks");
 
     // no server: text assets (articles) are empty, writes and listings succeed
-    system.getMainComponent(CVAssetReader).getText = () => Promise.resolve("");
+    const assetReader = system.getMainComponent(CVAssetReader);
+    assetReader.getText = () => Promise.resolve("");
+    // system assets (language files) come from the repository instead of the CDN
+    assetReader.getSystemJSON = async (assetPath: string) =>
+        JSON.parse(await readFile(path.resolve(__dirname, "../../../assets", assetPath), "utf8"));
     system.getMainComponent(CVAssetWriter).putText = () => Promise.resolve();
     system.getMainComponent(CVMediaManager).refresh = () => Promise.resolve();
 
