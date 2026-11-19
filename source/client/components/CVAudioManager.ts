@@ -323,7 +323,7 @@ export default class CVAudioManager extends Component
     {
         const { outs } = this;
         const uri = this.getAudioClipUri(id);
-        this.audioView = this.audioViews[id];
+        this.audioView = this.getPlayerById(id);
 
         if(!uri) {
             Notification.show("Failed to play audio clip - no uri", "warning");
