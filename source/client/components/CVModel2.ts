@@ -217,6 +217,10 @@ export default class CVModel2 extends CObject3D
     get activeDerivative() {
         return this._activeDerivative;
     }
+    /** The derivative being loaded, which becomes the active one once it is done */
+    get loadingDerivative() {
+        return this._loadingDerivative;
+    }
     get localBoundingBox(): Readonly<Box3> {
         return this._localBoundingBox;
     }
@@ -929,7 +933,8 @@ export default class CVModel2 extends CObject3D
             return;
         }
         if(this._loadingDerivative == derivative) {
-            return new Promise(resolve=> this._loadingDerivative.on("load", resolve));
+            // Whoever started that load reports its failure
+            return this._loadingDerivative.pending.then(() => {}, () => {});
         }
         
         this._loadingDerivative = derivative;
@@ -944,6 +949,9 @@ export default class CVModel2 extends CObject3D
                     // or this derivative is no longer needed as it's not the requested quality 
                     // AND we already have _something_ to display
                     derivative.unload();
+                    if (this._loadingDerivative == derivative) {
+                        this._loadingDerivative = null;
+                    }
                     return;
                 }
 
@@ -1054,6 +1062,7 @@ export default class CVModel2 extends CObject3D
             }).catch(error =>{
                 if(error.name == "AbortError" || error.name == "ABORT_ERR") return;
                 console.error(error);
+                if (this._loadingDerivative == derivative) this._loadingDerivative = null;
                 Notification.show(`Failed to load model derivative: ${error.message}`)
 
                 // A failed LOD upgrade is not a model failure: an earlier derivative is still on display.

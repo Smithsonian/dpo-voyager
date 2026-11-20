@@ -588,6 +588,65 @@ $color-component-meta-light: #d9d998;
   flex-basis: 50%;
 }
 
+// Rows reuse .ff-list-item (hover and selected looks) from ff-ui
+.sv-derivative-list .sv-derivative {
+  gap: 6px;
+  padding: 2px 6px;
+
+  // Fixed widths: the URIs line up whatever a row shows
+  .sv-derivative-quality {
+    width: 5em;
+    text-align: center;
+  }
+
+  .sv-derivative-loaded {
+    width: 1.2em;
+  }
+}
+
+.sv-derivative-details {
+  // Label on the left, then the button or the status, right-aligned. They wrap under the label when it is too long
+  .sv-derivative-header {
+    justify-content: space-between;
+    column-gap: 6px;
+
+    .sv-label {
+      margin: 0;
+    }
+  }
+
+  // ff-ui makes buttons grow (.ff-button.ff-control): this one keeps its size, at the right
+  .sv-derivative-activate,
+  .sv-derivative-state {
+    margin-left: auto;
+    flex: 0 0 auto;
+  }
+
+  .sv-derivative-state {
+    padding: 2px 10px;
+    border-radius: 8px;
+
+    // The one on display: same blue as a selected list row
+    &.sv-state-loaded {
+      background-color: common.$color-primary;
+    }
+  }
+
+  .sv-derivative-error {
+    color: #e05050;
+  }
+
+  // The detail view scrolls, not the stats: ff-ui's .ff-tree scrolls, but it still has to clip its borders
+  .ff-tree {
+    overflow: hidden;
+  }
+
+  // Property rows may need several lines for a long list of slots
+  .sv-derivative-row {
+    max-height: none;
+  }
+}
+
 .sv-task-item-full {
   flex-basis: 100%;
 }
