@@ -107,6 +107,7 @@ export default function() {
 
             state.values[0] = "2026-11-09T14:30:00Z";
             machine.stateFromJSON({ states: [state] });
+            machine.ins.recall.set();
             machine.update({} as IPulseContext);
             assert.strictEqual(property.value.format("YYYY-MM-DDTHH:mm:ss"), "2026-11-09T14:30:00");
         });
