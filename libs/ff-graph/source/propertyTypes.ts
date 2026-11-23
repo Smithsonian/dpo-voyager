@@ -7,10 +7,16 @@
 
 import { TypeOf, PropOf, enumToArray, Dictionary } from "@ff/core/types";
 import * as dayjs from 'dayjs';
+import * as utc from 'dayjs/plugin/utc';
 
 // enable dayjs() call (->'now') in Javascript:
 type TDayjsFactory = (date?: dayjs.ConfigType) => dayjs.Dayjs;
 const createDayjs = ((dayjs as unknown as { default?: TDayjsFactory }).default || dayjs as unknown as TDayjsFactory);
+
+const utcPlugin = (utc as unknown as { default?: dayjs.PluginFunc<unknown> }).default || utc as unknown as dayjs.PluginFunc<unknown>;
+dayjs.extend(utcPlugin);
+type TDayjsUtcFactory = TDayjsFactory & { utc: (date?: dayjs.ConfigType) => dayjs.Dayjs };
+export const createDayjsUtc = ((createDayjs as unknown as { default?: TDayjsUtcFactory }).default || createDayjs as unknown as TDayjsUtcFactory).utc;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -102,7 +108,7 @@ export const schemas: Dictionary<IPropertySchema> = {
     ColorRGBA: { preset: [1, 1, 1, 1], semantic: "color", labels: labels.rgba, min: 0, max: 1, bar: true },
     Boolean: { preset: false },
     String: { preset: "" },
-    DateTime: { preset: createDayjs(), semantic: "datetime" },
+    DateTime: { preset: createDayjsUtc(), semantic: "datetime" },
     AssetPath: { preset: "", semantic: "asset-path" },
     Tags: { preset: "", options: [], semantic: "tags" },
     Object: { preset: null, objectType: Object },
@@ -138,4 +144,4 @@ export const types = {
     Option: (path: string, options: string[], props?: SchemaProps<number>) => makeOptionType(options, path, props),
     Object: <T>(path: string, type: TypeOf<T>, props?: SchemaProps<T>) => makeObjectType(type, path, props),
     Event: (path: string, props?: SchemaProps<number>) => makeType<number>(schemas.Event, path, props)
-};
+}

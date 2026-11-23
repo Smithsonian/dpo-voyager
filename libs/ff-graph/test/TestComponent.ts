@@ -27,7 +27,8 @@ const ins = {
     option0: types.Option("Test.Enum0", [ "one", "two", "three" ]),
     option1: types.Enum("Test.Enum1", Enum1, 2),
     option2: types.Property("Test.Enum2", { options: [ "seven", "eight", "nine" ], preset: 1 }),
-    obj0: types.Object("Test.Object0", Object)
+    obj0: types.Object("Test.Object0", Object),
+    datetime: types.DateTime("Test.DateTime")
 };
 
 const outs = {

@@ -216,6 +216,14 @@ export default class Property<T = any> extends Publisher
     cloneValue(): T
     {
         const value = this.value;
+
+        if (this.schema.semantic === "datetime") {
+            if (value != null && (typeof value === "object" || typeof value === "function")
+            && "format" in value && typeof value.format === "function") {
+                return value.format("YYYY-MM-DDTHH:mm:ss");
+            }
+        }
+
         return Array.isArray(value) ? value.slice() as any : value;
     }
 

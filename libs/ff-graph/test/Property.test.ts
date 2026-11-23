@@ -7,6 +7,10 @@
 
 import { assert } from "chai";
 import System from "@ff/graph/System";
+import Property from "@ff/graph/Property";
+import { createDayjsUtc, types } from "@ff/graph/propertyTypes";
+import CTweenMachine from "@ff/graph/components/CTweenMachine";
+import { IPulseContext } from "@ff/graph/components/CPulse";
 import TestComponent from "./TestComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +76,39 @@ export default function() {
             const ins = comp0.ins;
             assert.deepStrictEqual(ins.option0.schema.options, [ "one", "two", "three" ]);
             assert.deepStrictEqual(ins.option2.schema.options, [ "seven", "eight", "nine" ]);
+        });
+
+        test("cloneValue/datetime preserves wall-clock time", function() {
+            const datetime = createDayjsUtc("2026-11-09T12:30:45").utcOffset(120);
+            const property = new Property("Test.DateTime", types.DateTime("Test.DateTime", { preset: datetime }).schema);
+            assert.strictEqual(property.cloneValue(), "2026-11-09T14:30:45");
+            assert.strictEqual(property.value, datetime);
+        });
+
+        test("datetime snapshot restores a Day.js wall-clock value", function() {
+            system.registry.add(CTweenMachine);
+            const machine = node.createComponent(CTweenMachine, "machine");
+            const datetime = createDayjsUtc("2026-03-08T02:30:45");
+            const property = new Property("Test.DateTime", types.DateTime("Test.DateTime", { preset: datetime }).schema);
+            machine.addTargetProperty(property);
+
+            machine.ins.id.setValue("snapshot");
+            machine.ins.store.set();
+            machine.update({} as IPulseContext);
+            const state = JSON.parse(JSON.stringify(machine.getState("snapshot")));
+            assert.strictEqual(state.values[0], "2026-03-08T02:30:45");
+
+            machine.stateFromJSON({ states: [state] });
+            property.setValue(createDayjsUtc("2026-03-09T12:00:00"));
+            machine.ins.recall.set();
+            machine.update({} as IPulseContext);
+            assert.isTrue(property.value.isUTC());
+            assert.strictEqual(property.value.format("YYYY-MM-DDTHH:mm:ss"), "2026-03-08T02:30:45");
+
+            state.values[0] = "2026-11-09T14:30:00Z";
+            machine.stateFromJSON({ states: [state] });
+            machine.update({} as IPulseContext);
+            assert.strictEqual(property.value.format("YYYY-MM-DDTHH:mm:ss"), "2026-11-09T14:30:00");
         });
 
         test("linking/simple", function() {
