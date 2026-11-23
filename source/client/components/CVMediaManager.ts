@@ -182,6 +182,16 @@ export default class CVMediaManager extends CAssetManager
         });
     }
 
+    /** Records the size of an uploaded model file in its derivative, as the file manager reports it */
+    protected registerByteSize(model: CVModel2, quality: EDerivativeQuality, filepath: string) {
+        // Parsed from the WebDAV response's text: a string in practice
+        const byteSize = Number(this.getAssetByPath(filepath)?.info.size);
+        const asset = model.derivatives.get(EDerivativeUsage.Web3D, quality)?.findAsset(EAssetType.Model);
+        if (asset && byteSize > 0) {
+            asset.data.byteSize = byteSize;
+        }
+    }
+
     protected handleModelImport(filepath: string) {
         const mainView : MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
         const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
@@ -194,6 +204,7 @@ export default class CVMediaManager extends CAssetManager
             if(model === undefined) {
                 // converting path to relative (TODO: check if all browsers will have leading slash here)
                 const newModel = activeDoc.appendModel(filepath, quality);
+                this.registerByteSize(newModel, quality, filepath);
                 const name = parentName;
                 newModel.node.name = name;
                 newModel.ins.name.setValue(name);
@@ -203,6 +214,7 @@ export default class CVMediaManager extends CAssetManager
             }
             else {
                 model.replaceModelAsset(filepath, quality);
+                this.registerByteSize(model, quality, filepath);
                 model.once<IModelLoadEvent>("model-load", () => {selection.selectNode(model.node); 
                     this.assetManager.completeInitialLoad()}, this);
             }
