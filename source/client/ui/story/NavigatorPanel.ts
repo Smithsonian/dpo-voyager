@@ -21,6 +21,7 @@ import "./DocumentList";
 import "./NodeTree";
 
 import CVTaskProvider from "../../components/CVTaskProvider";
+import CVMediaManager from "../../components/CVMediaManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,6 +68,9 @@ export default class NavigatorPanel extends SystemView
                 <div class="sv-panel-header">
                     <ff-icon name="hierarchy"></ff-icon>
                     <div class="ff-text">Nodes</div>
+                    <div class="ff-flex-spacer"></div>
+                    <ff-button icon="upload" text="Import" title="Import files into the scene" transparent
+                        @click=${() => system.getMainComponent(CVMediaManager).openImport()}></ff-button>
                 </div>
                 <sv-node-tree class="ff-flex-item-stretch" .system=${system}></sv-node-tree>
             </div>`;

@@ -47,6 +47,9 @@ export interface IAssetRenameEvent extends ITypedEvent<"asset-rename">
     newPath: string;
 }
 
+/** Asks the drop zone to pick files, to import as if they were dropped */
+export type IPickFilesEvent = ITypedEvent<"pick-files">;
+
 export default class CVMediaManager extends CAssetManager
 {
     static readonly typeName: string = "CVMediaManager";
@@ -67,6 +70,17 @@ export default class CVMediaManager extends CAssetManager
     }
     protected get metas() {
         return this.system.getComponents(CVMeta);
+    }
+
+    /**
+     * Import files into the scene, as the Navigator's "Import" button does:
+     * by the host if it takes the import over (see {@link ImportFilesEvent}), by picking files to drop otherwise.
+     */
+    openImport()
+    {
+        if (!this.handleHostImport([])) {
+            this.emit<IPickFilesEvent>({ type: "pick-files" });
+        }
     }
 
     create()

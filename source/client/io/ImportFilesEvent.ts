@@ -58,6 +58,7 @@ export interface IImportFilesEventDetail
 {
     /**
      * The dropped files, by path among them, with "/" separators. Example: "scan/model.obj", "scan/tex/diffuse.jpg".
+     * Empty when the import is opened from the Navigator's "Import" button.
      */
     files: Map<string, File>;
     /** The scene's models, that the import may go to */
@@ -72,12 +73,13 @@ export interface IImportFilesEventDetail
 }
 
 /**
- * Dispatched on `<voyager-story>` when files are dropped to be imported into the scene (but a drop that has a scene document).
- * It bubbles, and is cancelable.
+ * Dispatched on `<voyager-story>` when files are to be imported into the scene: dropped files (but a drop that has a scene document),
+ * or none from the Navigator's "Import" button. It bubbles, and is cancelable.
  *
  * The host may take the import over with `event.detail.respondWith()`, in place of Voyager's import menus:
  * show its own menu, convert and optimize models on its server, choose where files are stored...
- * Otherwise, Voyager writes dropped files as-is to the scene and asks what they're for in its own menus.
+ * Otherwise, Voyager writes dropped files as-is to the scene and asks what they're for in its own menus,
+ * or opens a file picker from the "Import" button.
  *
  * @example
  * story.addEventListener("import-files", (e: ImportFilesEvent) => {
