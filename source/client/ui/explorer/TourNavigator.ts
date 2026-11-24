@@ -24,6 +24,7 @@ import DocumentView, { customElement, html } from "./DocumentView";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 import CVInterface, { EUIElements } from "client/components/CVInterface";
+import CVReader from "client/components/CVReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +34,7 @@ export default class TourNavigator extends DocumentView
     protected tours: CVTours;
     protected language: CVLanguageManager;
     protected interface: CVInterface;
+    protected reader: CVReader;
 
     protected needsFocus: boolean = false;
     protected firstRender: boolean = true;
@@ -46,8 +48,6 @@ export default class TourNavigator extends DocumentView
         this.classList.add("sv-bottom-bar-container", "sv-tour-navigator"/*, "sv-transition"*/); // Chrome bug causing issues with transition
         //setTimeout(() => this.classList.remove("sv-transition"), 1);
         //this.addEventListener("transitionend", this.focusActive, { once: true });
-
-        this.needsFocus = true;
     }
 
     protected render()
@@ -92,10 +92,9 @@ export default class TourNavigator extends DocumentView
     protected updated(changedProperties) {
         super.updated(changedProperties);
 
-        if(this.needsFocus) {
-            const container = this.getElementsByClassName("sv-section-trail").item(2) as HTMLElement;
-            container.focus();
-            this.needsFocus = false;
+        if(this.tours.ins.focus.value) {
+            this.setFocus();
+            this.tours.ins.focus.setValue(false, true);
         }
 
         // Hack so that initial nav title display is detected by screen readers.
@@ -164,14 +163,19 @@ export default class TourNavigator extends DocumentView
         if (previous) {
             this.tours.outs.tourIndex.off("value", this.onUpdate, this);
             this.tours.outs.stepIndex.off("value", this.onUpdate, this);
+            this.tours.ins.focus.off("value", this.onUpdate, this);
+            this.reader.ins.closed.off("value", this.setFocus, this);
             this.language.outs.activeLanguage.off("value", this.onUpdate, this);
         }
         if (next) {
             this.tours = next.setup.tours;
             this.language = next.setup.language;
             this.interface = next.setup.interface;
+            this.reader = next.setup.reader;
             this.tours.outs.tourIndex.on("value", this.onUpdate, this);
             this.tours.outs.stepIndex.on("value", this.onUpdate, this);
+            this.tours.ins.focus.on("value", this.onUpdate, this);
+            this.reader.ins.closed.on("value", this.setFocus, this);
             this.language.outs.activeLanguage.on("value", this.onUpdate, this);
         }
 
@@ -218,5 +222,10 @@ export default class TourNavigator extends DocumentView
                 titleArea.style.setProperty("pointer-events", "auto");
             });
         }
+    }
+
+    protected setFocus() {
+        const container = this.getElementsByClassName("sv-section-trail").item(2) as HTMLElement;
+        container.focus();
     }
 }

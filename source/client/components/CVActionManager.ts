@@ -338,7 +338,8 @@ export default class CVActionManager extends Component
     {
         if(this.tours.activeTour) {
             // Set any currently active or queued animations to their finish state
-            while(this._actionQueue.length > 0) {
+            const queueCount = this._actionQueue.length;
+            for(let i=0; i<queueCount; i++) {
                 const action = this._actionQueue.pop();
                 this.playAction(action.model, action.action);
             }
@@ -455,11 +456,6 @@ export default class CVActionManager extends Component
                 else if(machine.deltaStates.some(state => state.id === machine.ins.id.value)) {
                     machine.endTween();
                 }
-                else {
-                    // Queue up action if tour state tweening
-                    this._actionQueue.push({model: model, action: action});
-                    return;
-                }
             }
 
             machine.addIns.deltaID.setValue(action.stateId);
@@ -568,7 +564,7 @@ export default class CVActionManager extends Component
     protected setAnnotationVisibility(model: CVModel2, action: IAction)
     {
         const view = model.getComponent(CVAnnotationView);
-        const annotations = action.actionAnnoId?.length ? action.actionAnnoId.split("\x1F").map(id => view.getAnnotationById(id)) : [];
+        const annotations = action.actionAnnoId?.length ? action.actionAnnoId.split("\x1F").filter(Boolean).map(id => view.getAnnotationById(id)) : [];
 
         annotations.forEach(annotation => {
             const isVisible = action.type == EActionType[EActionType.ToggleAnnotation] as TActionType ?
