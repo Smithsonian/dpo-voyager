@@ -206,9 +206,10 @@ export default class CVAudioManager extends Component
                         }
                         this.audioContext.decodeAudioData(arrayBuffer,
                             (buffer) => {
+                                const currLanguage = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType;
                                 let duration = buffer.duration;
                                 clip.durations[language] = duration.toString();
-                                language === activeLanguage ? this.getPlayerById(id).requestUpdate() : null;                                         
+                                language === currLanguage ? this.getPlayerById(id).requestUpdate() : null;                                         
                             }
                         )                                         
                     });
