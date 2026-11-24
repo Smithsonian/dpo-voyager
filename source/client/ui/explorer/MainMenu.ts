@@ -16,7 +16,7 @@
  */
 
 import Subscriber from "@ff/core/Subscriber";
-import CFullscreen from "@ff/scene/components/CFullscreen";
+import Notification from "@ff/ui/Notification";
 
 import CVAnalytics from "../../components/CVAnalytics";
 import CVToolProvider from "../../components/CVToolProvider";
@@ -30,6 +30,7 @@ import DocumentView, { customElement, html } from "./DocumentView";
 import ShareMenu from "./ShareMenu";
 import CVAnnotationView from "client/components/CVAnnotationView";
 import ARCode from "./ARCode";
+import { isFullscreenActive, isFullscreenEnabled, onFullscreenChange, toggleFullscreen } from "../../utils/fullscreen";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,10 +41,8 @@ export default class MainMenu extends DocumentView
     protected shareButtonSelected = false;
     protected resizeObserver: ResizeObserver = null;
     protected isClipped: boolean = false;
+    protected removeFullscreenListener: () => void = null;
 
-    protected get fullscreen() {
-        return this.system.getMainComponent(CFullscreen);
-    }
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
     }
@@ -66,7 +65,7 @@ export default class MainMenu extends DocumentView
     protected connected()
     {
         super.connected();
-        this.fullscreen.outs.fullscreenActive.on("value", this.onUpdate, this);
+        this.removeFullscreenListener = onFullscreenChange(() => this.onUpdate());
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.activeLanguage.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.narrationEnabled.on("value", this.onUpdate, this);
@@ -92,7 +91,8 @@ export default class MainMenu extends DocumentView
         this.activeDocument.setup.audio.outs.narrationEnabled.off("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.activeLanguage.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
-        this.fullscreen.outs.fullscreenActive.off("value", this.onUpdate, this);
+        this.removeFullscreenListener();
+        this.removeFullscreenListener = null;
         super.disconnected();
     }
 
@@ -120,9 +120,8 @@ export default class MainMenu extends DocumentView
         const annotationsButtonVisible = views.some(view => {return view.hasAnnotations;}); //true;
         const annotationsActive = setup.viewer.ins.annotationsVisible.value;
 
-        const fullscreen = this.fullscreen;
-        const fullscreenButtonVisible = fullscreen.outs.fullscreenAvailable.value;
-        const fullscreenActive = fullscreen.outs.fullscreenActive.value;
+        const fullscreenButtonVisible = isFullscreenEnabled();
+        const fullscreenActive = isFullscreenActive();
 
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
@@ -220,7 +219,15 @@ export default class MainMenu extends DocumentView
 
     protected onToggleFullscreen()
     {
-        this.fullscreen.toggle();
+        // The menu lives in the shadow root of the voyager-explorer element, which is what goes fullscreen.
+        const root = this.getRootNode();
+        const target = root instanceof ShadowRoot ? root.host : this;
+
+        toggleFullscreen(target).catch(error => {
+            console.warn("Fullscreen request failed:", error);
+            const message = "Fullscreen is not available in this context.";
+            Notification.show(this.activeDocument?.setup.language.getLocalizedString(message) ?? message, "warning");
+        });
         this.analytics.sendProperty("Menu_Fullscreen");
     }
 
