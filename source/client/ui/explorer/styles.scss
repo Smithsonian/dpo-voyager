@@ -225,7 +225,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   -webkit-user-select: text;
 }
 
-// HTML overlay of the scene view (annotations and their popup): a single layer,
+// HTML overlay of the scene view (annotations): a single layer,
 // above the scene view's splitter, below captions and the chrome view
 .sv-content-overlay {
   z-index: 1;
@@ -593,11 +593,15 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 ////////////////////////////////////////////////////////////////////////////////
 // CHROME VIEW
 
-.sv-chrome-view {
+@mixin chrome-text {
   @include common.font-ui-normal;
   font-size: 0.85em;
   line-height: 1.35;
   color: common.$color-text;
+}
+
+.sv-chrome-view {
+  @include chrome-text;
   @include common.fullsize;
   overflow: clip;
   display: flex;
@@ -772,7 +776,6 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     color: inherit;
     background-color: color.adjust(black, $alpha: -0.4);
     pointer-events: auto;
-    cursor: auto; // the scene view sets a "grab" cursor
     outline: none;
 
     &[open] {
@@ -787,6 +790,12 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       }
     }
   }
+}
+
+// The explorer's popups, in its shadow root, use the chrome view's text styles.
+// The annotation popup keeps the annotations' ones.
+:host > .sv-modal:not(.sv-annotation-popup) {
+  @include chrome-text;
 }
 
 .sv-modal-panel {

@@ -27,6 +27,36 @@ export interface IModalCloseEvent<T = unknown> extends CustomEvent<T>
     type: "close";
 }
 
+// Elements made inert by popups, to tell them from elements inert for other reasons
+const madeInert = new WeakSet<HTMLElement>();
+
+/**
+ * While popups are open among the children of `parent`, makes all other children
+ * inert, except the topmost open popup.
+ * Computed from the popups open, so it holds whatever order they open and close in.
+ */
+function updateInert(parent: ParentNode)
+{
+    const children = Array.from(parent.children);
+    const top = children.filter(child => child instanceof Modal && child.isOpen).pop();
+
+    for (const child of children) {
+        if (!(child instanceof HTMLElement)) {
+            continue;
+        }
+        if (top && child !== top) {
+            if (!child.inert) {
+                child.inert = true;
+                madeInert.add(child);
+            }
+        }
+        else if (madeInert.has(child)) {
+            child.inert = false;
+            madeInert.delete(child);
+        }
+    }
+}
+
 /**
  * Application popup window, built on a native `<dialog>`.
  * When closed, dispatches a "close" event (see {@link IModalCloseEvent}) with the
@@ -34,6 +64,11 @@ export interface IModalCloseEvent<T = unknown> extends CustomEvent<T>
  * doesn't remove itself: its owner does, on "close". This allows using it from a
  * template (`<sv-modal .content=${...} @close=${...}>`) as well as from code,
  * see {@link openIn} and {@link openModal}.
+ *
+ * It covers its parent, and makes the parent's other children inert (unreachable by
+ * keyboard and assistive technologies) while open: its parent is what it is modal to.
+ * {@link openIn} and {@link openModal} put it at the root of a Voyager element, so
+ * that when Voyager is embedded in a page, the rest of the page stays usable.
  */
 @customElement("sv-modal")
 export default class Modal extends CustomElement
@@ -60,6 +95,8 @@ export default class Modal extends CustomElement
     private _closed = false;
     // true while a pointer press that started on the backdrop is in progress
     private _backdropPress = false;
+    // parent whose other children are inert while open
+    private _parent: ParentNode = null;
 
     constructor()
     {
@@ -68,6 +105,12 @@ export default class Modal extends CustomElement
         this.onDialogKeyDown = this.onDialogKeyDown.bind(this);
         this.onDialogPointerDown = this.onDialogPointerDown.bind(this);
         this.onDialogClick = this.onDialogClick.bind(this);
+    }
+
+    /** True from when the dialog is shown until it is closed. */
+    get isOpen()
+    {
+        return !this._closed && !!this.dialog && this.dialog.open;
     }
 
     /** Closes the dialog, dispatching "close" with `value` as detail. */
@@ -85,18 +128,25 @@ export default class Modal extends CustomElement
     }
 
     /**
-     * Appends the element to `parent`. Resolves with the value passed to {@link close},
-     * `undefined` if dismissed, once closed and removed.
+     * Appends the popup to the root of the Voyager element `element` is in (or is),
+     * covering all of it: its shadow root for the explorer, else the element itself.
+     * Outside of a Voyager element, to `document.body`, covering the whole page.
+     * Resolves with the value passed to {@link close}, `undefined` if dismissed, once
+     * closed and removed.
      */
-    openIn(parent: Node): Promise<unknown>
+    openIn(element: Element): Promise<unknown>
     {
+        const root = element.getRootNode();
+        const parent: ParentNode = root instanceof ShadowRoot ? root
+            : element.closest("voyager-story, voyager-mini, voyager-launcher") || document.body;
+
         return new Promise(resolve => {
             this.addEventListener("close", (event: IModalCloseEvent) => {
                 this.remove();
                 resolve(event.detail);
             }, { once: true });
 
-            parent.appendChild(this);
+            parent.append(this);
         });
     }
 
@@ -104,6 +154,16 @@ export default class Modal extends CustomElement
     {
         super.firstConnected();
         this.classList.add("sv-modal");
+    }
+
+    protected disconnected()
+    {
+        super.disconnected();
+
+        // removed without being closed
+        if (this._parent) {
+            updateInert(this._parent);
+        }
     }
 
     protected render()
@@ -126,6 +186,8 @@ export default class Modal extends CustomElement
         if (!this._closed) {
             // focuses the content's [autofocus] element, if any
             this.dialog.show();
+            this._parent = this.parentNode;
+            updateInert(this._parent);
         }
     }
 
@@ -136,6 +198,9 @@ export default class Modal extends CustomElement
         }
 
         this._closed = true;
+        if (this._parent) {
+            updateInert(this._parent);
+        }
         this.dispatchEvent(new CustomEvent("close", { detail: this._value }));
     }
 
@@ -186,10 +251,11 @@ export interface IModalContext<T>
 }
 
 /**
- * Shows a popup in `parent`, with the content returned by `render`.
+ * Shows a popup covering the Voyager element `element` is in (see {@link Modal.openIn}),
+ * with the content returned by `render`.
  * @returns the value passed to `close()`, or `undefined` if dismissed.
  */
-export function openModal<T = void>(parent: HTMLElement,
+export function openModal<T = void>(element: Element,
     render: (context: IModalContext<T>) => ModalContent, options: IModalOptions): Promise<T | undefined>
 {
     const modal = new Modal();
@@ -204,5 +270,5 @@ export function openModal<T = void>(parent: HTMLElement,
 
     context.update();
 
-    return modal.openIn(parent) as Promise<T | undefined>;
+    return modal.openIn(element) as Promise<T | undefined>;
 }

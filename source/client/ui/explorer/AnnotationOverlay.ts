@@ -23,16 +23,9 @@ import AnnotationSprite from "client/annotations/AnnotationSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// The popup lives in the scene view's overlay, whose handlers would otherwise act on
-// events in it: navigation and picking (pointer, wheel), keyboard navigation, and
-// leaving annotations on Escape.
-const sceneViewEvents = [ "pointerdown", "pointermove", "pointerup", "pointercancel", "wheel", "keydown" ];
-
-const stopPropagation = (event: Event) => event.stopPropagation();
-
 /**
- * Shows the full content of an annotation in a popup, over the scene view only:
- * the chrome view (titles, menus) stays above it.
+ * Shows the full content of an annotation in a popup covering the Voyager element.
+ * `parent`: an element in the Voyager element, see {@link Modal.openIn}.
  * `content` is the annotation's content element: it is moved into the popup, the
  * caller has to put it back once the returned promise resolves.
  * The popup closes when the annotation's article link is followed.
@@ -42,6 +35,7 @@ export function showAnnotationOverlay(parent: HTMLElement, content: HTMLElement,
     const modal = new Modal();
     modal.label = "Annotation pop-up";
     modal.panelClass = "sv-annotation-overlay sv-annotation";
+    modal.classList.add("sv-annotation-popup");
 
     const close = () => modal.close();
 
@@ -57,7 +51,6 @@ export function showAnnotationOverlay(parent: HTMLElement, content: HTMLElement,
     modal.content = render("");
     const timer = window.setTimeout(() => { modal.content = render(sprite.annotation.title); }, 100);
 
-    sceneViewEvents.forEach(type => modal.addEventListener(type, stopPropagation));
     sprite.addEventListener("link", close);
 
     return modal.openIn(parent).then(() => {
