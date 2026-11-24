@@ -6,7 +6,7 @@
  */
 
 import PopupButton from "./PopupButton";
-import Popup from "./Popup";
+import { showPopover } from "./popover";
 import ColorEdit, { Color, IColorEditChangeEvent } from "./ColorEdit";
 
 
@@ -28,7 +28,7 @@ export default class ColorButton extends PopupButton
     @property({ type: Boolean })
     numeric = false;
 
-    protected popup: Popup = null;
+    protected popup: HTMLElement = null;
 
 
     protected firstConnected()
@@ -44,15 +44,12 @@ export default class ColorButton extends PopupButton
         edit.alpha = this.alpha;
         edit.numeric = this.numeric;
 
-        const popup = this.popup = new Popup();
-        popup.appendElement(edit);
-        this.appendElement(popup);
+        // opening and closing are handled by PopupButton
+        const popup = this.popup = this.appendElement("div");
+        popup.setAttribute("popover", "manual");
+        popup.appendChild(edit);
 
-        popup.anchor = this;
-        popup.keepVisible = true;
-        popup.align = "end";
-        popup.justify = "end";
-        popup.position = "anchor";
+        showPopover(popup, this, { x: "end" });
     }
 
     protected hidePopup()

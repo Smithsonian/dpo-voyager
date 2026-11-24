@@ -27,9 +27,9 @@ import CVModel2 from "../../components/CVModel2";
 import { EDerivativeQuality } from "../../schema/model";
 
 import DocumentView, { customElement, html } from "./DocumentView";
-import ShareMenu from "./ShareMenu";
+import { showShareMenu } from "./ShareMenu";
 import CVAnnotationView from "client/components/CVAnnotationView";
-import ARCode from "./ARCode";
+import { showARCode } from "./ARCode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -208,7 +208,7 @@ export default class MainMenu extends DocumentView
             this.requestUpdate();
 
             const container = this.closest("sv-chrome-view") as HTMLElement;
-            ShareMenu.show(container, this.activeDocument.setup.language).then(() => {
+            showShareMenu(container, this.activeDocument.setup.language).then(() => {
                 this.shareButtonSelected = false;
                 this.requestUpdate();
                 this.setElementFocus("share-btn");
@@ -247,7 +247,7 @@ export default class MainMenu extends DocumentView
         }
         else {
             const container = this.closest("sv-chrome-view") as HTMLElement;
-            ARCode.show(container, this.activeDocument.setup.language, ar.arCodeImage).then(() => {
+            showARCode(container, this.activeDocument.setup.language, ar.arCodeImage).then(() => {
                 //this.shareButtonSelected = false;
                 //this.requestUpdate();
                 this.setElementFocus("ar-btn");

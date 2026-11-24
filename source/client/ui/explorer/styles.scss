@@ -225,7 +225,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   -webkit-user-select: text;
 }
 
+// HTML overlay of the scene view (annotations): a single layer,
+// above the scene view's splitter, below captions and the chrome view
 .sv-content-overlay {
+  z-index: 1;
+
   .error-msg {
     position: absolute;
     text-align: center;
@@ -484,27 +488,6 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   }
 }
 
-.sv-annotation-overlay {
-  padding: 7px;
-  pointer-events: auto;
-  background-color: $menu-color-background;
-  max-width: #{"min(80%, 800px)"};
-  min-width: 50%;
-  max-height: 90%;
-  overflow-y: auto;
-  cursor: auto;
-
-  .sv-annotation-body {
-    .ff-button {
-      background: rgba(0, 0, 0, 0.01); // hack to get click events
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // AR MODE
 
@@ -586,14 +569,8 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 .sv-ar-code {
-  position: relative;
   width: 420px;
   max-width: 85%;
-  max-height: 90%;
-  padding: 8px;
-  background: common.$color-background;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
-  pointer-events: auto;
 
   .ff-title {
     margin: 0.5em 0 1em 0;
@@ -616,11 +593,15 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 ////////////////////////////////////////////////////////////////////////////////
 // CHROME VIEW
 
-.sv-chrome-view {
+@mixin chrome-text {
   @include common.font-ui-normal;
   font-size: 0.85em;
   line-height: 1.35;
   color: common.$color-text;
+}
+
+.sv-chrome-view {
+  @include chrome-text;
   @include common.fullsize;
   overflow: clip;
   display: flex;
@@ -770,16 +751,92 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SHARE MENU
+// MODAL WINDOWS (see ui/Modal.ts)
 
-.sv-share-menu {
+// Host element: covers its parent. The dialog fills it and serves as backdrop,
+// so the modal is confined to the Voyager element when embedded in a page.
+.sv-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+
+  & > dialog {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-sizing: border-box;
+    overflow: hidden;
+    color: inherit;
+    background-color: color.adjust(black, $alpha: -0.4);
+    pointer-events: auto;
+    outline: none;
+
+    &[open] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      // fade in the backdrop only, the panel appears at once
+      transition: background-color common.$tx-medium;
+
+      @starting-style {
+        background-color: transparent;
+      }
+    }
+  }
+}
+
+// The explorer's popups, in its shadow root, use the chrome view's text styles.
+// The annotation popup keeps the annotations' ones.
+:host > .sv-modal:not(.sv-annotation-popup) {
+  @include chrome-text;
+}
+
+.sv-modal-panel {
   position: relative;
-  width: 450px;
-  max-width: 85%;
+  box-sizing: border-box;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
   padding: 8px;
   background: common.$color-background;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
-  pointer-events: auto;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ANNOTATION POPUP
+
+// panel of the annotation popup, also an .sv-annotation for the content's styles
+.sv-annotation-overlay {
+  position: relative; // not absolute like annotations
+  z-index: auto;
+  background-color: $menu-color-background;
+  max-width: #{"min(80%, 800px)"};
+  min-width: 50%;
+
+  .sv-annotation-body {
+    .ff-button {
+      background: rgba(0, 0, 0, 0.01); // hack to get click events
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SHARE MENU
+
+.sv-share-menu {
+  width: 450px;
+  max-width: 85%;
 
   .ff-title {
     margin: 0.5em 0 1em 0;
@@ -958,6 +1015,7 @@ $tour-entry-indent: 12px;
 
 .sv-option-menu {
   position: relative;
+  box-sizing: content-box; // width and height are for the content
   width: 225px;
   max-width: 85%;
   height: 200px;
@@ -1031,12 +1089,8 @@ $tour-entry-indent: 12px;
 // HELP SCREEN
 
 .sv-main-help {
-  position: relative;
   width: 90%;
   height: 90%;
-  padding: 8px;
-  background: common.$color-background;
-  pointer-events: auto;
 
   .sv-help-section {
     display: flex;
@@ -1324,6 +1378,11 @@ $tour-entry-indent: 12px;
       padding: 8px;
       border-radius: 2px;
     }
+
+    // floating picker: the popover is positioned instead (see PropertyColor)
+    .sv-color-popover .ff-color-edit {
+      position: static;
+    }
   }
   
   &.sv-property-number{
@@ -1551,13 +1610,9 @@ $tour-entry-indent: 12px;
 }
 
 .sv-splash {
-  padding: 7px;
-  pointer-events: auto;
   background-color: $menu-color-background;
   max-width: #{"min(80%, 800px)"};
   min-width: 50%;
-  max-height: 90%;
-  overflow-y: auto;
 
   & > :focus-visible {
     outline: none;

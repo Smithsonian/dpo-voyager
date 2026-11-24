@@ -15,92 +15,27 @@
  * limitations under the License.
  */
 
-import Popup, { customElement, html } from "@ff/ui/Popup";
+import { html } from "@ff/ui/CustomElement";
+import { unsafeHTML } from "lit-html/directives/unsafe-html";
 
 import "@ff/ui/Button";
 import CVLanguageManager from "client/components/CVLanguageManager";
-import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+import { openModal } from "../Modal";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-splash")
-export default class SplashScreen extends Popup
+/** Shows the scene's introduction, `content` being an HTML string. */
+export function showSplashScreen(parent: HTMLElement, language: CVLanguageManager, content: string): Promise<void>
 {
-    protected url: string;
-    protected language: CVLanguageManager = null;
-    protected content: string = "";
-    protected contentElement: HTMLDivElement;
+    const windowName = language.getLocalizedString("Welcome to Voyager");
 
-   
-    static show(parent: HTMLElement, language: CVLanguageManager, content: string): Promise<void>
-    {
-        const screen = new SplashScreen(parent, language, content);
-        parent.appendChild(screen);
-
-        return new Promise((resolve, reject) => {
-            screen.on("close", () => resolve());
-        });
-    }
-
-    constructor( parent: HTMLElement, language: CVLanguageManager, content: string )
-    {
-        super();
-
-        this.language = language;
-        this.content = content;
-        this.position = "center";
-        this.portal = parent;
-        this.modal = true;
-
-        this.url = window.location.href;
-    }
-
-    close()
-    {
-        this.dispatchEvent(new CustomEvent("close"));
-        this.remove();
-    }
-
-    protected firstConnected()
-    {
-        super.firstConnected();
-        this.contentElement = this.createElement("div", null);
-        this.classList.add("sv-splash");
-    }
-
-    protected render()
-    {
-        const language = this.language;
-        const contentElement = this.contentElement;
-
-        contentElement.innerHTML = this.content;
-
-        return html`
-        <div id="main" tabIndex="-1" role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
+    return openModal(parent, ({ close }) => html`
+        <div id="main" tabindex="-1" autofocus>
             <div class="ff-flex-row">
-                <div class="ff-flex-spacer ff-title"><b>${language.getLocalizedString("Welcome to Voyager")}</b></div>
-                <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
+                <div class="ff-flex-spacer ff-title"><b>${windowName}</b></div>
+                <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${() => close()}></ff-button>
             </div>
-            <div>
-                ${contentElement}
-            </div>
-        </div>
-        `;
-    }
-
-    protected firstUpdated(changedProperties) {
-        super.firstUpdated(changedProperties);
-
-        (this.querySelector("#main") as HTMLElement).focus();
-    }
-
-    protected onKeyDownMain(e: KeyboardEvent)
-    {
-        if (e.code === "Escape") {
-            this.close();
-        }
-        else if(e.code === "Tab") {
-            focusTrap(getFocusableElements(this) as HTMLElement[], e);
-        }
-    }
+            <div>${unsafeHTML(content)}</div>
+        </div>`,
+        { label: windowName, panelClass: "sv-splash" });
 }

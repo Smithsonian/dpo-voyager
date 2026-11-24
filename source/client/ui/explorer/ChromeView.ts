@@ -27,16 +27,15 @@ import "./MainMenu";
 import "./ToolBar";
 import "./TourNavigator";
 import "./TourMenu";
-import "./LanguageMenu";
 import "./TagCloud";
-import HelpMain from "./HelpMain";
+import { showHelp } from "./HelpMain";
 import { ITourMenuSelectEvent } from "./TourMenu";
 
 import DocumentView, { customElement, html } from "./DocumentView";
-import LanguageMenu from "./LanguageMenu";
+import { showLanguageMenu } from "./LanguageMenu";
 import { EUIElements } from "client/components/CVInterface";
 import CVAssetReader from "client/components/CVAssetReader";
-import SplashScreen from "./SplashScreen";
+import { showSplashScreen } from "./SplashScreen";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -135,7 +134,7 @@ export default class ChromeView extends DocumentView
         const introText = this.activeDocument.outs.intro.value;
         if(introText) { // TODO: Stop intro pop-up from spawning when setting property in Story
             if(this.needsSplash && introText.length > 0) {
-                SplashScreen.show(this, this.activeDocument.setup.language, introText).then(() => {
+                showSplashScreen(this, this.activeDocument.setup.language, introText).then(() => {
                     (this.getRootNode() as ShadowRoot).getElementById("sv-scene").focus();
                 });
             }
@@ -214,7 +213,7 @@ export default class ChromeView extends DocumentView
         if (!language.ins.enabled.value) {
             language.ins.enabled.setValue(true);
 
-            LanguageMenu.show(this, this.activeDocument.setup.language).then(() => {
+            showLanguageMenu(this, this.activeDocument.setup.language).then(() => {
                 language.ins.enabled.setValue(false);
                 (this.querySelector("#language") as HTMLElement).focus();
             });
@@ -225,7 +224,7 @@ export default class ChromeView extends DocumentView
         const language = this.activeDocument.setup.language;
         const navMode = this.activeDocument.setup.navigation.ins.mode.value;
 
-        HelpMain.show(this, language, navMode).then(() => {
+        showHelp(this, language, navMode).then(() => {
             (this.querySelector("#main-help") as HTMLElement).focus();
         });
     }

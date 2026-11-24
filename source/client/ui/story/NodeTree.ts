@@ -30,8 +30,8 @@ import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
 import Notification from "@ff/ui/Notification";
 import CLight from "@ff/scene/components/CLight";
-import ConfirmDeleteLightMenu from "./ConfirmDeleteLightMenu";
-import CreateLightMenu from "./CreateLightMenu";
+import { showConfirmDeleteLightMenu } from "./ConfirmDeleteLightMenu";
+import { showCreateLightMenu } from "./CreateLightMenu";
 import CVOrbitNavigation from "client/components/CVOrbitNavigation";
 import CVScene from "client/components/CVScene";
 import unitScaleFactor from "client/utils/unitScaleFactor";
@@ -204,9 +204,12 @@ class NodeTree extends Tree<NVNode>
         const mainView = document.getElementsByTagName('voyager-story')[0] as HTMLElement;
         const language: CVLanguageManager = this.documentProvider.activeComponent.setup.language;
 
-        CreateLightMenu
-            .show(mainView, language)
-            .then(([selectedType, name]) => {
+        showCreateLightMenu(mainView, language)
+            .then(result => {
+                if (!result) {
+                    return;
+                }
+                const [selectedType, name] = result;
                 const lightNode = NodeTree.createLightNode(parentNode, selectedType, name);
                 parentNode.transform.addChild(lightNode.transform);
                 this.nodeProvider.activeNode = lightNode;
@@ -253,7 +256,7 @@ class NodeTree extends Tree<NVNode>
         const mainView = document.getElementsByTagName('voyager-story')[0] as HTMLElement;
         const language: CVLanguageManager = this.documentProvider.activeComponent.setup.language;
 
-        ConfirmDeleteLightMenu.show(mainView, language, node.name)
+        showConfirmDeleteLightMenu(mainView, language, node.name)
             .then(confirmed => {
                 if (confirmed) {
                     if (this.nodeProvider.activeNode === node) {

@@ -500,17 +500,16 @@ button, input {
 ////////////////////////////////////////////////////////////////////////////////
 // COMPONENTS
 
-.ff-modal-plane {
-  @include fullscreen;
-  background-color: color.adjust(black, $alpha: -0.4);
-  opacity: 0;
-  transition: opacity $tx-medium;
-  z-index: 990;
-  pointer-events: auto;
-
-  &.ff-transition {
-    opacity: 1;
-  }
+// popovers positioned by script, see popover.ts
+.ff-popover {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  overflow: visible;
+  color: inherit;
+  background: transparent;
 }
 
 ff-dialog {
@@ -697,65 +696,16 @@ ff-popup-button {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MESSAGE BOX
-
-.ff-message-box {
-  position: relative;
-  min-width: 350px;
-  max-width: 450px;
-  width: 90%;
-  padding: 16px;
-  background: $color-background;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
-  opacity: 0;
-  transition: opacity $tx-short;
-
-  &.ff-transition {
-    opacity: 1;
-  }
-
-  .ff-title {
-    align-items: flex-start;
-
-    .ff-type-icon {
-      margin: 0 16px 0 0;
-      height: 2.5em;
-      &[name="prompt"] { fill: $color-prompt; }
-      &[name="info"] { fill: $color-info; }
-      &[name="warning"] { fill: $color-warning; }
-      &[name="error"] { fill: $color-error; }
-    }
-    .ff-content {
-      flex: 1 1 auto;
-      margin: 0 0 2em 0;
-    }
-    .ff-caption {
-      font-size: 1.5em;
-    }
-    .ff-text {
-      margin: 2em 0 1em 0;
-    }
-    .ff-line-edit {
-      margin: 0 0 1em 0;
-      input { padding: 4px }
-    }
-    .ff-close-button  {
-      margin: 0 0 0 16px;
-      padding: 0;
-    }
-  }
-
-  .ff-button + .ff-button {
-    margin-left: 8px;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // MENU
 
 .ff-popup-options {
   @include window;
   min-width: 6rem;
+
+  &:popover-open {
+    display: flex;
+    flex-direction: column;
+  }
 
   button {
     padding: 4px 8px;

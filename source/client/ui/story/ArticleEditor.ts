@@ -41,7 +41,7 @@ import contentCss from './editor_css/content.min.css?raw';
 import contentOverrides from './editor_css/overrides.css?raw';
 
 import Notification from "@ff/ui/Notification";
-import MessageBox from "@ff/ui/MessageBox";
+import { showMessageBox } from "../MessageBox";
 
 import SystemView, { customElement } from "@ff/scene/ui/SystemView";
 
@@ -101,7 +101,7 @@ export default class ArticleEditor extends SystemView
     closeArticle()
     {
         if (tinymce.activeEditor.isDirty() && this._assetPath) {
-            return MessageBox.show("Close Article", "Would you like save your changes?", "warning", "yes-no").then(result => {
+            return showMessageBox("Close Article", "Would you like save your changes?", "warning", "yes-no").then(result => {
                 if (result.ok) {
                     return this.writeArticle().then(() => this.clearArticle());
                 }

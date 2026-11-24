@@ -22,7 +22,7 @@ import HTMLSprite, { SpriteElement, html } from "@ff/three/HTMLSprite";
 
 import Annotation from "../models/Annotation";
 import CVAssetReader from "client/components/CVAssetReader";
-import AnnotationOverlay from "client/ui/explorer/AnnotationOverlay";
+import { showAnnotationOverlay } from "client/ui/explorer/AnnotationOverlay";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -210,7 +210,7 @@ export class AnnotationElement extends SpriteElement
     showOverlay(content: HTMLElement)
     {
         this.requestUpdate().then(() => {
-            AnnotationOverlay.show(this.parentElement, content, this.sprite).then(() => {
+            showAnnotationOverlay(this.parentElement, content, this.sprite).then(() => {
                 this.overlayed = false;
                 this.append(content); // attach content back to original container
                 (this.querySelector('[tabindex="0"]') as HTMLElement).focus();
