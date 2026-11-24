@@ -47,6 +47,7 @@ export default class ExplorerPanel extends CustomElement
 
             const fileInput = this.appendElement("input");
             fileInput.type = "file";
+            fileInput.multiple = true; // A model comes with the files it refers to
             fileInput.id = "fileInput";
             fileInput.style.display = "none";
 
