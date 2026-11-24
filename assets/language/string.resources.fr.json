@@ -42,6 +42,7 @@
   "Floor": "Sol",
   "Front": "Face",
   "Fullscreen": "Plein écran",
+  "Fullscreen is not available in this context.": "Le plein écran n'est pas disponible dans ce contexte.",
   "Go Backward": "Revenir en arrière",
   "Go Forward": "Avancer",
   "Grid": "Grille",

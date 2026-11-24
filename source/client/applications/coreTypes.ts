@@ -25,7 +25,6 @@ import CTweenMachine from "@ff/graph/components/CTweenMachine";
 
 import CRenderer from "@ff/scene/components/CRenderer";
 
-import CFullscreen from "@ff/scene/components/CFullscreen";
 import CPickSelection from "@ff/scene/components/CPickSelection";
 import CScene from "@ff/scene/components/CScene";
 
@@ -108,7 +107,6 @@ const types = [
     CNodeProvider,
     CTweenMachine,
     CRenderer,
-    CFullscreen,
     CPickSelection,
     CScene,
 
