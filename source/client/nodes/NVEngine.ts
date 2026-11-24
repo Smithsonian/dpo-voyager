@@ -20,7 +20,6 @@ import Node from "@ff/graph/Node";
 import CPulse from "@ff/graph/components/CPulse";
 import CRenderer from "@ff/scene/components/CRenderer";
 import CPickSelection from "@ff/scene/components/CPickSelection";
-import CFullscreen from "@ff/scene/components/CFullscreen";
 
 import CVAssetManager from "../components/CVAssetManager";
 import CVAssetReader from "../components/CVAssetReader";
@@ -38,9 +37,6 @@ export default class NVEngine extends Node
     }
     get renderer() {
         return this.components.get(CRenderer);
-    }
-    get fullscreen() {
-        return this.components.get(CFullscreen);
     }
     get selection() {
         return this.components.get(CPickSelection);
@@ -62,7 +58,6 @@ export default class NVEngine extends Node
     {
         this.createComponent(CPulse);
         this.createComponent(CRenderer);
-        this.createComponent(CFullscreen);
         this.createComponent(CVAssetManager);
         this.createComponent(CVAssetReader);
         this.createComponent(CVAnalytics);
