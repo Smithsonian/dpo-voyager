@@ -23,7 +23,7 @@ import ExplorerLockToolbar from "./ExplorerLockToolbar";
 import { relative } from "path";
 import { IStoryApplicationProps } from "client/applications/StoryApplication";
 import { SimpleDropzone } from 'simple-dropzone';
-import CVMediaManager from "client/components/CVMediaManager";
+import CVMediaManager, { IPickFilesEvent } from "client/components/CVMediaManager";
 import CVStoryApplication from "client/components/CVStoryApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,6 +33,8 @@ export default class ExplorerPanel extends CustomElement
 {
     @property({ attribute: false })
     application: ExplorerApplication;
+
+    protected fileInput: HTMLInputElement;
 
     constructor(application?: ExplorerApplication)
     {
@@ -45,8 +47,9 @@ export default class ExplorerPanel extends CustomElement
             this.addEventListener('dragleave', this.onDragLeave);
             this.addEventListener('drop', this.onDragDrop);
 
-            const fileInput = this.appendElement("input");
+            const fileInput = this.fileInput = this.appendElement("input");
             fileInput.type = "file";
+            fileInput.multiple = true; // A model comes with the files it refers to
             fileInput.id = "fileInput";
             fileInput.style.display = "none";
 
@@ -73,6 +76,21 @@ export default class ExplorerPanel extends CustomElement
         const explorerWrapper = document.createElement("div");
         lockableContainer.appendChild(explorerWrapper);
         explorerWrapper.appendChild(new ExplorerView(this.application));
+    }
+
+    protected connected()
+    {
+        this.application.system.getComponent(CVMediaManager).on<IPickFilesEvent>("pick-files", this.onPickFiles, this);
+    }
+
+    protected disconnected()
+    {
+        this.application.system.getComponent(CVMediaManager).off<IPickFilesEvent>("pick-files", this.onPickFiles, this);
+    }
+
+    protected onPickFiles()
+    {
+        this.fileInput?.click();
     }
 
     protected onDragEnter(e: MouseEvent) {

@@ -26,7 +26,7 @@ import MainView from "client/ui/explorer/MainView";
 import CVDocumentProvider from "./CVDocumentProvider";
 import ImportMenu from "client/ui/story/ImportMenu";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
-import { EAssetType, EDerivativeQuality, EDerivativeUsage, EMapType } from "client/schema/model";
+import { EAssetType, EDerivativeQuality, EDerivativeUsage, EMapType, TDerivativeQuality } from "client/schema/model";
 import CSelection from "@ff/graph/components/CSelection";
 import CVMeta from "./CVMeta";
 import Article from "client/models/Article";
@@ -35,6 +35,7 @@ import ImageImportMenu from "client/ui/story/ImageImportMenu";
 import CVAssetReader from "./CVAssetReader";
 import NVNode from "client/nodes/NVNode";
 import CVImagePlane from "./CVImagePlane";
+import { dispatchImportFiles, IFileImportResult } from "client/io/ImportFilesEvent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,6 +46,9 @@ export interface IAssetRenameEvent extends ITypedEvent<"asset-rename">
     oldPath: string;
     newPath: string;
 }
+
+/** Asks the drop zone to pick files, to import as if they were dropped */
+export type IPickFilesEvent = ITypedEvent<"pick-files">;
 
 export default class CVMediaManager extends CAssetManager
 {
@@ -66,6 +70,17 @@ export default class CVMediaManager extends CAssetManager
     }
     protected get metas() {
         return this.system.getComponents(CVMeta);
+    }
+
+    /**
+     * Import files into the scene, as the Navigator's "Import" button does:
+     * by the host if it takes the import over (see {@link ImportFilesEvent}), by picking files to drop otherwise.
+     */
+    openImport()
+    {
+        if (!this.handleHostImport([])) {
+            this.emit<IPickFilesEvent>({ type: "pick-files" });
+        }
     }
 
     create()
@@ -141,6 +156,11 @@ export default class CVMediaManager extends CAssetManager
 
         const documentRoot = documentProvided ? fileArray[fileArray.length-1][0].replace(fileArray[fileArray.length-1][1].name, '') : "";
 
+        // The host may take over every drop that's not a scene's
+        if (!documentProvided && this.handleHostImport(fileArray.map(([path, file]) => [path.replace(/^\/+/, ""), file]))) {
+            return;
+        }
+
         fileArray.forEach(([path, file]) => {
             const cleanfileName = decodeURI(file.name);
             const filenameLower = cleanfileName.toLowerCase();
@@ -186,29 +206,15 @@ export default class CVMediaManager extends CAssetManager
         const mainView : MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
         const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
         const filename = filepath.substr(filepath.lastIndexOf("/") + 1);
-        const selection = this.getMainComponent(CSelection);
 
         ImportMenu.show(mainView, activeDoc.setup.language, filename).then(([quality, parentName]) => {
-            this.assetManager.ins.initialLoad.setValue(true);
             const model = this.getSystemComponents(CVModel2).find(element => element.node.name === parentName);
-            if(model === undefined) {
-                // converting path to relative (TODO: check if all browsers will have leading slash here)
-                const newModel = activeDoc.appendModel(filepath, quality);
-                const name = parentName;
-                newModel.node.name = name;
-                newModel.ins.name.setValue(name);
-                newModel.ins.quality.setValue(quality);
-                newModel.once<IModelLoadEvent>("model-load", () => {selection.selectNode(newModel.node); 
-                    this.assetManager.outs.initialLoad.setValue(false)}, this);
-            }
-            else {
-                model.derivatives.remove(EDerivativeUsage.Web3D, quality);
-                model.derivatives.createModelAsset(filepath, quality)
-                model.ins.quality.setValue(quality);
-                model.outs.updated.set();
-                model.once<IModelLoadEvent>("model-load", () => {selection.selectNode(model.node); 
-                    this.assetManager.outs.initialLoad.setValue(false)}, this);
-            }
+            this.applyImport({
+                kind: "model",
+                target: model ? model.id : null,
+                name: parentName,
+                derivatives: [{ quality: EDerivativeQuality[quality] as TDerivativeQuality, uri: filepath }],
+            });
         }).catch(e => {
             const asset = this.getAssetByPath(filepath);
             this.delete(asset);
@@ -226,38 +232,135 @@ export default class CVMediaManager extends CAssetManager
             const type = returnVals[0];
             switch(type) {
                 case "environment":
-                    this.environment.addImage(filepath);
+                    this.applyImport({ kind: "environment", uri: filepath });
                     break;
                 case "overlay":
                     // move overlay out of assets folder - lifecycle handled by parent object
                     this.move(asset, this.root).then(() => {  
                         const parentName = returnVals[1];
                         const model = this.getSystemComponents(CVModel2).find(element => element.node.name === parentName);
-                        const newAsset = model.activeDerivative.createAsset(EAssetType.Image, rootPath);
-                        newAsset.data.mapType = EMapType.Zone;
-                        const overlay = model.getOverlay(rootPath);
-                        overlay.asset = newAsset;
-                        overlay.fromFile = true;
-                        model.ins.overlayMap.setValue(model.getOverlays().length);
+                        this.applyImport({ kind: "overlay", target: model.id, uri: rootPath });
                     });        
                     break;
                 case "plane":
                     // move plane geometry out of assets folder - lifecycle handled by parent object
-                    this.move(asset, this.root).then(() => { 
-                        const nvNode = activeDoc.root.graph.createCustomNode(NVNode);
-                        const plane = nvNode.transform.createComponent(CVImagePlane);
-                        plane.setImage(rootPath);
-                        const derivative = plane.derivatives.getOrCreate(EDerivativeUsage.Image2D, EDerivativeQuality.High);
-                        derivative.createAsset(EAssetType.Image, rootPath);
-                        activeDoc.root.scene.transform.addChild(plane.transform);
-                        nvNode.name = "ImagePlane";
-                        plane.ins.name.setValue(nvNode.name);
-                    });
+                    this.move(asset, this.root).then(() => this.applyImport({ kind: "plane", uri: rootPath }));
                     break;
             }
         }).catch(e => {
             this.delete(asset);
         });
+    }
+
+    /**
+     * Add imported files to the scene, as an import menu says: Voyager's, or the host's (see {@link ImportFilesEvent}).
+     * The files are in the scene already.
+     */
+    protected applyImport(result: IFileImportResult)
+    {
+        if (!result) {
+            return; // Files for the scene to use later
+        }
+        const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
+        const findModel = (id: string) => {
+            const model = this.getSystemComponents(CVModel2).find(element => element.id === id);
+            if (!model) {
+                throw new Error(`No model with id ${id} to import to`);
+            }
+            return model;
+        };
+
+        switch (result.kind) {
+            case "model": {
+                const selection = this.getMainComponent(CSelection);
+                const derivatives = result.derivatives.map(({ quality, uri }) => ({ quality: EDerivativeQuality[quality], uri }));
+                const quality = derivatives[derivatives.length - 1].quality; // The highest, that shows
+                const model = result.target === null ? undefined : findModel(result.target);
+                this.assetManager.ins.initialLoad.setValue(true);
+                if(model === undefined) {
+                    const [ first, ...others ] = derivatives;
+                    const newModel = activeDoc.appendModel(first.uri, first.quality);
+                    others.forEach(({ quality, uri }) => newModel.derivatives.createModelAsset(uri, quality));
+                    const name = result.name;
+                    newModel.node.name = name;
+                    newModel.ins.name.setValue(name);
+                    newModel.ins.quality.setValue(quality);
+                    newModel.once<IModelLoadEvent>("model-load", () => {selection.selectNode(newModel.node); 
+                        this.assetManager.outs.initialLoad.setValue(false)}, this);
+                }
+                else {
+                    derivatives.forEach(({ quality, uri }) => {
+                        model.derivatives.remove(EDerivativeUsage.Web3D, quality);
+                        model.derivatives.createModelAsset(uri, quality)
+                    });
+                    model.ins.quality.setValue(quality);
+                    model.outs.updated.set();
+                    model.once<IModelLoadEvent>("model-load", () => {selection.selectNode(model.node); 
+                        this.assetManager.outs.initialLoad.setValue(false)}, this);
+                }
+                break;
+            }
+            case "environment":
+                this.environment.addImage(result.uri);
+                break;
+            case "overlay": {
+                const model = findModel(result.target);
+                const newAsset = model.activeDerivative.createAsset(EAssetType.Image, result.uri);
+                newAsset.data.mapType = EMapType.Zone;
+                const overlay = model.getOverlay(result.uri);
+                overlay.asset = newAsset;
+                overlay.fromFile = true;
+                model.ins.overlayMap.setValue(model.getOverlays().length);
+                break;
+            }
+            case "plane": {
+                const nvNode = activeDoc.root.graph.createCustomNode(NVNode);
+                const plane = nvNode.transform.createComponent(CVImagePlane);
+                plane.setImage(result.uri);
+                const derivative = plane.derivatives.getOrCreate(EDerivativeUsage.Image2D, EDerivativeQuality.High);
+                derivative.createAsset(EAssetType.Image, result.uri);
+                activeDoc.root.scene.transform.addChild(plane.transform);
+                nvNode.name = "ImagePlane";
+                plane.ins.name.setValue(nvNode.name);
+                break;
+            }
+            default:
+                throw new Error(`Unknown import: ${JSON.stringify(result)}`);
+        }
+    }
+
+    /**
+     * Offer the host to import files, with an "import-files" event on `<voyager-story>` (see {@link ImportFilesEvent}).
+     * If it takes the import over, do what it says once the files are in the scene.
+     * @param files the files by their path among them, or none for the host to ask for them
+     * @returns whether the host took the import over
+     */
+    protected handleHostImport(files: Iterable<[string, File]>): boolean {
+        const mainView = document.getElementsByTagName("voyager-story")[0];
+        const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
+        if (!mainView || !activeDoc) {
+            return false;
+        }
+        const models = activeDoc.setup.language.getGraphComponents(CVModel2).filter(model => !model.is(CVImagePlane));
+
+        const imported = dispatchImportFiles(mainView, new Map(files), models.map(model => ({
+            id: model.id,
+            name: model.node.name,
+            qualities: model.derivatives.getByUsage(EDerivativeUsage.Web3D).map(derivative => EDerivativeQuality[derivative.data.quality] as TDerivativeQuality),
+        })));
+        if (!imported) {
+            return false;
+        }
+
+        imported
+        .then(result => this.refresh().then(() => this.applyImport(result)))
+        .catch(e => {
+            // Cancelled: nothing to tell
+            if (e && e.name !== "AbortError") {
+                console.error("Import failed:", e);
+            }
+        });
+        return true;
     }
 
     uploadFiles(files: FileList, folder: IAssetEntry): Promise<any>
