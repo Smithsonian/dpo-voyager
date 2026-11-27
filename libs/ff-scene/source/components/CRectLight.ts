@@ -14,7 +14,6 @@ export default class CRectLight extends CLight
     protected static readonly rectLightIns = {
         position: types.Vector3("Light.Position", [ 0, 0, 0 ]),
         target: types.Vector3("Light.Target", [ 0, -1, 0 ]),
-        size: types.Vector2("Light.Size", [10, 10]),
     };
 
     ins = this.addInputs<CLight, typeof CRectLight["rectLightIns"]>(CRectLight.rectLightIns);

@@ -10,6 +10,9 @@ import CVCamera from "client/components/CVCamera";
 import CVModel2 from "client/components/CVModel2";
 import CVSpotLight from "client/components/lights/CVSpotLight";
 import CVPointLight from "client/components/lights/CVPointLight";
+import CVSunLight from "client/components/lights/CVSunLight";
+import Annotation from "client/models/Annotation";
+import { EEasingCurve } from "@ff/core/easing";
 
 import { createStory, createDocumentData, IStory } from "../helpers/story";
 
@@ -152,6 +155,43 @@ describe("Deserialization defaults", function() {
 
             const spot = story.document.innerComponents.getArray(CVSpotLight)[0];
             expect(spot.ins.penumbra.value).to.equal(0);
+        });
+    });
+
+    it("sun light: round-trips its tags", function() {
+        const story = reload(createStory(lightDocument([{ type: "sun", tags: "outdoor" }])));
+        const sun = story.document.innerComponents.getArray(CVSunLight)[0];
+        expect(sun.ins.tags.value).to.equal("outdoor");
+    });
+
+    describe("snapshot states", function() {
+        it("use the tween machine presets for missing fields, and don't save them", function() {
+            const story = createStory(createDocumentData([{ name: "Model" }]));
+            const snapshots = story.document.setup.snapshots;
+            const { curve, duration, threshold } = snapshots.ins;
+
+            expect(curve.schema.preset).to.equal(EEasingCurve.EaseQuad);
+            snapshots.fromData({ targets: [], states: [{ id: "a", values: [] }] } as any, new Map());
+            const state = snapshots.getState("a");
+            expect([ state.curve, state.duration, state.threshold ])
+                .to.deep.equal([ curve.schema.preset, duration.schema.preset, threshold.schema.preset ]);
+        });
+    });
+
+    describe("annotations", function() {
+        it("load missing fields as their defaults and don't save them", function() {
+            const annotation = new Annotation({ id: "a", position: [ 0, 0, 0 ], direction: [ 0, 1, 0 ] } as any);
+            const { defaults } = Annotation;
+
+            expect(annotation.data).to.include({ ...defaults, color: annotation.data.color, style: Annotation.defaultStyle });
+            expect(annotation.data.color).to.deep.equal(defaults.color);
+            expect(Object.keys(annotation.toJSON())).to.have.members([ "id", "position", "direction" ]);
+        });
+
+        it("don't share the default color between annotations", function() {
+            const a = new Annotation();
+            a.data.color[0] = 1;
+            expect(new Annotation().data.color[0]).to.equal(0);
         });
     });
 

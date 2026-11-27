@@ -125,6 +125,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             shadowResolution: EShadowMapResolution[data.shadowResolution],
             shadowBlur: data.shadowBlur,
             shadowIntensity: data.shadowIntensity,
+            tags: data.tags,
         });
     }
 
@@ -144,6 +145,10 @@ export default class CVSunLight extends CSunLight implements ICVLight {
                 intensityFactor: ins.intensityFactor.value,
             }
         };
+
+        if (ins.tags.value) {
+            data.tags = ins.tags.value;
+        }
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;

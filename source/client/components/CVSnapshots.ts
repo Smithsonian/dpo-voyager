@@ -212,6 +212,7 @@ export default class CVSnapshots extends CTweenMachine
     {
         this.clear();
 
+        const ins = this.ins;
         const features = this.targetFeatures;
         const keys = Object.keys(features);
 
@@ -245,9 +246,9 @@ export default class CVSnapshots extends CTweenMachine
             if(state.id !== CVTours.sceneSnapshotId) {
                 this.setState({
                     id: state.id,
-                    curve: state.curve !== undefined ? EEasingCurve[state.curve] : EEasingCurve.EaseQuad,
-                    duration: state.duration !== undefined ? state.duration : 2,
-                    threshold: state.threshold !== undefined ? state.threshold : 0.5,
+                    curve: EEasingCurve[state.curve] ?? ins.curve.schema.preset,
+                    duration: state.duration ?? ins.duration.schema.preset,
+                    threshold: state.threshold ?? ins.threshold.schema.preset,
                     values: state.values.filter((value, index) => !missingTargets.has(index)),
                 });
 
@@ -286,6 +287,7 @@ export default class CVSnapshots extends CTweenMachine
 
     toData(pathMap: Map<Component, string>): ISnapshots | null
     {
+        const ins = this.ins;
         const features = this.targetFeatures;
         const usedIds = this.getUsedStateIds();
 
@@ -306,13 +308,13 @@ export default class CVSnapshots extends CTweenMachine
             states: Object.keys(this.states).filter(key => usedIds.has(key)).map(key => {
                 const state = this.states[key];
                 const data: any = { id: state.id, values: state.values };
-                if (state.curve !== EEasingCurve.EaseQuad) {
+                if (state.curve !== ins.curve.schema.preset) {
                     data.curve = EEasingCurve[state.curve];
                 }
-                if (state.duration !== 2) {
+                if (state.duration !== ins.duration.schema.preset) {
                     data.duration = state.duration;
                 }
-                if (state.threshold !== 0.5) {
+                if (state.threshold !== ins.threshold.schema.preset) {
                     data.threshold = state.threshold;
                 }
                 if ("paths" in state) {
