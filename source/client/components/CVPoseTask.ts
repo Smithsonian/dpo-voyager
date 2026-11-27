@@ -153,8 +153,9 @@ export default class CVPoseTask extends CVTask
     update(context)
     {
         if (this.ins.modelUpdated && this.activeModel) {
-            _boundingBox.makeEmpty();
-            _boundingBox.expandByObject(this.activeModel.object3D);
+            const object3D = this.activeModel.object3D;
+            object3D.updateWorldMatrix(true, false);
+            _boundingBox.copy(this.activeModel.localBoundingBox).applyMatrix4(object3D.matrixWorld);
             _boundingBox.getSize(_size);
             _size.toArray(this.outs.size.value);
             this.outs.size.set();

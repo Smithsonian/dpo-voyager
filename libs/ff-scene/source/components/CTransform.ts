@@ -5,7 +5,7 @@
  * License: MIT
  */
 
-import { Object3D, Vector3, Matrix4, Quaternion, Euler, EulerOrder } from "three";
+import { Box3, Object3D, Vector3, Matrix4, Quaternion, Euler, EulerOrder } from "three";
 
 import math from "@ff/core/math";
 
@@ -70,6 +70,11 @@ export default class CTransform extends CHierarchy implements ICObject3D
      */
     get object3D(): Object3D {
         return this._object3D;
+    }
+
+    /** Bounding box of this component's content in its object's local space, if it keeps one. */
+    get localBoundingBox(): Readonly<Box3> | null {
+        return null;
     }
 
     /**

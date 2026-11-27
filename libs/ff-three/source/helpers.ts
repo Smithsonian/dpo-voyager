@@ -24,6 +24,7 @@ import {
 
 const _vec3 = new Vector3();
 const _mat4 = new Matrix4();
+const _box3 = new Box3();
 const _euler = new Euler();
 const _quat = new Quaternion();
 
@@ -95,15 +96,11 @@ export function disposeObject(object: Object3D)
 }
 
 /**
- * Computes the bounding box of the given object, relative to the given root (same as object if
- * not specified explicitly). Accounts for the transforms of all children relative to the root.
- * Caller is responsible for emptying the given bounding box, and for updating the matrices of
- * all child objects.
- * @param object
- * @param box The box to be updated.
- * @param root
+ * Expands the box by the bounding boxes of the object's visible geometries (layer 0),
+ * transformed into the root's space (the object's if not given). Doesn't read vertices.
+ * @returns False if a rotation by other than multiples of 90° made the box larger than the geometry.
  */
-export function computeLocalBoundingBox(object: Object3D, box: Box3, root?: Object3D)
+export function expandByGeometryBounds(object: Object3D, box: Box3, root?: Object3D): boolean
 {
     if (!root) {
         root = object;
@@ -111,11 +108,20 @@ export function computeLocalBoundingBox(object: Object3D, box: Box3, root?: Obje
 
     // Don't include branches under invisible objects or masked objects
     if(!object.visible || object.layers.mask > 1) {
-        return;
+        return true;
     }
 
-    const geometry = (object as any).geometry;
-    if (geometry && object.visible) {
+    if (object.matrixAutoUpdate) {
+        object.updateMatrix();
+    }
+
+    let tight = true;
+
+    const geometry = (object as any).geometry as BufferGeometry;
+    if (geometry && geometry.isBufferGeometry) {
+        if (!geometry.boundingBox) {
+            geometry.computeBoundingBox();
+        }
 
         let current = object;
         _mat4.identity();
@@ -125,26 +131,33 @@ export function computeLocalBoundingBox(object: Object3D, box: Box3, root?: Obje
             current = current.parent;
         }
 
-        if (geometry.isGeometry) {
-            const vertices = geometry.vertices;
-            for (let i = 0, n = vertices.length; i < n; ++i) {
-                _vec3.copy(vertices[i]).applyMatrix4(_mat4);
-                box.expandByPoint(_vec3);
-            }
-        }
-        else if (geometry.isBufferGeometry) {
-            const attribute = geometry.attributes.position;
-            if (attribute !== undefined) {
-                for (let i = 0, n = attribute.count; i < n; ++i) {
-                    _vec3.fromBufferAttribute(attribute, i).applyMatrix4(_mat4);
-                    box.expandByPoint(_vec3);
-                }
-            }
+        if (!geometry.boundingBox.isEmpty()) {
+            box.union(_box3.copy(geometry.boundingBox).applyMatrix4(_mat4));
+            tight = isAxisAligned(_mat4);
         }
     }
 
     const children = object.children;
     for (let i = 0, n = children.length; i < n; ++i) {
-        computeLocalBoundingBox(children[i], box, root);
+        tight = expandByGeometryBounds(children[i], box, root) && tight;
     }
+
+    return tight;
+}
+
+/** True if the matrix maps each axis onto an axis: it rotates by multiples of 90° only. */
+export function isAxisAligned(matrix: Matrix4): boolean
+{
+    const e = matrix.elements;
+
+    // each column (the image of an axis) has a single non-zero component
+    for (let column = 0; column < 3; ++column) {
+        const x = Math.abs(e[column * 4]), y = Math.abs(e[column * 4 + 1]), z = Math.abs(e[column * 4 + 2]);
+        const epsilon = Math.max(x, y, z) * 1e-6;
+        if ((x > epsilon ? 1 : 0) + (y > epsilon ? 1 : 0) + (z > epsilon ? 1 : 0) > 1) {
+            return false;
+        }
+    }
+
+    return true;
 }
