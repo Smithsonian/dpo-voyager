@@ -186,7 +186,7 @@ export default class CVOrbitNavigation extends CObject3D
 
     dispose()
     {
-        this.sceneNode.outs.boundingRadius.on("value", this.onBoundsChange, this);
+        this.sceneNode.outs.boundingRadius.off("value", this.onBoundsChange, this);
         this.assetManager.outs.completed.off("value", this.onLoadingCompleted, this);
 
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
