@@ -41,6 +41,7 @@ import CSunLight from "@ff/scene/components/CSunLight";
 
 const _vec3 = new Vector3();
 const _vec3b = new Vector3();
+const _box = new Box3();
 
 function light_has_shadowSize(l : CLight): l is (CLight & {ins: {shadowSize: Property<number>}}) {
     return "shadowSize" in l.ins;
@@ -211,10 +212,20 @@ export default class CVScene extends CVNode
         const box = this.outs.boundingBox.value;
         box.makeEmpty();
 
+        // the models' bounding boxes, in world space
         this.models.forEach(model => {
-            if(model.object3D.visible){
-                box.expandByObject(model.object3D);
+            if(!model.object3D.visible) {
+                return;
             }
+            // catches geometry moved by animations
+            model.composeLocalBoundingBox();
+            const localBox = model.localBoundingBox;
+            // no bounds yet, or a model without geometry
+            if(localBox.isEmpty() || localBox.min.equals(localBox.max)) {
+                return;
+            }
+            model.object3D.updateWorldMatrix(true, false);
+            box.union(_box.copy(localBox).applyMatrix4(model.object3D.matrixWorld));
         });
         box.getSize(_vec3);
 

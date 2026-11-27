@@ -21,11 +21,15 @@ import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 
 import { INode } from "client/schema/document";
 
+// type only: CVScene imports this module
+import type CVScene from "./CVScene";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3a = new Vector3();
 const _vec3b = new Vector3();
 const _mat4 = new Matrix4();
+const _invWorld = new Matrix4();
 const _quat = new Quaternion();
 const _euler = new Euler();
 const defaultPosition = new Vector3(0,0,0);
@@ -40,6 +44,7 @@ export default class CVNode extends CTransform
     static readonly icon: string = "";
 
     private _savedDocumentData: any = {};
+    private _sceneBoundingBox = new Box3();
 
     get settingProperties() {
         return [
@@ -55,6 +60,17 @@ export default class CVNode extends CTransform
             this.ins.rotation,
             this.ins.scale,
         ];
+    }
+
+    /** On a scene's node, the bounding box of the scene's models */
+    get localBoundingBox(): Readonly<Box3> | null {
+        const scene = this.node.components.get<CVScene>("CVScene", true);
+        if (!scene) {
+            return null;
+        }
+
+        _invWorld.copy(this.object3D.matrixWorld).invert();
+        return this._sceneBoundingBox.copy(scene.outs.boundingBox.value).applyMatrix4(_invWorld);
     }
 
     update(context)

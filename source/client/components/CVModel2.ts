@@ -50,6 +50,38 @@ const _quat = new Quaternion();
 const _quat1 = new Quaternion();
 const _box = new Box3();
 const _mat4 = new Matrix4();
+const _vertexMatrix = new Matrix4();
+const _vertex = new Vector3();
+
+/** Expands the box by the vertices of the object's geometry, in the root's space. Expensive. */
+function readBoundingBox(object: Object3D, box: Box3, root: Object3D)
+{
+    // same objects as helpers.expandByGeometryBounds()
+    if (!object.visible || object.layers.mask > 1) {
+        return;
+    }
+
+    const position = (object as any).geometry?.attributes?.position;
+    if (position) {
+        _vertexMatrix.identity();
+        for (let current = object; current && current !== root; current = current.parent) {
+            _vertexMatrix.premultiply(current.matrix);
+        }
+        for (let i = 0, n = position.count; i < n; ++i) {
+            box.expandByPoint(_vertex.fromBufferAttribute(position, i).applyMatrix4(_vertexMatrix));
+        }
+    }
+
+    object.children.forEach(child => readBoundingBox(child, box, root));
+}
+
+/** The matrices of an object and its descendants */
+function readMatrices(object: Object3D): number[]
+{
+    const matrices: number[] = [];
+    object.traverse(o => matrices.push(...o.matrix.elements));
+    return matrices;
+}
 
 export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
@@ -179,6 +211,10 @@ export default class CVModel2 extends CObject3D
     private _visible: boolean = true;
     private _boxFrame: Box3Helper = null;
     private _localBoundingBox = new Box3();
+    /** Bounding box read from the vertices of a derivative rotated inside the model, at load */
+    private _vertexBox: Box3 | null = null;
+    /** Matrices of the derivative when its vertex box was read */
+    private _vertexBoxMatrices: number[] | null = null;
     private _materialCache: Dictionary<IPBRMaterialSettings> = {};
     private _clayColor = new Color("#a67a6c").convertLinearToSRGB();
     private _wireColor = new Color("#004966").convertLinearToSRGB();
@@ -452,14 +488,64 @@ export default class CVModel2 extends CObject3D
         object3D.matrix.decompose(_vec3a, _quat, _vec3b);
         object3D.matrix.makeRotationFromQuaternion(_quat);
 
-        // compute local bounding box and set position offset
-        _box.makeEmpty();
-        helpers.computeLocalBoundingBox(object3D, _box, object3D.parent);
+        // rotate local bounding box and set position offset
+        _box.copy(this._localBoundingBox).applyMatrix4(object3D.matrix);
         _box.getCenter(_vec3a);
         _vec3a.multiplyScalar(-1).toArray(position.value);
 
         // trigger matrix update
         position.set();
+    }
+
+    /**
+     * Composes the local bounding box from the geometry bounds of the derivative on display, or from its
+     * vertex box while nothing moved since load. Without a derivative, the document's box is kept.
+     */
+    composeLocalBoundingBox()
+    {
+        const model = this._activeDerivative?.model;
+        if (!model) {
+            return;
+        }
+
+        const box = this._localBoundingBox;
+        box.makeEmpty();
+        helpers.expandByGeometryBounds(model, box, this.object3D);
+
+        // a model without geometry is a point at its origin
+        if (box.isEmpty()) {
+            _vec3a.setScalar(0);
+            box.set(_vec3a, _vec3a);
+            return;
+        }
+
+        if (this._vertexBox && this.isAsLoaded(model)) {
+            box.copy(this._vertexBox);
+        }
+    }
+
+    /** Reads the vertex box of a derivative on display, if it is rotated inside the model. */
+    protected readVertexBox(model: Object3D)
+    {
+        this._vertexBox = null;
+        this._vertexBoxMatrices = null;
+
+        const isTight = helpers.expandByGeometryBounds(model, _box.makeEmpty(), this.object3D);
+        if (isTight) {
+            return;
+        }
+
+        this._vertexBox = new Box3();
+        readBoundingBox(model, this._vertexBox, this.object3D);
+        this._vertexBoxMatrices = readMatrices(model);
+    }
+
+    /** True if nothing moved inside the model since its vertex box was read */
+    protected isAsLoaded(model: Object3D): boolean
+    {
+        const loaded = this._vertexBoxMatrices;
+        const matrices = readMatrices(model);
+        return matrices.length === loaded.length && matrices.every((value, index) => value === loaded[index]);
     }
 
     setFromMatrix(matrix: Matrix4)
@@ -965,15 +1051,9 @@ export default class CVModel2 extends CObject3D
                 }
 
                 // update bounding box based on loaded derivative
-                this._localBoundingBox.makeEmpty();
-                helpers.computeLocalBoundingBox(derivative.model, this._localBoundingBox);
+                this.readVertexBox(derivative.model);
+                this.composeLocalBoundingBox();
                 this.outs.updated.set();
-
-                // handle empty bounds case
-                if(this._localBoundingBox.isEmpty()) {
-                    _vec3a.setScalar(0);
-                    this._localBoundingBox.set(_vec3a, _vec3a);
-                }
 
                 if (ENV_DEVELOPMENT) {
                     // log bounding box to console

@@ -266,8 +266,6 @@ export default class ModelReader
                    material.map.colorSpace = SRGBColorSpace;
                 }
 
-                mesh.geometry.computeBoundingBox();
-
                 // update default shaders for extended functionality
                 extendShaders(material);
                 material.userData.paramCopy = {};

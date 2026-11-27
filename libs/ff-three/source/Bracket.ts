@@ -11,19 +11,17 @@ import {
     LineBasicMaterial,
     BufferGeometry,
     Float32BufferAttribute,
-    Vector3,
-    Matrix4,
     Box3,
     Color,
     Material,
 } from "three";
 
-import { computeLocalBoundingBox } from "./helpers";
+import { expandByGeometryBounds } from "./helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3 = new Vector3();
-const _mat4 = new Matrix4();
+/** Returns a bounding box in the bracket's target space, or null */
+export type BracketBoxSource = () => Readonly<Box3> | null;
 
 export interface IBracketProps
 {
@@ -32,6 +30,8 @@ export interface IBracketProps
     /** Length of the bracket lines relative to the size of the object. Default is 0.25. */
     length?: number;
     axes?:boolean;
+    /** Box to show, read again on every update. Default is the target's geometry bounds, computed once. */
+    source?: BracketBoxSource;
 }
 
 /**
@@ -45,23 +45,78 @@ export default class Bracket extends LineSegments
         axes: false,
     };
 
+    protected props: IBracketProps;
+    protected source: BracketBoxSource | null;
+    /** The box the geometry was built from */
+    protected box = new Box3();
+
     constructor(target: Object3D, props?: IBracketProps)
     {
         props = Object.assign({}, Bracket.defaultProps, props);
 
-        const box = new Box3();
-        box.makeEmpty();
+        const material = new LineBasicMaterial({
+            color: props.color,
+            toneMapped: false,
+            depthTest: false
+        });
 
-        computeLocalBoundingBox(target, box);
+        super(new BufferGeometry(), material);
 
-        const length = props.length;
-        const min = [ box.min.x, box.min.y, box.min.z ];
-        const max = [ box.max.x, box.max.y, box.max.z ];
+        this.props = props;
+        this.source = props.source || null;
+
+        if (!this.source) {
+            expandByGeometryBounds(target, this.box.makeEmpty());
+        }
+        else {
+            this.box.copy(this.source() || this.box.makeEmpty());
+        }
+        this.build();
+
+        this.renderOrder = 1;
+    }
+
+    /** Follows changes of the box source, if any. */
+    update()
+    {
+        if (!this.source) {
+            return;
+        }
+
+        const box = this.source();
+        if (box ? box.equals(this.box) : this.box.isEmpty()) {
+            return;
+        }
+
+        if (box) {
+            this.box.copy(box);
+        }
+        else {
+            this.box.makeEmpty();
+        }
+
+        this.geometry.dispose();
+        this.geometry = new BufferGeometry();
+        this.build();
+    }
+
+    dispose()
+    {
+        this.geometry.dispose();
+        (this.material as Material).dispose();
+    }
+
+    protected build()
+    {
+        const { min: boxMin, max: boxMax } = this.box;
+        const length = this.props.length;
+        const min = [ boxMin.x, boxMin.y, boxMin.z ];
+        const max = [ boxMax.x, boxMax.y, boxMax.z ];
         const size = [ (max[0] - min[0]) * length, (max[1] - min[1]) * length, (max[2] - min[2]) * length ];
         let vertices :number[];
         let colors :number[];
         let has_volume = isFinite(size[0]) && isFinite(size[1]) && isFinite(size[2])
-        if ( has_volume && props.axes){
+        if ( has_volume && this.props.axes){
             vertices = [
                 0, 0, 0,	length, 0, 0,   0, 0, 0,
                 0, 0, 0,	0, length, 0,   0, 0, 0,
@@ -115,65 +170,8 @@ export default class Bracket extends LineSegments
             ];
         }
 
-        const geometry = new BufferGeometry();
-        geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
-        if(colors) geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
-        const material = new LineBasicMaterial({
-            color: props.color,
-            vertexColors: !!colors,
-            toneMapped: false,
-            depthTest: false
-        });
-
-        super(geometry, material);
-
-        this.renderOrder = 1;
-    }
-
-    update(){
-        
-    }
-
-    dispose()
-    {
-
-        this.geometry.dispose();
-        (this.material as Material).dispose();
-    }
-
-    protected static expandBoundingBox(object: Object3D, root: Object3D, box: Box3)
-    {
-        const geometry = (object as any).geometry;
-        if (geometry !== undefined) {
-
-            let parent = object;
-            _mat4.identity();
-            while(parent && parent !== root) {
-                _mat4.premultiply(parent.matrix);
-                parent = parent.parent;
-            }
-
-            if (geometry.isGeometry) {
-                const vertices = geometry.vertices;
-                for (let i = 0, n = vertices.length; i < n; ++i) {
-                    _vec3.copy(vertices[i]).applyMatrix4(_mat4);
-                    box.expandByPoint(_vec3);
-                }
-            }
-            else if (geometry.isBufferGeometry) {
-                const attribute = geometry.attributes.position;
-                if (attribute !== undefined) {
-                    for (let i = 0, n = attribute.count; i < n; ++i) {
-                        _vec3.fromBufferAttribute(attribute, i).applyMatrix4(_mat4);
-                        box.expandByPoint(_vec3);
-                    }
-                }
-            }
-        }
-
-        const children = object.children;
-        for (let i = 0, n = children.length; i < n; ++i) {
-            Bracket.expandBoundingBox(children[i], root, box);
-        }
+        this.geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+        if(colors) this.geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
+        (this.material as LineBasicMaterial).vertexColors = !!colors;
     }
 }

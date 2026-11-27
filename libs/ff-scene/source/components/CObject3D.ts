@@ -5,7 +5,7 @@
  * License: MIT
  */
 
-import { Object3D, Vector3, MathUtils } from "three";
+import { Box3, Object3D, Vector3, MathUtils } from "three";
 
 import { TypeOf } from "@ff/core/types";
 import { ITypedEvent } from "@ff/core/Publisher";
@@ -94,6 +94,10 @@ export default class CObject3D extends Component implements ICObject3D
     /** The underlying [[Object3D]] of this component. */
     get object3D(): Object3D | null {
         return this._object3D;
+    }
+    /** Bounding box of this component's content in its object's local space, if it keeps one. */
+    get localBoundingBox(): Readonly<Box3> | null {
+        return null;
     }
 
     /**

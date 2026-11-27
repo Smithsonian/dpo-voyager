@@ -148,7 +148,8 @@ export default class CPickSelection extends CSelection
                 }
 
                 if(!bracket){
-                    bracket = new Bracket(object3D);
+                    const source = component.localBoundingBox !== null ? () => component.localBoundingBox : undefined;
+                    bracket = new Bracket(object3D, { source });
                     bracket.layers.set(1);
                 }
                 object3D.add(bracket);

@@ -23,7 +23,7 @@ import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2";
 import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
 
-import { computeLocalBoundingBox } from "./helpers";
+import { expandByGeometryBounds } from "./helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,7 +64,7 @@ export default class Axes extends LineSegments2
         const box = new Box3();
         box.makeEmpty();
   
-        computeLocalBoundingBox(target, box);
+        expandByGeometryBounds(target, box);
         return (box.isEmpty()? 1: box.getBoundingSphere(new Sphere()).radius) * props.length;
       })();
 
