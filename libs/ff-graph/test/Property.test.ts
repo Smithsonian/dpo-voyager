@@ -91,6 +91,21 @@ export default function() {
             assert.notStrictEqual(ins.vec3.value, ins.vec3.schema.preset, "presets are copied");
         });
 
+        test("setPreset", function() {
+            const ins = node.createComponent(TestComponent, "preset").ins;
+            const other = node.createComponent(TestComponent, "other").ins;
+            ins.num1.setPreset(7);
+            assert.strictEqual(ins.num1.value, 7);
+            assert.isTrue(ins.num1.isDefault());
+            ins.num1.setValue(8);
+            ins.num1.reset();
+            assert.strictEqual(ins.num1.value, 7);
+
+            // the template's schema is shared, other instances keep their preset
+            assert.strictEqual(other.num1.schema.preset, 42);
+            assert.strictEqual(other.num1.value, 42);
+        });
+
         test("linking/simple", function() {
             assert.isTrue(comp0.outs.num0.canLinkTo(comp1.ins.num0));
             comp0.outs.num0.linkTo(comp1.ins.num0);

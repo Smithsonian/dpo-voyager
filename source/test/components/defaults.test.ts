@@ -2,6 +2,7 @@ import { expect } from "chai";
 
 import Property from "@ff/graph/Property";
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
+import { EBackgroundStyle } from "@ff/scene/components/CBackground";
 
 import { IDocument } from "client/schema/document";
 import CVNode from "client/components/CVNode";
@@ -16,15 +17,6 @@ import { createStory, createDocumentData, IStory } from "../helpers/story";
 const features = [
     "interface", "reader", "viewer", "navigation", "derivatives", "background",
     "environment", "language", "floor", "grid", "tape", "slicer",
-];
-
-/**
- * Deviations still waiting for a decision: a missing section and a section
- * missing this field load different values.
- */
-const pendingDecision = [
-    "background.style",     // RadialGradient (preset) vs Solid (fromData fallback)
-    "floor.receiveShadow",  // true (constructor) vs false (fromData fallback)
 ];
 
 // Required by the JSON schema, so never missing in a valid document
@@ -82,13 +74,41 @@ describe("Deserialization defaults", function() {
                 const emptyValues = propertyValues(empty, feature);
                 Object.keys(absentValues).forEach(key => {
                     const path = `${feature}.${key}`;
-                    if (!pendingDecision.includes(path) && absentValues[key] !== emptyValues[key]) {
+                    if (absentValues[key] !== emptyValues[key]) {
                         deviations.push(`${path}: ${absentValues[key]} != ${emptyValues[key]}`);
                     }
                 });
             });
 
             expect(deviations).to.deep.equal([]);
+        });
+
+        it("background: defaults to a radial gradient", function() {
+            const data = createDocumentData([{ name: "Model" }]);
+            data.setups[0].background = {} as any;
+            const background = createStory(data).document.setup.background;
+
+            expect(background.ins.style.value).to.equal(EBackgroundStyle.RadialGradient);
+        });
+
+        it("floor and grid: hidden by preset, floor receives shadows by preset", function() {
+            const data = createDocumentData([{ name: "Model" }]);
+            data.setups[0].floor = {} as any;
+            data.setups[0].grid = {} as any;
+            const { floor, grid } = createStory(data).document.setup;
+
+            expect(floor.ins.visible.value).to.equal(false);
+            expect(floor.ins.visible.isDefault()).to.equal(true);
+            expect(floor.ins.receiveShadow.value).to.equal(true);
+            expect(floor.ins.receiveShadow.isDefault()).to.equal(true);
+            expect(grid.ins.visible.value).to.equal(false);
+            expect(grid.ins.visible.isDefault()).to.equal(true);
+        });
+
+        it("floor and grid presets don't leak into other objects", function() {
+            const { tape } = createStory(createDocumentData([{ name: "Model" }])).document.setup;
+
+            expect(tape.ins.visible.schema.preset).to.equal(true);
         });
 
         it("tape: loads a boolean visibility when 'enabled' is missing", function() {
