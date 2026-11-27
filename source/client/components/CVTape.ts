@@ -276,12 +276,12 @@ export default class CVTape extends CObject3D
     fromData(data: ITape)
     {
         this.ins.copyValues({
-            visible: data.enabled,   // TODO: should probably be visible instead of enabled
-            startPosition: data.startPosition ?? this.ins.startPosition.schema.preset,
-            startDirection: data.startDirection ?? this.ins.startDirection.schema.preset,
-            endPosition: data.endPosition ?? this.ins.endPosition.schema.preset,
-            endDirection: data.endDirection ?? this.ins.endDirection.schema.preset,
-            markerStyle: EMarkerStyle[data.markerStyle] ?? this.ins.markerStyle.schema.preset
+            visible: data.enabled ?? this.ins.enabled.schema.preset,   // TODO: should probably be visible instead of enabled
+            startPosition: data.startPosition,
+            startDirection: data.startDirection,
+            endPosition: data.endPosition,
+            endDirection: data.endDirection,
+            markerStyle: EMarkerStyle[data.markerStyle]
         });
         
     }

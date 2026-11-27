@@ -254,9 +254,9 @@ export default class CVReader extends Component
     {
         data = data || {} as IReader;
 
-        this.ins.setValues({
-            enabled: !!data.enabled,
-            position: EReaderPosition[data.position] || EReaderPosition.Overlay,
+        this.ins.copyValues({
+            enabled: data.enabled,
+            position: EReaderPosition[data.position],
             //articleId: data.articleId || "",
         });
     }

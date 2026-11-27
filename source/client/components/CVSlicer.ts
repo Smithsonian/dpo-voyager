@@ -170,12 +170,12 @@ export default class CVSlicer extends Component
     {
         data = data || {} as ISlicer;
 
-        this.ins.setValues({
-            enabled: data.enabled ?? this.ins.enabled.schema.preset,
-            axis: ESliceAxis[data.axis] ?? this.ins.axis.schema.preset,
-            position: data.position ?? this.ins.position.schema.preset,
-            inverted: data.inverted ?? this.ins.inverted.schema.preset,
-            color: data.color ?? this.ins.color.schema.preset
+        this.ins.copyValues({
+            enabled: data.enabled,
+            axis: ESliceAxis[data.axis],
+            position: data.position,
+            inverted: data.inverted,
+            color: data.color
         });
     }
 
@@ -188,7 +188,7 @@ export default class CVSlicer extends Component
             axis: ESliceAxis[ins.axis.getValidatedValue()] as TSliceAxis,
             position: ins.position.value,
             inverted: ins.inverted.value,
-            color: ins.color.value
+            color: ins.color.cloneValue()
         };
     }
 

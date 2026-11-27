@@ -52,11 +52,13 @@ export default class CVInterface extends Component
     {
         data = data || {} as IInterface;
 
-        this.ins.setValues({
-            visible: data.visible !== undefined ? data.visible : true,
-            logo: data.logo !== undefined ? data.logo : true,
-            menu: data.menu !== undefined ? data.menu : true,
-            tools: data.tools !== undefined ? data.tools : true
+        const ins = this.ins;
+
+        ins.copyValues({
+            visible: data.visible,
+            logo: data.logo,
+            menu: data.menu,
+            tools: data.tools,
         });
     }
 

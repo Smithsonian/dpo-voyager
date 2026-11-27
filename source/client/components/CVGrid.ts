@@ -93,8 +93,7 @@ export default class CVGrid extends CObject3D
 
     create()
     {
-        this.ins.pickable.setValue(false);
-        this.ins.visible.setValue(false);
+        this.ins.visible.setPreset(false);
 
         // Create tape measurement
         this.tape = this.node.createComponent(CVTape);
@@ -238,9 +237,9 @@ export default class CVGrid extends CObject3D
         data = data || {} as IGrid;
 
         this.ins.copyValues({
-            visible: !!data.visible,
-            color: data.color || [ 0.5, 0.7, 0.8 ],
-            opacity: data.opacity ?? this.ins.opacity.schema.preset,
+            visible: data.visible,
+            color: data.color,
+            opacity: data.opacity,
         });
     }
 

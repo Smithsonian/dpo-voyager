@@ -78,14 +78,14 @@ export default class CVRectLight extends CRectLight implements ICVLight
         ins.name.setValue(data.name);
 
         ins.copyValues({
-            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
-            color: data.color !== undefined ? data.color : ins.color.schema.preset,
-            intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+            enabled: data.enabled,
+            color: data.color,
+            intensity: data.intensity,
 
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
+            tags: data.tags,
         });
-        ins.tags.setValue(data.tags || "");
     }
 
     toDocument(document: IDocument, node: INode): number

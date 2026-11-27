@@ -89,21 +89,21 @@ export default class CVPointLight extends CPointLight implements ICVLight
         data.point = data.point || {} as any;
 
         ins.copyValues({
-            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
-            color: data.color !== undefined ? data.color : ins.color.schema.preset,
-            intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+            enabled: data.enabled,
+            color: data.color,
+            intensity: data.intensity,
 
             position: ins.position.schema.preset,
 
-            distance: data.point.distance || ins.distance.schema.preset,
-            decay: data.point.decay !== undefined ? data.point.decay : ins.decay.schema.preset,
+            distance: data.point.distance,
+            decay: data.point.decay,
 
-            shadowEnabled: data.shadowEnabled || false,
-            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
-            shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
-            shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
+            shadowEnabled: data.shadowEnabled,
+            shadowResolution: EShadowMapResolution[data.shadowResolution],
+            shadowBlur: data.shadowBlur,
+            shadowIntensity: data.shadowIntensity,
+            tags: data.tags,
         });
-        ins.tags.setValue(data.tags || "");
     }
 
     toDocument(document: IDocument, node: INode): number

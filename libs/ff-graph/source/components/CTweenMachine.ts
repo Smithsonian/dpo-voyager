@@ -69,7 +69,7 @@ export default class CTweenMachine extends Component
 
     protected static readonly ins = {
         id: types.String("Snapshot.Id"),
-        curve: types.Enum("Tween.Curve", EEasingCurve),
+        curve: types.Enum("Tween.Curve", EEasingCurve, EEasingCurve.EaseQuad),
         duration: types.Number("Tween.Duration", 2),
         threshold: types.Percent("Tween.Threshold", 0.5),
         tween: types.Event("Control.Tween"),

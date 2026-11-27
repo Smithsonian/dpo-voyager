@@ -223,10 +223,6 @@ export default class CVSetup extends Component
                 this[name].fromData(featureData);
             }
         }
-
-        this.slicer.ins.color.set();  
-        this.reader.ins.enabled.set();
-        this.reader.ins.position.set();
     }
 
     resetViewer() {    

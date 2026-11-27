@@ -569,7 +569,7 @@ export default class CVDerivativesController extends Component{
         data = data || {} as ILOD;
 
         this.ins.copyValues({
-            enabled: !!data.enabled,
+            enabled: data.enabled,
         });
     }
 

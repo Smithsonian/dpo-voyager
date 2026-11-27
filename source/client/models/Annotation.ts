@@ -30,7 +30,26 @@ export type IAnnotationDisposeEvent = IDocumentDisposeEvent<Annotation>;
 
 export default class Annotation extends Document<IAnnotation, IAnnotation>
 {
-    static readonly defaultColor = [ 0, 0.61, 0.87 ];
+    /** Values of the fields a document may leave out. Fields at their default aren't saved. */
+    static readonly defaults = Object.freeze({
+        visible: true,
+        scale: 1,
+        offset: 0,
+        tilt: 0,
+        azimuth: 0,
+        color: Object.freeze([ 0, 0.61, 0.87 ]) as readonly number[],
+        zoneIndex: -1,
+    });
+
+    // a getter: AnnotationFactory imports this module and isn't initialized yet when it loads
+    static get defaultStyle() {
+        return AnnotationFactory.defaultTypeName;
+    }
+
+    static get defaultColor() {
+        return Annotation.defaults.color.slice();
+    }
+
     private _language : ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
     private _leadChanged : boolean = false;
 
@@ -139,20 +158,13 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
             audioId: "",
             viewId: "",
 
-            style: AnnotationFactory.defaultTypeName,
-            visible: true,
+            ...Annotation.defaults,
+            style: Annotation.defaultStyle,
             expanded: false,
 
             position: null,
             direction: null,
-            scale: 1,
-            offset: 0,
-            tilt: 0,
-            azimuth: 0,
-
-            color: [ 0, 0.61, 0.87 ],
-
-            zoneIndex: -1,
+            color: Annotation.defaultColor,
         };
     }
 
@@ -196,9 +208,6 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if (data.imageUri) {
             json.imageUri = data.imageUri;
         }
-        if (data.imageUri) {
-            json.imageUri = data.imageUri;
-        }
         if (Object.keys(this.data.imageCredit).length > 0) {
             json.imageCredit = {};
             Object.keys(this.data.imageCredit).forEach( key => {
@@ -217,7 +226,9 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if (data.viewId) {
             json.viewId = data.viewId;
         }
-        if (data.style !== AnnotationFactory.defaultTypeName) {
+        const defaults = Annotation.defaults;
+
+        if (data.style !== Annotation.defaultStyle) {
             json.style = data.style;
         }
         /*if (data.visible === false) {
@@ -229,25 +240,25 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if (data.direction) {
             json.direction = data.direction.slice();
         }
-        if (data.scale !== 1) {
+        if (data.scale !== defaults.scale) {
             json.scale = data.scale;
         }
-        if (data.offset !== 0) {
+        if (data.offset !== defaults.offset) {
             json.offset = data.offset;
         }
-        if (data.tilt !== 0) {
+        if (data.tilt !== defaults.tilt) {
             json.tilt = data.tilt;
         }
-        if (data.azimuth !== 0) {
+        if (data.azimuth !== defaults.azimuth) {
             json.azimuth = data.azimuth;
         }
 
         const color = data.color;
-        if (color && (color[0] !== 0 || color[1] !== 0.61 || color[2] !== 0.87)) {
+        if (color && color.some((value, i) => value !== defaults.color[i])) {
             json.color = color.slice();
         }
 
-        if (data.zoneIndex > -1) {
+        if (data.zoneIndex > defaults.zoneIndex) {
             json.zoneIndex = data.zoneIndex;
         }
 
@@ -273,19 +284,21 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         data.audioId = json.audioId || "";
         data.viewId = json.viewId || "";
 
-        data.style = json.style || AnnotationFactory.defaultTypeName;
-        data.visible = json.visible !== undefined ? json.visible : true;
+        const defaults = Annotation.defaults;
+
+        data.style = json.style || Annotation.defaultStyle;
+        data.visible = json.visible ?? defaults.visible;
         data.expanded = false;
 
         data.position = json.position.slice();
         data.direction = json.direction.slice();
-        data.scale = json.scale !== undefined ? json.scale : 1;
-        data.offset = json.offset || 0;
-        data.tilt = json.tilt || 0;
-        data.azimuth = json.azimuth || 0;
+        data.scale = json.scale ?? defaults.scale;
+        data.offset = json.offset ?? defaults.offset;
+        data.tilt = json.tilt ?? defaults.tilt;
+        data.azimuth = json.azimuth ?? defaults.azimuth;
 
-        data.color = json.color || Annotation.defaultColor.slice();
+        data.color = json.color ?? Annotation.defaultColor;
 
-        data.zoneIndex = json.zoneIndex !== undefined ? json.zoneIndex : -1;
+        data.zoneIndex = json.zoneIndex ?? defaults.zoneIndex;
     }
 }

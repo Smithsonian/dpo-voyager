@@ -419,6 +419,18 @@ export default class Property<T = any> extends Publisher
         this.setValue(value);
     }
 
+    /**
+     * Gives this property another preset and resets it to the new preset.
+     * Lets a component subclass change the default of an inherited input.
+     * The schema is shared with the other properties created from the same template,
+     * so it is replaced by a copy, not modified.
+     */
+    setPreset(preset: T)
+    {
+        (this as { schema: IPropertySchema<T> }).schema = { ...this.schema, preset };
+        this.reset();
+    }
+
     setMultiChannelCount(count: number)
     {
         if (!this.isMulti()) {

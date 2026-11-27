@@ -68,24 +68,24 @@ export default class CVCamera extends CCamera
     setFromSavedData(){
         const data = this._savedDocumentData;
 
-        if(data.autoNearFar != undefined) {
-            this.addIns.autoNearFar.setValue(data.autoNearFar);
-        }
+        const { ins, addIns } = this;
+
+        addIns.autoNearFar.setValue(data.autoNearFar ?? addIns.autoNearFar.schema.preset);
 
         if (data.type === "perspective") {
-            this.ins.copyValues({
+            ins.copyValues({
                 projection: EProjection.Perspective,
                 fov: data.perspective.yfov,
                 near: data.perspective.znear,
-                far: data.perspective.zfar
+                far: data.perspective.zfar,
             });
         }
         else {
-            this.ins.copyValues({
+            ins.copyValues({
                 projection: EProjection.Orthographic,
                 size: data.orthographic.ymag,
                 near: data.orthographic.znear,
-                far: data.orthographic.zfar
+                far: data.orthographic.zfar,
             });
         }
     }

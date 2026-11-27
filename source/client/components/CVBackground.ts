@@ -51,9 +51,9 @@ export default class CVBackground extends CBackground
     fromData(data: IBackground)
     {
         this.ins.copyValues({
-            style: EBackgroundStyle[data.style] || EBackgroundStyle.Solid,
-            color0: data.color0 || [ 0.2, 0.25, 0.3 ],
-            color1: data.color1 || [ 0.01, 0.03, 0.05 ],
+            style: EBackgroundStyle[data.style],
+            color0: data.color0,
+            color1: data.color1,
         });
     }
 

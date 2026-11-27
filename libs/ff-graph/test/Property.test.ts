@@ -74,6 +74,38 @@ export default function() {
             assert.deepStrictEqual(ins.option2.schema.options, [ "seven", "eight", "nine" ]);
         });
 
+        test("copyValues", function() {
+            const ins = node.createComponent(TestComponent, "copy").ins;
+            const vec3 = [ 7, 8, 9 ];
+            ins.copyValues({ num1: 0, bool1: false, vec3 });
+            assert.strictEqual(ins.num1.value, 0);
+            assert.strictEqual(ins.bool1.value, false);
+            assert.deepStrictEqual(ins.vec3.value, [ 7, 8, 9 ]);
+            assert.notStrictEqual(ins.vec3.value, vec3, "arrays are copied");
+
+            // undefined and null reset to the preset
+            ins.copyValues({ num1: undefined, bool1: null, vec3: undefined });
+            assert.strictEqual(ins.num1.value, 42);
+            assert.strictEqual(ins.bool1.value, true);
+            assert.deepStrictEqual(ins.vec3.value, [ 1, 2, 3 ]);
+            assert.notStrictEqual(ins.vec3.value, ins.vec3.schema.preset, "presets are copied");
+        });
+
+        test("setPreset", function() {
+            const ins = node.createComponent(TestComponent, "preset").ins;
+            const other = node.createComponent(TestComponent, "other").ins;
+            ins.num1.setPreset(7);
+            assert.strictEqual(ins.num1.value, 7);
+            assert.isTrue(ins.num1.isDefault());
+            ins.num1.setValue(8);
+            ins.num1.reset();
+            assert.strictEqual(ins.num1.value, 7);
+
+            // the template's schema is shared, other instances keep their preset
+            assert.strictEqual(other.num1.schema.preset, 42);
+            assert.strictEqual(other.num1.value, 42);
+        });
+
         test("linking/simple", function() {
             assert.isTrue(comp0.outs.num0.canLinkTo(comp1.ins.num0));
             comp0.outs.num0.linkTo(comp1.ins.num0);

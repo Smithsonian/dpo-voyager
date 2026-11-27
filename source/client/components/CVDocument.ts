@@ -198,7 +198,7 @@ export default class CVDocument extends CRenderGraph
 
         if (!mergeParent) {
             this.clearNodeTree();
-            this.ins.title.setValue(null);
+            this.ins.title.reset();
         }
 
         this.ins.copyright.setValue(documentData.asset.copyright ?? this.ins.copyright.schema.preset);

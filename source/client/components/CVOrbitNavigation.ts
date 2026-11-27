@@ -382,14 +382,14 @@ export default class CVOrbitNavigation extends CObject3D
         const orbit = data.orbit ?? {} as INavigation["orbit"];
 
         ins.copyValues({
-            enabled: data.enabled ?? ins.enabled.schema.preset,
-            autoZoom: data.autoZoom ?? ins.autoZoom.schema.preset,
+            enabled: data.enabled,
+            autoZoom: data.autoZoom,
             autoRotation: !!data.autoRotation,
             autoRotationSpeed: data.autoRotationSpeed !== undefined ? data.autoRotationSpeed : ins.autoRotationSpeed.schema.preset,
-            lightsFollowCamera: data.lightsFollowCamera ?? ins.lightsFollowCamera.schema.preset,
-            mode: ENavigationType[data.type] ?? ins.mode.schema.preset,
-            orbit: orbit.orbit ?? ins.orbit.schema.preset,
-            offset: orbit.offset ?? ins.offset.schema.preset,
+            lightsFollowCamera: data.lightsFollowCamera,
+            mode: ENavigationType[data.type],
+            orbit: orbit.orbit,
+            offset: orbit.offset,
             minOrbit: orbit.minOrbit ? _replaceNull(orbit.minOrbit, -Infinity) : ins.minOrbit.schema.preset,
             maxOrbit: orbit.maxOrbit ? _replaceNull(orbit.maxOrbit, Infinity) : ins.maxOrbit.schema.preset,
             minOffset: orbit.minOffset ? _replaceNull(orbit.minOffset, -Infinity) : ins.minOffset.schema.preset,

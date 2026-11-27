@@ -78,15 +78,14 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
         }
 
         ins.name.setValue(data.name);
-        data.point = data.point || {} as any;
 
         ins.copyValues({
-            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
-            color: data.color !== undefined ? data.color : ins.color.schema.preset,
-            intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-            ground: data.hemisphere?.ground ?? ins.ground.schema.preset,
+            enabled: data.enabled,
+            color: data.color,
+            intensity: data.intensity,
+            ground: data.hemisphere?.ground,
+            tags: data.tags,
         });
-        ins.tags.setValue(data.tags || "");
     }
 
     toDocument(document: IDocument, node: INode): number

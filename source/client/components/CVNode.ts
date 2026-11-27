@@ -101,16 +101,16 @@ export default class CVNode extends CTransform
             scale.set();
         }
         else {
-            position.setValue(data.translation ? data.translation.slice() : defaultPosition.toArray());
+            position.copyValue(data.translation ?? position.schema.preset);
             if (data.rotation) {
                 _quat.fromArray(data.rotation);
                 _euler.setFromQuaternion(_quat, orderTag);
                 _vec3a.setFromEuler(_euler).multiplyScalar(MathUtils.RAD2DEG).toArray(rotation.value);
                 rotation.set();
             } else {
-                rotation.setValue(defaultRotation.toArray());
+                rotation.reset();
             }
-            scale.setValue(data.scale? data.scale.slice():defaultScale.toArray());
+            scale.copyValue(data.scale ?? scale.schema.preset);
             // this updates the matrix from the PRS properties
             this.transform.changed = true;
         }

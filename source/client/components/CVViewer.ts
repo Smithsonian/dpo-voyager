@@ -296,21 +296,17 @@ export default class CVViewer extends Component
         const ins = this.ins;
 
         ins.copyValues({
-            shader: EShaderMode[data.shader] || EShaderMode.Default,
-            exposure: data.exposure !== undefined ? data.exposure : ins.exposure.schema.preset,
-            toneMapping: data.toneMapping || false,
-            gamma: data.gamma !== undefined ? data.gamma : ins.gamma.schema.preset,
-            isWallMountAR: data.isWallMountAR || false,
-            arScale: data.arScale || 1.0,
-            annotationsVisible: !!data.annotationsVisible,
-            activeTags: data.activeTags || "",
-            sortedTags: data.sortedTags || "",
-            radioTags: data.radioTags !== undefined ? !!data.radioTags : ins.radioTags.schema.preset,
+            shader: EShaderMode[data.shader],
+            exposure: data.exposure,
+            toneMapping: data.toneMapping,
+            gamma: data.gamma,
+            isWallMountAR: data.isWallMountAR,
+            arScale: data.arScale || ins.arScale.schema.preset,
+            annotationsVisible: data.annotationsVisible,
+            activeTags: data.activeTags,
+            sortedTags: data.sortedTags,
+            radioTags: data.radioTags,
         });
-
-        if (data.shader && EShaderMode[data.shader]){
-            ins.shader.setValue(EShaderMode[data.shader] || EShaderMode.Default);
-        }
     }
 
     toData(): IViewer

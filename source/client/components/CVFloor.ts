@@ -67,8 +67,8 @@ export default class CVFloor extends CFloor
     {
         super(node, id);
 
-        this.ins.visible.setValue(false);
-        this.ins.receiveShadow.setValue(true);
+        this.ins.visible.setPreset(false);
+        this.ins.receiveShadow.setPreset(true);
 
         // make sure floor is rendered behind other transparent scene objects
         this.floor.renderOrder = -1;
@@ -119,15 +119,17 @@ export default class CVFloor extends CFloor
     {
         data = data || {} as IFloor;
 
-        this.ins.copyValues({
-            visible: !!data.visible,
-            position: data.position || [ 0, -25, 0 ],
-            radius: data.size !== undefined ? data.size : 50,
-            color: data.color || [ 0.6, 0.75, 0.8 ],
-            opacity: data.opacity !== undefined ? data.opacity : 0.5,
-            receiveShadow: !!data.receiveShadow,
-            autoSize: data.autoSize !== undefined ? data.autoSize : true
+        const { ins, addIns } = this;
+
+        ins.copyValues({
+            visible: data.visible,
+            position: data.position,
+            radius: data.size,
+            color: data.color,
+            opacity: data.opacity,
+            receiveShadow: data.receiveShadow,
         });
+        addIns.autoSize.setValue(data.autoSize ?? addIns.autoSize.schema.preset);
     }
 
     toData(): IFloor
