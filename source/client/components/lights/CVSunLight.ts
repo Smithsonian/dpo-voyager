@@ -108,23 +108,23 @@ export default class CVSunLight extends CSunLight implements ICVLight {
         ins.name.setValue(data.name);
 
         ins.copyValues({
-            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
-            color: data.color !== undefined ? data.color : ins.color.schema.preset,
-            intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-            datetime: data.sun?.datetime !== undefined ? dayjs(data.sun.datetime).tz(data.sun.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone) : ins.datetime.schema.preset,
-            timezone: data.sun?.timezone !== undefined ? data.sun.timezone : ins.timezone.schema.preset,
-            latitude: data.sun?.latitude !== undefined ? data.sun.latitude : ins.latitude.schema.preset,
-            longitude: data.sun?.longitude !== undefined ? data.sun.longitude : ins.longitude.schema.preset,
-            intensityFactor: data.sun?.intensityFactor !== undefined ? data.sun.intensityFactor : ins.intensityFactor.schema.preset,
+            enabled: data.enabled,
+            color: data.color,
+            intensity: data.intensity,
+            datetime: data.sun?.datetime !== undefined ? dayjs(data.sun.datetime).tz(data.sun.timezone ?? ins.timezone.schema.preset) : ins.datetime.schema.preset,
+            timezone: data.sun?.timezone,
+            latitude: data.sun?.latitude,
+            longitude: data.sun?.longitude,
+            intensityFactor: data.sun?.intensityFactor,
 
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
 
-            shadowEnabled: data.shadowEnabled || false,
-            shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
-            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 0 : ins.shadowResolution.schema.preset,
-            shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
-            shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
+            shadowEnabled: data.shadowEnabled,
+            shadowSize: data.shadowSize,
+            shadowResolution: EShadowMapResolution[data.shadowResolution],
+            shadowBlur: data.shadowBlur,
+            shadowIntensity: data.shadowIntensity,
         });
     }
 

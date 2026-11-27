@@ -92,24 +92,24 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
         data.spot = data.spot || {} as any;
 
         ins.copyValues({
-            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
-            color: data.color !== undefined ? data.color : ins.color.schema.preset,
-            intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+            enabled: data.enabled,
+            color: data.color,
+            intensity: data.intensity,
 
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
 
-            distance: data.spot.distance || ins.distance.schema.preset,
-            decay: data.spot.decay !== undefined ? data.spot.decay : ins.decay.schema.preset,
-            angle: data.spot.angle !== undefined ? data.spot.angle : ins.angle.schema.preset,
-            penumbra: data.spot.penumbra || ins.penumbra.schema.preset,
+            distance: data.spot.distance,
+            decay: data.spot.decay,
+            angle: data.spot.angle,
+            penumbra: data.spot.penumbra,
 
-            shadowEnabled: data.shadowEnabled || false,
-            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
-            shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
-            shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
+            shadowEnabled: data.shadowEnabled,
+            shadowResolution: EShadowMapResolution[data.shadowResolution],
+            shadowBlur: data.shadowBlur,
+            shadowIntensity: data.shadowIntensity,
+            tags: data.tags,
         });
-        ins.tags.setValue(data.tags || "");
     }
 
     toDocument(document: IDocument, node: INode): number

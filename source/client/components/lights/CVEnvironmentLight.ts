@@ -106,13 +106,11 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
             throw new Error("light type mismatch: not an environment light");
         }
 
-        data.point = data.point || {} as any;
-
         ins.copyValues({
-            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
-            intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+            enabled: data.enabled,
+            intensity: data.intensity,
+            tags: data.tags,
         });
-        ins.tags.setValue(data.tags || "");
     }
 
     toDocument(document: IDocument, node: INode): number

@@ -239,7 +239,7 @@ export default class CVGrid extends CObject3D
 
         this.ins.copyValues({
             visible: !!data.visible,
-            color: data.color || [ 0.5, 0.7, 0.8 ],
+            color: data.color,
             opacity: data.opacity,
         });
     }

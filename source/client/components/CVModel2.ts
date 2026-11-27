@@ -521,15 +521,13 @@ export default class CVModel2 extends CObject3D
         if (data === null) {
             throw new Error("No saved document state");
         }
-        const units = EUnitType[data.units || "cm"];
-        ins.localUnits.setValue(isFinite(units) ? units : EUnitType.cm);
-
-        ins.visible.setValue(data.visible !== undefined ? data.visible : true);
-        ins.tags.setValue(data.tags || "");
-        ins.renderOrder.setValue(data.renderOrder !== undefined ? data.renderOrder : 0);
-
-        const side = ESideType[data.shadowSide || "Back"];
-        ins.shadowSide.setValue(isFinite(side) ? side : ESideType.Back);
+        ins.copyValues({
+            localUnits: EUnitType[data.units],
+            visible: data.visible,
+            tags: data.tags,
+            renderOrder: data.renderOrder,
+            shadowSide: ESideType[data.shadowSide],
+        });
 
         ins.position.reset();
         ins.rotation.reset();
@@ -546,25 +544,21 @@ export default class CVModel2 extends CObject3D
             ins.rotation.set();
         }
 
-        if (data.material) {
-            const material = data.material; 
-            ins.copyValues({
-                override: true,
-                color: material.color || ins.color.schema.preset,
-                opacity: material.opacity !== undefined ? material.opacity : ins.opacity.schema.preset,
-                hiddenOpacity: material.hiddenOpacity !== undefined ? material.hiddenOpacity : ins.hiddenOpacity.schema.preset,
-                roughness: material.roughness !== undefined ? material.roughness : ins.roughness.schema.preset,
-                metalness: material.metalness !== undefined ? material.metalness : ins.metalness.schema.preset,
-                occlusion: material.occlusion !== undefined ? material.occlusion : ins.occlusion.schema.preset,
-                doubleSided: material.doubleSided !== undefined ? material.doubleSided : ins.doubleSided.schema.preset
-            });
-        }
-
-        ins.slicerEnabled.setValue(typeof data.slicerEnabled != "boolean" || data.slicerEnabled);
-
-        if (data.overlayMap) {
-            ins.overlayMap.setValue(data.overlayMap);
-        }
+        // no material: the override is off and its values back to their defaults,
+        // otherwise resetting the scene keeps an override that was set after loading.
+        const material = data.material ?? {} as IModel["material"];
+        ins.copyValues({
+            override: !!data.material,
+            color: material.color,
+            opacity: material.opacity,
+            hiddenOpacity: material.hiddenOpacity,
+            roughness: material.roughness,
+            metalness: material.metalness,
+            occlusion: material.occlusion,
+            doubleSided: material.doubleSided,
+            slicerEnabled: data.slicerEnabled,
+            overlayMap: data.overlayMap,
+        });
 
         if (data.annotations) {
             this.getComponent(CVAnnotationView).fromData(data.annotations);
@@ -588,10 +582,10 @@ export default class CVModel2 extends CObject3D
         if (ins.tags.value) {
             data.tags = ins.tags.value;
         }
-        if (ins.renderOrder.value !== 0) {
+        if (!ins.renderOrder.isDefault()) {
             data.renderOrder = ins.renderOrder.value;
         }
-        if(ins.shadowSide.value != ESideType.Back) {
+        if (!ins.shadowSide.isDefault()) {
             data.shadowSide = ESideType[this.ins.shadowSide.getValidatedValue()] as TSideType;
         }
 
@@ -608,7 +602,7 @@ export default class CVModel2 extends CObject3D
 
         if (ins.override.value) {
             data.material = {
-                color: ins.color.value,
+                color: ins.color.cloneValue(),
                 opacity: ins.opacity.value,
                 hiddenOpacity: ins.hiddenOpacity.value,
                 roughness: ins.roughness.value,
@@ -618,11 +612,11 @@ export default class CVModel2 extends CObject3D
             };
         }
 
-        if (!ins.slicerEnabled.value){ 
-            data.slicerEnabled = false;
+        if (!ins.slicerEnabled.isDefault()) {
+            data.slicerEnabled = ins.slicerEnabled.value;
         }
 
-        if (ins.overlayMap.value !== 0) {
+        if (!ins.overlayMap.isDefault()) {
             data.overlayMap = ins.overlayMap.value;
         }
 

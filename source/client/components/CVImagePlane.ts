@@ -144,11 +144,11 @@ export default class CVImagePlane extends CVModel2
 
         ins.name.setValue(node.name);
 
-        const units = EUnitType[data.units || "cm"];
-        ins.localUnits.setValue(isFinite(units) ? units : EUnitType.cm);
-
-        ins.visible.setValue(data.visible !== undefined ? data.visible : true);
-        ins.tags.setValue(data.tags || "");
+        ins.copyValues({
+            localUnits: EUnitType[data.units],
+            visible: data.visible,
+            tags: data.tags,
+        });
 
         ins.position.reset();
         ins.rotation.reset();
@@ -198,13 +198,13 @@ export default class CVImagePlane extends CVModel2
             const material = data.material; 
             ins.copyValues({
                 //override: true,
-                color: material.color || ins.color.schema.preset,
-                opacity: material.opacity !== undefined ? material.opacity : ins.opacity.schema.preset,
+                color: material.color,
+                opacity: material.opacity,
                 //hiddenOpacity: material.hiddenOpacity !== undefined ? material.hiddenOpacity : ins.hiddenOpacity.schema.preset,
                 //roughness: material.roughness !== undefined ? material.roughness : ins.roughness.schema.preset,
                 //metalness: material.metalness !== undefined ? material.metalness : ins.metalness.schema.preset,
                 //occlusion: material.occlusion !== undefined ? material.occlusion : ins.occlusion.schema.preset,
-                doubleSided: material.doubleSided !== undefined ? material.doubleSided : ins.doubleSided.schema.preset
+                doubleSided: material.doubleSided
             });
         }
 

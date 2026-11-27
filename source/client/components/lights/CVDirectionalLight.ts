@@ -89,20 +89,20 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         ins.name.setValue(data.name);
 
         ins.copyValues({
-            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
-            color: data.color !== undefined ? data.color : ins.color.schema.preset,
-            intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+            enabled: data.enabled,
+            color: data.color,
+            intensity: data.intensity,
 
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
 
-            shadowEnabled: data.shadowEnabled || false,
-            shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
+            shadowEnabled: data.shadowEnabled,
+            shadowSize: data.shadowSize,
             shadowResolution: EShadowMapResolution[data.shadowResolution],
-            shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
-            shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
+            shadowBlur: data.shadowBlur,
+            shadowIntensity: data.shadowIntensity,
+            tags: data.tags,
         });
-        ins.tags.setValue(data.tags || "");
 
     }
 

@@ -140,8 +140,8 @@ export default class CVLanguageManager extends Component
         const { ins, outs } = this;
         data = data || {} as ILanguage;
 
-        const language = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
-        this.ins.primarySceneLanguage.setValue(ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE]);
+        const language = ELanguageType[data.language] ?? ins.primarySceneLanguage.schema.preset;
+        this.ins.primarySceneLanguage.setValue(language);
 
         this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.primarySceneLanguage.value].toLowerCase() + ".json").then(json => 
             {this._sceneSetupTranslations = json});
