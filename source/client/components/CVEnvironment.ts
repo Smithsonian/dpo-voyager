@@ -187,9 +187,9 @@ export default class CVEnvironment extends Component
         const ins = this.ins;
 
         this.ins.copyValues({
-          rotation : data.rotation ?? ins.rotation.schema.preset ,
-          imageIndex : data.index ??  ins.imageIndex.schema.preset,
-          visible : data.visible ?? ins.visible.schema.preset,
+          rotation : data.rotation,
+          imageIndex : data.index,
+          visible : data.visible,
         })
     }
 

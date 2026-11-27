@@ -232,14 +232,23 @@ export default class PropertyGroup extends Publisher
     }
 
     /**
-     * Sets the values of multiple properties. Properties are identified by key.
+     * Sets the values of multiple properties, copying array values. Properties are identified by key.
+     * An undefined or null value resets the property to its preset, so deserialized data
+     * can be passed as is: a missing field loads the property's default.
      * @param values Dictionary of property key/value pairs.
      */
     copyValues(values: Dictionary<any>)
     {
-        Object.keys(values).forEach(
-            key => this.getProperty(key).copyValue(values[key])
-        );
+        Object.keys(values).forEach(key => {
+            const value = values[key];
+            const property = this.getProperty(key);
+            if (value === undefined || value === null) {
+                property.reset();
+            }
+            else {
+                property.copyValue(value);
+            }
+        });
     }
 
     unlinkAllProperties()

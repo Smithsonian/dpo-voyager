@@ -98,7 +98,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
             shadowEnabled: data.shadowEnabled || false,
             shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
-            shadowResolution: EShadowMapResolution[data.shadowResolution] ?? ins.shadowResolution.schema.preset,
+            shadowResolution: EShadowMapResolution[data.shadowResolution],
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
             shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
